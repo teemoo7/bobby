@@ -23,15 +23,19 @@ public class Board {
         Board clone = new Board();
         for (int i = 0; i < RANKS; i++) {
             for (int j = 0; j < FILES; j++) {
-                clone.setPiece(i, j, getPiece(i, j).clone());
+                Optional<Piece> piece = getPiece(i, j);
+                if (piece.isPresent()) {
+                    clone.setPiece(i, j, piece.get().clone());
+                }
             }
         }
         return clone;
     }
 
-    public Board withMove(Move move) {
-
-        setPiece(move.get);
+    //todo: builder
+    public void withMove(Move move) {
+        removePiece(move.getFromX(), move.getFromY());
+        setPiece(move.getToX(), move.getToY(), move.getPiece());
     }
 
     private void setPiece(int x, int y, Piece piece) {

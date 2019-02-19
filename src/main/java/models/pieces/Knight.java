@@ -15,4 +15,9 @@ public class Knight extends Piece {
             return "\u265E";
         }
     }
+
+    @Override
+    public Piece clone() {
+        return new Knight(color);
+    }
 }

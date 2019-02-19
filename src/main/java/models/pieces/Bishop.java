@@ -15,4 +15,9 @@ public class Bishop extends Piece {
             return "\u265D";
         }
     }
+
+    @Override
+    public Piece clone() {
+        return new Bishop(color);
+    }
 }

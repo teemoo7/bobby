@@ -15,4 +15,9 @@ public class King extends Piece {
             return "\u265A";
         }
     }
+
+    @Override
+    public Piece clone() {
+        return new King(color);
+    }
 }

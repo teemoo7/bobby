@@ -7,10 +7,13 @@ import models.Board;
 import models.Color;
 import models.Move;
 import models.Position;
+import models.pieces.Bishop;
 import models.pieces.King;
 import models.pieces.Knight;
 import models.pieces.Pawn;
 import models.pieces.Piece;
+import models.pieces.Queen;
+import models.pieces.Rook;
 
 public class MoveService {
 	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY, boolean withCheck) {
@@ -29,24 +32,87 @@ public class MoveService {
 			}
 
 			// try one forward
-			moves.add(new Move(posX, posY, posX, posY + factor));
+			moves.add(new Move(piece, posX, posY, posX, posY + factor));
 
 			// try two forward if initial position
 			if (posY == initialY) {
-				moves.add(new Move(posX, posY, posX, posY + 2 * factor));
+				moves.add(new Move(piece, posX, posY, posX, posY + 2 * factor));
 			}
 		} else if (piece instanceof Knight) {
-			moves.add(new Move(posX, posY, posX + 1, posY + 2));
-			moves.add(new Move(posX, posY, posX + 1, posY - 2));
-			moves.add(new Move(posX, posY, posX - 1, posY + 2));
-			moves.add(new Move(posX, posY, posX - 1, posY - 2));
-			moves.add(new Move(posX, posY, posX + 2, posY + 1));
-			moves.add(new Move(posX, posY, posX + 2, posY - 1));
-			moves.add(new Move(posX, posY, posX - 2, posY + 1));
-			moves.add(new Move(posX, posY, posX - 2, posY - 1));
+			moves.add(new Move(piece, posX, posY, posX + 1, posY + 2));
+			moves.add(new Move(piece, posX, posY, posX + 1, posY - 2));
+			moves.add(new Move(piece, posX, posY, posX - 1, posY + 2));
+			moves.add(new Move(piece, posX, posY, posX - 1, posY - 2));
+			moves.add(new Move(piece, posX, posY, posX + 2, posY + 1));
+			moves.add(new Move(piece, posX, posY, posX + 2, posY - 1));
+			moves.add(new Move(piece, posX, posY, posX - 2, posY + 1));
+			moves.add(new Move(piece, posX, posY, posX - 2, posY - 1));
+		} else if (piece instanceof Bishop) {
+			moves.addAll(computeBishopMoves(piece, posX, posY));
+		} else if (piece instanceof Rook) {
+			moves.addAll(computeRookMoves(piece, posX, posY));
+		} else if (piece instanceof Queen) {
+			moves.addAll(computeRookMoves(piece, posX, posY));
+			moves.addAll(computeBishopMoves(piece, posX, posY));
+		} else {
+			// king
+			moves.add(new Move(piece, posX, posY, posX + 1, posY));
+			moves.add(new Move(piece, posX, posY, posX - 1, posY));
+			moves.add(new Move(piece, posX, posY, posX, posY + 1));
+			moves.add(new Move(piece, posX, posY, posX, posY - 1));
+			moves.add(new Move(piece, posX, posY, posX + 1, posY + 1));
+			moves.add(new Move(piece, posX, posY, posX + 1, posY - 1));
+			moves.add(new Move(piece, posX, posY, posX - 1, posY - 1));
+			moves.add(new Move(piece, posX, posY, posX - 1, posY + 1));
 		}
 
 		return moves.stream().filter(move -> isValidMove(move, board, piece)).collect(Collectors.toList());
+	}
+
+	private List<Move> computeBishopMoves(Piece piece, int posX, int posY) {
+		List<Move> moves = new ArrayList<>();
+		// right up /
+		int distanceMax = Math.min(7-posX, 7-posY);
+		for (int i = 0; i < distanceMax; i++) {
+			moves.add(new Move(piece, posX, posY, posX + i, posY + i));
+		}
+		// right down \
+		distanceMax = Math.min(7-posX, posY);
+		for (int i = 0; i < distanceMax; i++) {
+			moves.add(new Move(piece, posX, posY, posX + i, posY - i));
+		}
+		// left down /
+		distanceMax = Math.min(posX, posY);
+		for (int i = 0; i < distanceMax; i++) {
+			moves.add(new Move(piece, posX, posY, posX - i, posY - i));
+		}
+		// left up \
+		distanceMax = Math.min(posX, 7-posY);
+		for (int i = 0; i < distanceMax; i++) {
+			moves.add(new Move(piece, posX, posY, posX - i, posY + i));
+		}
+		return moves;
+	}
+
+	private List<Move> computeRookMoves(Piece piece, int posX, int posY) {
+		List<Move> moves = new ArrayList<>();
+		// up
+		for (int i = 0; i < 7-posY; i++) {
+			moves.add(new Move(piece, posX, posY, posX, posY + i));
+		}
+		// down
+		for (int i = 0; i < posY; i++) {
+			moves.add(new Move(piece, posX, posY, posX, posY - i));
+		}
+		// left
+		for (int i = 0; i < posX; i++) {
+			moves.add(new Move(piece, posX, posY, posX - i, posY));
+		}
+		// right
+		for (int i = 0; i < 7-posX; i++) {
+			moves.add(new Move(piece, posX, posY, posX + i, posY));
+		}
+		return moves;
 	}
 
 	private boolean isValidMove(Move move, Board board, Piece piece) {
@@ -76,13 +142,19 @@ public class MoveService {
 			//todo: check kings mutual distance
 		}
 		// compute board after move
-		board.clone().withMove(move);
-		return !isInCheck(board, piece.getColor());
+		Board boardAfterMove = board.clone();
+		boardAfterMove.withMove(move);
+		return !isInCheck(boardAfterMove, piece.getColor());
 	}
 
 	private boolean isInCheck(Board board, Color color) {
 		final Position kingPosition = findKingPosition(board, color).orElseThrow(() -> new RuntimeException("No more king!"));
 		final Color otherColor = swap(color);
+
+		//one naive implementation could be to compute all moves for all pieces and check if the destination of any move is where the king is, which would mean check
+		// but it is way to expensive, so the preferred method here is to find the king and check the straight, diagonal and L moves
+		// todo: implement smart method
+
 		for (int x = 0; x < 8; x++) {
 			for (int y = 0; y < 8; y++) {
 				Optional<Piece> pieceOpt = board.getPiece(x, y);

@@ -15,4 +15,9 @@ public class Rook extends Piece {
             return "\u265C";
         }
     }
+
+    @Override
+    public Piece clone() {
+        return new Rook(color);
+    }
 }

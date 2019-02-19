@@ -15,4 +15,9 @@ public class Queen extends Piece {
             return "\u265B";
         }
     }
+
+    @Override
+    public Piece clone() {
+        return new Queen(color);
+    }
 }

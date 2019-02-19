@@ -15,4 +15,9 @@ public class Pawn extends Piece {
             return "\u265F";
         }
     }
+
+    @Override
+    public Piece clone() {
+        return new Pawn(color);
+    }
 }
