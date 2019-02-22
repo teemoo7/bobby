@@ -1,9 +1,11 @@
 package gui;
 
-import models.pieces.Piece;
+import java.awt.Container;
+import java.awt.GridLayout;
 
-import java.awt.*;
 import javax.swing.JFrame;
+
+import models.pieces.Piece;
 
 
 public class Board extends JFrame {

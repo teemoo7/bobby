@@ -4,6 +4,9 @@ import models.pieces.*;
 
 public class Bobby {
     public static void main(String args[]) {
+
+        //todo: use MVC Swing to display computed moves when piece is clicked
+
         Board board = new Board("Bobby chess game");
         board.display(getInitialPiecesPositions());
     }
