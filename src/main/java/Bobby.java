@@ -1,14 +1,65 @@
-import gui.Board;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.border.Border;
+
+import gui.BoardView;
+import gui.Square;
+import models.Board;
 import models.Color;
-import models.pieces.*;
+import models.Move;
+import models.pieces.Bishop;
+import models.pieces.King;
+import models.pieces.Knight;
+import models.pieces.Pawn;
+import models.pieces.Piece;
+import models.pieces.Queen;
+import models.pieces.Rook;
 
 public class Bobby {
     public static void main(String args[]) {
+        final MoveService moveService = new MoveService();
 
         //todo: use MVC Swing to display computed moves when piece is clicked
+        Board board = new Board(getInitialPiecesPositions());
 
-        Board board = new Board("Bobby chess game");
-        board.display(getInitialPiecesPositions());
+        BoardView boardView = new BoardView("Bobby chess game");
+        boardView.display(board.getBoard());
+
+        final Border redBorder = BorderFactory.createLineBorder(java.awt.Color.red);
+        final Border blueBorder = BorderFactory.createLineBorder(java.awt.Color.blue);
+
+        Square[][] squares = boardView.getSquares();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Square square = squares[i][j];
+                square.addMouseListener(new MouseAdapter() {
+                    public void mouseClicked(MouseEvent e) {
+                        //todo: clear current selection
+                        cleanSquaresBorder(squares);
+
+                        //todo: if selection active, perform move, then clear
+
+                        square.setBorder(redBorder);
+                        List<Move> moves = moveService.computeMoves(board, square.getPiece(), square.getPosition().getX(), square.getPosition().getY(), false);
+                        for (Move move: moves) {
+                            squares[move.getToY()][move.getToX()].setBorder(blueBorder);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    private static void cleanSquaresBorder(Square[][] squares) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Square square = squares[i][j];
+                square.setBorder(BorderFactory.createEmptyBorder());
+            }
+        }
     }
 
     private static Piece[][] getInitialPiecesPositions() {

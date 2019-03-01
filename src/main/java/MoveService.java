@@ -165,6 +165,9 @@ public class MoveService {
 
 	private Optional<Move> getAllowedMove(Piece piece, int posX, int posY, int deltaX, int deltaY, Board board) {
 		Move move = new Move(piece, posX, posY, posX + deltaX, posY + deltaY);
+		if (isOutOfBounds(move)) {
+			return Optional.empty();
+		}
 		Optional<Piece> destPiece = board.getPiece(move.getToX(), move.getToY());
 		if (piece instanceof Pawn) {
 			if (deltaX == 0) {
@@ -197,12 +200,12 @@ public class MoveService {
 		return Optional.of(move);
 	}
 
-	private boolean isValidMove(Move move, Board board, Piece piece) {
+	private boolean isOutOfBounds(Move move) {
 		// Board boundaries
-		if (move.getToX() > 7 || move.getToY() > 7 || move.getToX() < 0 || move.getToY() < 0) {
-			return false;
-		}
+		return move.getToX() > 7 || move.getToY() > 7 || move.getToX() < 0 || move.getToY() < 0;
+	}
 
+	private boolean isValidMove(Move move, Board board, Piece piece) {
 		// compute board after move
 		Board boardAfterMove = board.clone();
 		boardAfterMove.withMove(move);
@@ -210,7 +213,7 @@ public class MoveService {
 		// check kings mutual distance
 		Position king1 = findKingPosition(boardAfterMove, piece.getColor());
 		Position king2 = findKingPosition(boardAfterMove, swap(piece.getColor()));
-		if (Math.min(Math.abs(king1.getX() - king2.getX()), Math.abs(king1.getY() - king2.getY())) <= 1) {
+		if (Math.max(Math.abs(king1.getX() - king2.getX()), Math.abs(king1.getY() - king2.getY())) <= 1) {
 			return false;
 		}
 

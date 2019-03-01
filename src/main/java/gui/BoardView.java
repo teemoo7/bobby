@@ -5,13 +5,15 @@ import java.awt.GridLayout;
 
 import javax.swing.JFrame;
 
+import models.Position;
 import models.pieces.Piece;
 
 
-public class Board extends JFrame {
+public class BoardView extends JFrame {
     private final Container contentPane;
+    private Square[][] squares = new Square[8][8];
 
-    public Board(String title) {
+    public BoardView(String title) {
         setTitle(title);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.contentPane = getContentPane();
@@ -22,6 +24,10 @@ public class Board extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    public Square[][] getSquares() {
+        return squares;
+    }
+
     public void display(Piece[][] positions) {
         addFilesLabels();
         Background background;
@@ -30,14 +36,11 @@ public class Board extends JFrame {
             background = getFirstSquareBackground(i);
             for (int j = 0; j < positions[i].length; j++) {
                 Piece piece = positions[i][j];
-                Square square;
-                if (piece != null) {
-                    square = new Square(piece.getUnicode(), background);
-                } else {
-                    square = new Square(background);
-                }
+                // Inverse coordinates (positions is a 2D array, reversed)
+                Square square = new Square(piece, new Position(j, i), background);
                 background = swapBackground(background);
                 contentPane.add(square);
+                squares[i][j] = square;
             }
             contentPane.add(getRankLabel(i));
         }

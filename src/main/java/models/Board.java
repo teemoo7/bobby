@@ -8,10 +8,18 @@ public class Board {
     public final static int RANKS = 8;
     public final static int FILES = 8;
 
-    private final Piece[][] board = new Piece[RANKS][FILES];
+    private final Piece[][] board;
+
+    public Board(Piece[][] board) {
+        this.board = board;
+    }
+
+    public Piece[][] getBoard() {
+        return board;
+    }
 
     public Optional<Piece> getPiece(int x, int y) {
-        return Optional.ofNullable(board[x][y]);
+        return Optional.ofNullable(board[y][x]);
     }
 
     public String toString() {
@@ -20,9 +28,9 @@ public class Board {
     }
 
     public Board clone() {
-        Board clone = new Board();
-        for (int i = 0; i < RANKS; i++) {
-            for (int j = 0; j < FILES; j++) {
+        Board clone = new Board(new Piece[FILES][RANKS]);
+        for (int i = 0; i < FILES; i++) {
+            for (int j = 0; j < RANKS; j++) {
                 Optional<Piece> piece = getPiece(i, j);
                 if (piece.isPresent()) {
                     clone.setPiece(i, j, piece.get().clone());
@@ -39,12 +47,12 @@ public class Board {
     }
 
     private void setPiece(int x, int y, Piece piece) {
-        board[x][y] = piece;
+        board[y][x] = piece;
     }
 
     private Optional<Piece> removePiece(int x, int y) {
         Optional<Piece> toRemove = getPiece(x, y);
-        board[x][y] = null;
+        board[y][x] = null;
         return toRemove;
     }
 
