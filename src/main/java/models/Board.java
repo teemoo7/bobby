@@ -40,8 +40,7 @@ public class Board {
         return clone;
     }
 
-    //todo: builder
-    public void withMove(Move move) {
+    public void doMove(Move move) {
         removePiece(move.getFromX(), move.getFromY());
         setPiece(move.getToX(), move.getToY(), move.getPiece());
     }

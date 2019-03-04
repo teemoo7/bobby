@@ -89,7 +89,7 @@ public class MoveService {
 		List<Move> moves = new ArrayList<>();
 		// right up /
 		for (int i = 0; i < Math.min(Math.min(7-posX, 7-posY), maxDistance); i++) {
-			Optional<Move> move = getAllowedMove(piece, posX, posY, i, i, board);
+			Optional<Move> move = getAllowedMove(piece, posX, posY, i+1, i+1, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
 				break;
@@ -97,7 +97,7 @@ public class MoveService {
 		}
 		// right down \
 		for (int i = 0; i < Math.min(Math.min(7-posX, posY), maxDistance); i++) {
-			Optional<Move> move = getAllowedMove(piece, posX, posY, i, -i, board);
+			Optional<Move> move = getAllowedMove(piece, posX, posY, i+1, -i-1, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
 				break;
@@ -105,7 +105,7 @@ public class MoveService {
 		}
 		// left down /
 		for (int i = 0; i < Math.min(Math.min(posX, posY), maxDistance); i++) {
-			Optional<Move> move = getAllowedMove(piece, posX, posY, -i, -i, board);
+			Optional<Move> move = getAllowedMove(piece, posX, posY, -i-1, -i-1, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
 				break;
@@ -113,7 +113,7 @@ public class MoveService {
 		}
 		// left up \
 		for (int i = 0; i < Math.min(Math.min(posX, 7-posY), maxDistance); i++) {
-			Optional<Move> move = getAllowedMove(piece, posX, posY, -i, i, board);
+			Optional<Move> move = getAllowedMove(piece, posX, posY, -i-1, i+1, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
 				break;
@@ -130,7 +130,7 @@ public class MoveService {
 		List<Move> moves = new ArrayList<>();
 		// up
 		for (int i = 0; i < Math.min(7-posY, maxDistance); i++) {
-			Optional<Move> move = getAllowedMove(piece, posX, posY, 0, i, board);
+			Optional<Move> move = getAllowedMove(piece, posX, posY, 0, i+1, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
 				break;
@@ -138,7 +138,7 @@ public class MoveService {
 		}
 		// down
 		for (int i = 0; i < Math.min(posY, maxDistance); i++) {
-			Optional<Move> move = getAllowedMove(piece, posX, posY, 0, -i, board);
+			Optional<Move> move = getAllowedMove(piece, posX, posY, 0, -i-1, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
 				break;
@@ -146,7 +146,7 @@ public class MoveService {
 		}
 		// left
 		for (int i = 0; i < Math.min(posX, maxDistance); i++) {
-			Optional<Move> move = getAllowedMove(piece, posX, posY, -i, 0, board);
+			Optional<Move> move = getAllowedMove(piece, posX, posY, -i-1, 0, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
 				break;
@@ -154,7 +154,7 @@ public class MoveService {
 		}
 		// right
 		for (int i = 0; i < Math.min(7-posX, maxDistance); i++) {
-			Optional<Move> move = getAllowedMove(piece, posX, posY, i, 0, board);
+			Optional<Move> move = getAllowedMove(piece, posX, posY, i+1, 0, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
 				break;
@@ -208,7 +208,7 @@ public class MoveService {
 	private boolean isValidMove(Move move, Board board, Piece piece) {
 		// compute board after move
 		Board boardAfterMove = board.clone();
-		boardAfterMove.withMove(move);
+		boardAfterMove.doMove(move);
 
 		// check kings mutual distance
 		Position king1 = findKingPosition(boardAfterMove, piece.getColor());

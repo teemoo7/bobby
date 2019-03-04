@@ -4,6 +4,7 @@ import java.awt.Container;
 import java.awt.GridLayout;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import models.Position;
 import models.pieces.Piece;
@@ -46,6 +47,20 @@ public class BoardView extends JFrame {
         }
         addFilesLabels();
         setVisible(true);
+    }
+
+    public void refresh(Piece[][] positions) {
+        for (int i = positions.length - 1; i >= 0 ; i--) {
+            for (int j = 0; j < positions[i].length; j++) {
+                Piece piece = positions[i][j];
+                // get current square, so that only its label is updated
+                squares[i][j].setPiece(piece);
+            }
+        }
+    }
+
+    public void popup(String message) {
+        JOptionPane.showMessageDialog(this, message);
     }
 
     private void addFilesLabels() {
