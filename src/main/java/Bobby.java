@@ -13,7 +13,7 @@ public class Bobby {
     public static void main(String args[]) {
         Board board = new Board(getInitialPiecesPositions());
         BoardView boardView = new BoardView("Bobby chess game");
-        Controller controller = new Controller(boardView, board);
+        GameController gameController = new GameController(boardView, board);
     }
 
     private static Piece[][] getInitialPiecesPositions() {

@@ -11,7 +11,7 @@ import gui.Square;
 import models.Board;
 import models.Move;
 
-public class Controller {
+public class GameController {
 	private static final Border RED_BORDER = BorderFactory.createLineBorder(java.awt.Color.red);
 	private static final Border BLUE_BORDER = BorderFactory.createLineBorder(java.awt.Color.blue);
 	private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
@@ -22,7 +22,7 @@ public class Controller {
 
 	private Square selectedSquare = null;
 
-	public Controller(BoardView view, Board board) {
+	public GameController(BoardView view, Board board) {
 		this.view = view;
 		this.board = board;
 		init();
@@ -78,8 +78,7 @@ public class Controller {
 			} else {
 				//check if move is authorized
 				List<Move> moves = getMoveService()
-					.computeMoves(board, selectedSquare.getPiece(), selectedSquare.getPosition().getX(), selectedSquare.getPosition().getY(),
-						false);
+					.computeMoves(board, selectedSquare.getPiece(), selectedSquare.getPosition().getX(), selectedSquare.getPosition().getY());
 
 				Optional<Move> myMove = moves.stream().filter(move -> move.getToX() == square.getPosition().getX() && move.getToY() == square.getPosition().getY()).findAny();
 				boolean isAuthorized = myMove.isPresent();
@@ -88,9 +87,10 @@ public class Controller {
 					cleanSelectedSquare();
 					cleanSquaresBorder();
 					getView().refresh(board.getBoard());
-					if (myMove.get().isTaking()) {
-						getView().popup("Taking piece!");
+					if (myMove.get().isChecking()) {
+						getView().popup("Check!");
 					}
+					//todo: check game ending
 				} else {
 					//todo: log error, should not happen
 				}
@@ -101,8 +101,7 @@ public class Controller {
 				setSelectedSquare(square);
 				square.setBorder(RED_BORDER);
 				List<Move> moves = getMoveService()
-					.computeMoves(board, square.getPiece(), square.getPosition().getX(), square.getPosition().getY(),
-						false);
+					.computeMoves(board, square.getPiece(), square.getPosition().getX(), square.getPosition().getY());
 				for (Move move : moves) {
 					getView().getSquares()[move.getToY()][move.getToX()].setBorder(BLUE_BORDER);
 				}

@@ -9,6 +9,7 @@ public class Move {
 	private final int toX;
 	private final int toY;
 	private boolean isTaking;
+	private boolean isChecking;
 
 	public Move(Piece piece, int fromX, int fromY, int toX, int toY) {
 		this.piece = piece;
@@ -44,5 +45,13 @@ public class Move {
 
 	public void setTaking(boolean taking) {
 		isTaking = taking;
+	}
+
+	public boolean isChecking() {
+		return isChecking;
+	}
+
+	public void setChecking(boolean checking) {
+		isChecking = checking;
 	}
 }
