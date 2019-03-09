@@ -227,7 +227,7 @@ public class MoveService {
 			// cannot eat king (would mean being checkmate)
 			return false;
 		}
-		if (Math.min(Math.abs(king1.get().getX() - king2.get().getX()), Math.abs(king1.get().getY() - king2.get().getY())) <= 1) {
+		if (Math.max(Math.abs(king1.get().getX() - king2.get().getX()), Math.abs(king1.get().getY() - king2.get().getY())) <= 1) {
 			return false;
 		}
 
@@ -244,9 +244,9 @@ public class MoveService {
 	}
 
 	private boolean isInPawnCheck(Board board, Position kingPosition, Color color) {
-		int factor = color == Color.WHITE ? -1 : 1;
+		int factor = color == Color.BLACK ? -1 : 1;
 		int y = kingPosition.getY() + factor;
-		if (y >= 0 && y < 8) {
+		if (y >= 0 && y <= 7) {
 			List<Piece> destinations = new ArrayList<>();
 			if (kingPosition.getX() > 1) {
 				board.getPiece(kingPosition.getX() - 1, y).ifPresent(destinations::add);
@@ -262,7 +262,7 @@ public class MoveService {
 
 	private boolean isInLCheck(Board board, Position kingPosition, Color color) {
 		final Piece fakeKnight = new Knight(color);
-		return computeDiagonalMoves(fakeKnight, kingPosition.getX(), kingPosition.getY(), board).stream()
+		return computeLShapeMoves(fakeKnight, kingPosition.getX(), kingPosition.getY(), board).stream()
 			.filter(Move::isTaking).anyMatch(move -> {
 			Piece takenPiece = board.getPiece(move.getToX(), move.getToY())
 				.orElseThrow(() -> new RuntimeException("Cannot take an empty piece!"));
