@@ -9,7 +9,10 @@ import javax.swing.border.Border;
 import gui.BoardView;
 import gui.Square;
 import models.Board;
+import models.Game;
 import models.Move;
+
+import static helpers.ColorHelper.swap;
 
 public class GameController {
 	private static final Border RED_BORDER = BorderFactory.createLineBorder(java.awt.Color.red);
@@ -18,13 +21,15 @@ public class GameController {
 
 	private final BoardView view;
 	private final Board board;
+	private final Game game;
 	private final MoveService moveService = new MoveService();
 
 	private Square selectedSquare = null;
 
-	public GameController(BoardView view, Board board) {
+	public GameController(BoardView view, Game game) {
 		this.view = view;
-		this.board = board;
+		this.game = game;
+		this.board = game.getBoard();
 		init();
 	}
 
@@ -80,14 +85,17 @@ public class GameController {
 				List<Move> moves = getMoveService()
 					.computeMoves(board, selectedSquare.getPiece(), selectedSquare.getPosition().getX(), selectedSquare.getPosition().getY());
 
-				Optional<Move> myMove = moves.stream().filter(move -> move.getToX() == square.getPosition().getX() && move.getToY() == square.getPosition().getY()).findAny();
-				boolean isAuthorized = myMove.isPresent();
+				Optional<Move> moveOpt = moves.stream().filter(move -> move.getToX() == square.getPosition().getX() && move.getToY() == square.getPosition().getY()).findAny();
+				boolean isAuthorized = moveOpt.isPresent();
 				if (isAuthorized) {
-					getBoard().doMove(myMove.get());
+					Move move = moveOpt.get();
+					getBoard().doMove(move);
+					game.addMoveToHistory(move);
+					game.setToPlay(swap(move.getPiece().getColor()));
 					cleanSelectedSquare();
 					cleanSquaresBorder();
 					getView().refresh(board.getBoard());
-					if (myMove.get().isChecking()) {
+					if (move.isChecking()) {
 						getView().popup("Check!");
 					}
 					//todo: check game ending

@@ -15,6 +15,8 @@ import models.pieces.Piece;
 import models.pieces.Queen;
 import models.pieces.Rook;
 
+import static helpers.ColorHelper.swap;
+
 public class MoveService {
 	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY) {
 		List<Move> moves = new ArrayList<>();
@@ -303,13 +305,5 @@ public class MoveService {
 			}
 		}
 		return Optional.empty();
-	}
-
-	private Color swap(Color color) {
-		if (color == Color.WHITE) {
-			return Color.BLACK;
-		} else {
-			return Color.WHITE;
-		}
 	}
 }
