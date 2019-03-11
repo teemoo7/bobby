@@ -1,3 +1,5 @@
+import static helpers.ColorHelper.swap;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,9 +17,22 @@ import models.pieces.Piece;
 import models.pieces.Queen;
 import models.pieces.Rook;
 
-import static helpers.ColorHelper.swap;
-
 public class MoveService {
+	public boolean canMove(Board board, Color color) {
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				Optional<Piece> piece = board.getPiece(i, j);
+				if (piece.isPresent() && piece.get().getColor() == color) {
+					List<Move> moves = computeMoves(board, piece.get(), i, j);
+					if (!moves.isEmpty()) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY) {
 		List<Move> moves = new ArrayList<>();
 		final Color color = piece.getColor();
@@ -49,6 +64,15 @@ public class MoveService {
 
 			return isValidSituation(boardAfterMove, color);
 		}).collect(Collectors.toList());
+	}
+
+	public boolean isInCheck(Board board, Color color) {
+		final Position kingPosition = findKingPosition(board, color).orElseThrow(() -> new RuntimeException("King not found"));
+
+		return isInStraightCheck(board, kingPosition, color)
+			|| isInDiagonalCheck(board, kingPosition, color)
+			|| isInLCheck(board, kingPosition, color)
+			|| isInPawnCheck(board, kingPosition, color);
 	}
 
 	private List<Move> computePawnMoves(Piece piece, int posX, int posY, Board board) {
@@ -234,15 +258,6 @@ public class MoveService {
 		}
 
 		return !isInCheck(boardAfterMove, color);
-	}
-
-	private boolean isInCheck(Board board, Color color) {
-		final Position kingPosition = findKingPosition(board, color).orElseThrow(() -> new RuntimeException("King not found"));
-
-		return isInStraightCheck(board, kingPosition, color)
-			|| isInDiagonalCheck(board, kingPosition, color)
-			|| isInLCheck(board, kingPosition, color)
-			|| isInPawnCheck(board, kingPosition, color);
 	}
 
 	private boolean isInPawnCheck(Board board, Position kingPosition, Color color) {
