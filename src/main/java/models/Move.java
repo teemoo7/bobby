@@ -54,4 +54,13 @@ public class Move {
 	public void setChecking(boolean checking) {
 		isChecking = checking;
 	}
+
+	public String getBasicNotation() {
+		return convertXToLetter(fromX) + fromY + "-" + convertXToLetter(toX) + toY;
+	}
+
+	private static String convertXToLetter(int x) {
+		final int aAscii = (int) 'a';
+		return String.valueOf((char) (aAscii + x));
+	}
 }

@@ -12,10 +12,8 @@ import javax.swing.border.Border;
 
 import gui.BoardView;
 import gui.Square;
-import models.Board;
-import models.Color;
-import models.Game;
-import models.Move;
+import models.*;
+import models.pieces.Pawn;
 import models.pieces.Piece;
 
 public class GameController {
@@ -133,6 +131,10 @@ public class GameController {
 					if (move.isChecking()) {
 						getView().popup("Check!");
 					}
+					GameState state = getGameState(game);
+					if (state != GameState.IN_PROGRESS) {
+						getView().popup("Game is over: " + state.name());
+					}
 					//todo: check game ending
 				} else {
 					//todo: log error, should not happen
@@ -141,7 +143,6 @@ public class GameController {
 		} else {
 			if (square.getPiece() != null) {
 				if (square.getPiece().getColor() == game.getToPlay()) {
-					//todo: check color to play
 					cleanSquaresBorder();
 					resetAllClickables();
 					// to unselect
@@ -175,21 +176,43 @@ public class GameController {
 			}
 		}
 	}
-/*
-	private GameStatus getGameStatus(Board board, Color color) {
-		boolean canMove = getMoveService().canMove(board, color);
-		boolean isInCheck = getMoveService().isInCheck(board, color);
+
+	private GameState getGameState(Game game) {
+		boolean canMove = getMoveService().canMove(game.getBoard(), game.getToPlay());
+		boolean isInCheck = getMoveService().isInCheck(game.getBoard(), game.getToPlay());
 
 		if (!canMove) {
 			if (isInCheck) {
-				return CheckMate;
+				// Checkmate
+				return GameState.LOSS;
 			} else {
-				return StaleMate;
+				// Stalemate
+				return GameState.DRAW;
 			}
 		}
 
-		//todo: threefold repetition - draw
-		//todo: 50-move (no pawn moved, no capture) - draw
+		List<Move> history = game.getHistory();
+		if (history.size() >= 6) {
+			Move move6 = history.get(history.size());
+			Move move4 = history.get(history.size()-2);
+			Move move2 = history.get(history.size()-4);
+			Move move5 = history.get(history.size()-1);
+			Move move3 = history.get(history.size()-2);
+			Move move1 = history.get(history.size()-5);
+			if (move6 == move4 && move6 == move2 && move5 == move3 && move5 == move1) {
+				// Threefold repetition
+				return GameState.DRAW;
+			}
+		}
+
+		if (history.size() >= 50) {
+			List<Move> last50Moves = history.subList(history.size() - 1 - 50, history.size() - 1);
+			if (last50Moves.stream().noneMatch(move -> move.isTaking() || move.getPiece() instanceof Pawn)) {
+				// 50-move (no pawn moved, no capture)
+				return GameState.DRAW;
+			}
+		}
+
+		return GameState.IN_PROGRESS;
 	}
-	*/
 }
