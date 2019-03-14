@@ -1,4 +1,5 @@
 import static helpers.ColorHelper.swap;
+import static models.Board.SIZE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +19,11 @@ import models.pieces.Queen;
 import models.pieces.Rook;
 
 public class MoveService {
+	static final int MAX_MOVE = SIZE - 1;
+
 	public boolean canMove(Board board, Color color) {
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
+		for (int i = 0; i < SIZE; i++) {
+			for (int j = 0; j < SIZE; j++) {
 				Optional<Piece> piece = board.getPiece(i, j);
 				if (piece.isPresent() && piece.get().getColor() == color) {
 					List<Move> moves = computeMoves(board, piece.get(), i, j);
@@ -122,13 +125,13 @@ public class MoveService {
 	}
 
 	private List<Move> computeDiagonalMoves(Piece piece, int posX, int posY, Board board) {
-		return computeDiagonalMoves(piece, posX, posY, board, 8);
+		return computeDiagonalMoves(piece, posX, posY, board, SIZE);
 	}
 
 	private List<Move> computeDiagonalMoves(Piece piece, int posX, int posY, Board board, int maxDistance) {
 		List<Move> moves = new ArrayList<>();
 		// right up /
-		for (int i = 0; i < Math.min(Math.min(7-posX, 7-posY), maxDistance); i++) {
+		for (int i = 0; i < Math.min(Math.min(MAX_MOVE-posX, MAX_MOVE-posY), maxDistance); i++) {
 			Optional<Move> move = getAllowedMove(piece, posX, posY, i+1, i+1, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
@@ -136,7 +139,7 @@ public class MoveService {
 			}
 		}
 		// right down \
-		for (int i = 0; i < Math.min(Math.min(7-posX, posY), maxDistance); i++) {
+		for (int i = 0; i < Math.min(Math.min(MAX_MOVE-posX, posY), maxDistance); i++) {
 			Optional<Move> move = getAllowedMove(piece, posX, posY, i+1, -i-1, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
@@ -152,7 +155,7 @@ public class MoveService {
 			}
 		}
 		// left up \
-		for (int i = 0; i < Math.min(Math.min(posX, 7-posY), maxDistance); i++) {
+		for (int i = 0; i < Math.min(Math.min(posX, MAX_MOVE-posY), maxDistance); i++) {
 			Optional<Move> move = getAllowedMove(piece, posX, posY, -i-1, i+1, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
@@ -163,13 +166,13 @@ public class MoveService {
 	}
 
 	private List<Move> computeStraightMoves(Piece piece, int posX, int posY, Board board) {
-		return computeStraightMoves(piece, posX, posY, board, 8);
+		return computeStraightMoves(piece, posX, posY, board, SIZE);
 	}
 
 	private List<Move> computeStraightMoves(Piece piece, int posX, int posY, Board board, int maxDistance) {
 		List<Move> moves = new ArrayList<>();
 		// up
-		for (int i = 0; i < Math.min(7-posY, maxDistance); i++) {
+		for (int i = 0; i < Math.min(MAX_MOVE-posY, maxDistance); i++) {
 			Optional<Move> move = getAllowedMove(piece, posX, posY, 0, i+1, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
@@ -193,7 +196,7 @@ public class MoveService {
 			}
 		}
 		// right
-		for (int i = 0; i < Math.min(7-posX, maxDistance); i++) {
+		for (int i = 0; i < Math.min(MAX_MOVE-posX, maxDistance); i++) {
 			Optional<Move> move = getAllowedMove(piece, posX, posY, i+1, 0, board);
 			move.ifPresent(moves::add);
 			if (!move.isPresent() || move.get().isTaking()) {
@@ -242,7 +245,7 @@ public class MoveService {
 
 	private boolean isOutOfBounds(Move move) {
 		// Board boundaries
-		return move.getToX() > 7 || move.getToY() > 7 || move.getToX() < 0 || move.getToY() < 0;
+		return move.getToX() > MAX_MOVE || move.getToY() > MAX_MOVE || move.getToX() < 0 || move.getToY() < 0;
 	}
 
 	private boolean isValidSituation(Board boardAfterMove, Color color) {
@@ -263,12 +266,12 @@ public class MoveService {
 	private boolean isInPawnCheck(Board board, Position kingPosition, Color color) {
 		int factor = color == Color.BLACK ? -1 : 1;
 		int y = kingPosition.getY() + factor;
-		if (y >= 0 && y <= 7) {
+		if (y >= 0 && y <= MAX_MOVE) {
 			List<Piece> destinations = new ArrayList<>();
 			if (kingPosition.getX() > 1) {
 				board.getPiece(kingPosition.getX() - 1, y).ifPresent(destinations::add);
 			}
-			if (kingPosition.getX() < 7) {
+			if (kingPosition.getX() < MAX_MOVE) {
 				board.getPiece(kingPosition.getX() + 1, y).ifPresent(destinations::add);
 			}
 			return destinations.stream()
@@ -308,8 +311,8 @@ public class MoveService {
 	}
 
 	private Optional<Position> findKingPosition(Board board, Color color) {
-		for (int x = 0; x < 8; x++) {
-			for (int y = 0; y < 8; y++) {
+		for (int x = 0; x < SIZE; x++) {
+			for (int y = 0; y < SIZE; y++) {
 				Optional<Piece> pieceOpt = board.getPiece(x, y);
 				if (pieceOpt.isPresent()) {
 					Piece piece = pieceOpt.get();

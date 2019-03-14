@@ -1,4 +1,5 @@
 import static helpers.ColorHelper.swap;
+import static models.Board.SIZE;
 
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
@@ -17,8 +18,8 @@ import models.pieces.Pawn;
 import models.pieces.Piece;
 
 public class GameController {
-	private static final Border RED_BORDER = BorderFactory.createLineBorder(java.awt.Color.red);
-	private static final Border BLUE_BORDER = BorderFactory.createLineBorder(java.awt.Color.blue);
+	private static final Border RED_BORDER = BorderFactory.createLineBorder(java.awt.Color.red, 3);
+	private static final Border BLUE_BORDER = BorderFactory.createLineBorder(java.awt.Color.blue, 3);
 	private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
 
 	private final BoardView view;
@@ -67,18 +68,19 @@ public class GameController {
 
 	private void resetAllClickables() {
 		Square[][] squares = getView().getSquares();
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
+		for (int i = 0; i < SIZE; i++) {
+			for (int j = 0; j < SIZE; j++) {
 				Square square = squares[i][j];
 				Stream.of(square.getMouseListeners()).forEach(square::removeMouseListener);
+				square.setCursor(Cursor.getDefaultCursor());
 			}
 		}
 	}
 
 	private void markSquaresClickableByColor(Color color) {
 		Square[][] squares = getView().getSquares();
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
+		for (int i = 0; i < SIZE; i++) {
+			for (int j = 0; j < SIZE; j++) {
 				Square square = squares[i][j];
 				Piece piece = square.getPiece();
 				if (piece != null && piece.getColor() == color) {
@@ -169,8 +171,8 @@ public class GameController {
 
 	private void cleanSquaresBorder() {
 		Square[][] squares = getView().getSquares();
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
+		for (int i = 0; i < SIZE; i++) {
+			for (int j = 0; j < SIZE; j++) {
 				Square square = squares[i][j];
 				square.setBorder(NO_BORDER);
 			}
@@ -193,12 +195,12 @@ public class GameController {
 
 		List<Move> history = game.getHistory();
 		if (history.size() >= 6) {
-			Move move6 = history.get(history.size());
-			Move move4 = history.get(history.size()-2);
-			Move move2 = history.get(history.size()-4);
-			Move move5 = history.get(history.size()-1);
-			Move move3 = history.get(history.size()-2);
-			Move move1 = history.get(history.size()-5);
+			Move move6 = history.get(history.size()-1);
+			Move move4 = history.get(history.size()-3);
+			Move move2 = history.get(history.size()-5);
+			Move move5 = history.get(history.size()-2);
+			Move move3 = history.get(history.size()-4);
+			Move move1 = history.get(history.size()-6);
 			if (move6 == move4 && move6 == move2 && move5 == move3 && move5 == move1) {
 				// Threefold repetition
 				return GameState.DRAW;

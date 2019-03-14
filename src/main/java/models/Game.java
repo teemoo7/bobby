@@ -1,9 +1,17 @@
 package models;
 
-import models.pieces.*;
+import static models.Board.SIZE;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import models.pieces.Bishop;
+import models.pieces.King;
+import models.pieces.Knight;
+import models.pieces.Pawn;
+import models.pieces.Piece;
+import models.pieces.Queen;
+import models.pieces.Rook;
 
 public class Game {
     final Player whitePlayer;
@@ -59,7 +67,7 @@ public class Game {
     }
 
     private Piece[][] getInitialPiecesPositions() {
-        Piece[][] pos = new Piece[8][8];
+        Piece[][] pos = new Piece[SIZE][SIZE];
         pos[0][0] = new Rook(Color.WHITE);
         pos[0][1] = new Knight(Color.WHITE);
         pos[0][2] = new Bishop(Color.WHITE);

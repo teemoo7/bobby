@@ -5,8 +5,7 @@ import java.util.Optional;
 import models.pieces.Piece;
 
 public class Board {
-    public final static int RANKS = 8;
-    public final static int FILES = 8;
+    public final static int SIZE = 8;
 
     private final Piece[][] board;
 
@@ -28,9 +27,9 @@ public class Board {
     }
 
     public Board clone() {
-        Board clone = new Board(new Piece[FILES][RANKS]);
-        for (int i = 0; i < FILES; i++) {
-            for (int j = 0; j < RANKS; j++) {
+        Board clone = new Board(new Piece[SIZE][SIZE]);
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
                 Optional<Piece> piece = getPiece(i, j);
                 if (piece.isPresent()) {
                     clone.setPiece(i, j, piece.get().clone());

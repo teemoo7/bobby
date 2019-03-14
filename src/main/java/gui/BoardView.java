@@ -1,5 +1,7 @@
 package gui;
 
+import static models.Board.SIZE;
+
 import java.awt.Container;
 import java.awt.GridLayout;
 
@@ -12,7 +14,7 @@ import models.pieces.Piece;
 
 public class BoardView extends JFrame {
     private final Container contentPane;
-    private Square[][] squares = new Square[8][8];
+    private Square[][] squares = new Square[SIZE][SIZE];
 
     public BoardView(String title) {
         setTitle(title);
