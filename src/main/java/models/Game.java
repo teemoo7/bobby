@@ -66,6 +66,16 @@ public class Game {
         this.history.add(move);
     }
 
+    public Player getPlayerByColor(Color color) {
+        switch (color) {
+        case WHITE:
+            return whitePlayer;
+        case BLACK:
+            return blackPlayer;
+        }
+        throw new RuntimeException("Unexpected color");
+    }
+
     private Piece[][] getInitialPiecesPositions() {
         Piece[][] pos = new Piece[SIZE][SIZE];
         pos[0][0] = new Rook(Color.WHITE);

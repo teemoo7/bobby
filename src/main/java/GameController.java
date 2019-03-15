@@ -18,8 +18,8 @@ import models.pieces.Pawn;
 import models.pieces.Piece;
 
 public class GameController {
-	private static final Border RED_BORDER = BorderFactory.createLineBorder(java.awt.Color.red, 3);
-	private static final Border BLUE_BORDER = BorderFactory.createLineBorder(java.awt.Color.blue, 3);
+	private static final Border RED_BORDER = BorderFactory.createLineBorder(java.awt.Color.red, 3, true);
+	private static final Border BLUE_BORDER = BorderFactory.createLineBorder(java.awt.Color.blue, 3, true);
 	private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
 
 	private final BoardView view;
@@ -36,30 +36,6 @@ public class GameController {
 		init();
 	}
 
-	public BoardView getView() {
-		return view;
-	}
-
-	public Board getBoard() {
-		return board;
-	}
-
-	public MoveService getMoveService() {
-		return moveService;
-	}
-
-	public Square getSelectedSquare() {
-		return selectedSquare;
-	}
-
-	public void setSelectedSquare(Square square) {
-		this.selectedSquare = square;
-	}
-
-	public void cleanSelectedSquare() {
-		this.selectedSquare = null;
-	}
-
 	private void init() {
 		view.display(board.getBoard());
 		resetAllClickables();
@@ -67,7 +43,7 @@ public class GameController {
 	}
 
 	private void resetAllClickables() {
-		Square[][] squares = getView().getSquares();
+		Square[][] squares = view.getSquares();
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
 				Square square = squares[i][j];
@@ -78,7 +54,7 @@ public class GameController {
 	}
 
 	private void markSquaresClickableByColor(Color color) {
-		Square[][] squares = getView().getSquares();
+		Square[][] squares = view.getSquares();
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
 				Square square = squares[i][j];
@@ -92,54 +68,70 @@ public class GameController {
 
 	private void markSquareClickable(Square square) {
 		square.addMouseListener(new MouseAdapter() {
-						public void mouseClicked(MouseEvent e) {
-							squareClicked(square);
-						}
-						public void mouseEntered(MouseEvent e) {
-							square.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-						}
-						public void mouseExited(MouseEvent e) {
-							square.setCursor(Cursor.getDefaultCursor());
-						}
-					});
+			public void mouseClicked(MouseEvent e) {
+				try {
+					squareClicked(square);
+				} catch (Exception exception) {
+					error(exception);
+				}
+			}
+
+			public void mouseEntered(MouseEvent e) {
+				square.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+			}
+
+			public void mouseExited(MouseEvent e) {
+				square.setCursor(Cursor.getDefaultCursor());
+			}
+		});
 	}
 
 	private void squareClicked(Square square) {
-		Square selectedSquare = getSelectedSquare();
 		if (selectedSquare != null) {
 			if (selectedSquare == square) {
-				// reset current selection
+				// cancel current selection
 				cleanSquaresBorder();
 				cleanSelectedSquare();
 				resetAllClickables();
 				markSquaresClickableByColor(game.getToPlay());
 			} else {
 				//check if move is authorized
-				List<Move> moves = getMoveService()
+				List<Move> moves = moveService
 					.computeMoves(board, selectedSquare.getPiece(), selectedSquare.getPosition().getX(), selectedSquare.getPosition().getY());
 
 				Optional<Move> moveOpt = moves.stream().filter(move -> move.getToX() == square.getPosition().getX() && move.getToY() == square.getPosition().getY()).findAny();
 				boolean isAuthorized = moveOpt.isPresent();
 				if (isAuthorized) {
-					Move move = moveOpt.get();
-					getBoard().doMove(move);
-					getView().refresh(board.getBoard());
-					game.addMoveToHistory(move);
-					game.setToPlay(swap(move.getPiece().getColor()));
 					cleanSelectedSquare();
 					cleanSquaresBorder();
 					resetAllClickables();
-					markSquaresClickableByColor(game.getToPlay());
-					if (move.isChecking()) {
-						getView().popup("Check!");
-					}
+
+					Move move = moveOpt.get();
+					board.doMove(move);
+					view.refresh(board.getBoard());
+					game.addMoveToHistory(move);
+					game.setToPlay(swap(move.getPiece().getColor()));
+
 					GameState state = getGameState(game);
-					if (state != GameState.IN_PROGRESS) {
-						getView().popup("Game is over: " + state.name());
+					switch (state) {
+					case LOSS:
+						Color winningColor = move.getPiece().getColor();
+						Player winner = game.getPlayerByColor(winningColor);
+						info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!");
+						break;
+					case DRAW:
+						info("Draw. The game is over.");
+						break;
+					case IN_PROGRESS:
+					default:
+						if (move.isChecking()) {
+							info("Check!");
+						}
+						markSquaresClickableByColor(game.getToPlay());
+						break;
 					}
-					//todo: check game ending
 				} else {
-					//todo: log error, should not happen
+					throw new RuntimeException("Unauthorized move!");
 				}
 			}
 		} else {
@@ -149,28 +141,36 @@ public class GameController {
 					resetAllClickables();
 					// to unselect
 					markSquareClickable(square);
-					setSelectedSquare(square);
+					selectedSquare = square;
 					square.setBorder(RED_BORDER);
-					List<Move> moves = getMoveService()
+					List<Move> moves = moveService
 						.computeMoves(board, square.getPiece(), square.getPosition().getX(), square.getPosition().getY());
 					for (Move move : moves) {
-						Square destination = getView().getSquares()[move.getToY()][move.getToX()];
+						Square destination = view.getSquares()[move.getToY()][move.getToX()];
 						destination.setBorder(BLUE_BORDER);
 						markSquareClickable(destination);
 					}
 				} else {
-					// Should not happen
-					//todo: log error
+					throw new RuntimeException("Cannot select a piece from opponent to start a move");
 				}
 			} else {
-				// cannot start by selecting an empty square, do nothing
-				//todo: log error
+				throw new RuntimeException("Cannot select an empty square to start a move");
 			}
 		}
 	}
 
+	private void info(String text) {
+		System.out.println("[INFO] " + text);
+		view.popupInfo(text);
+	}
+
+	private void error(Exception exception) {
+		System.err.println(exception);
+		view.popupError(exception.getMessage());
+	}
+
 	private void cleanSquaresBorder() {
-		Square[][] squares = getView().getSquares();
+		Square[][] squares = view.getSquares();
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
 				Square square = squares[i][j];
@@ -180,11 +180,8 @@ public class GameController {
 	}
 
 	private GameState getGameState(Game game) {
-		boolean canMove = getMoveService().canMove(game.getBoard(), game.getToPlay());
-		boolean isInCheck = getMoveService().isInCheck(game.getBoard(), game.getToPlay());
-
-		if (!canMove) {
-			if (isInCheck) {
+		if (!moveService.canMove(game.getBoard(), game.getToPlay())) {
+			if (moveService.isInCheck(game.getBoard(), game.getToPlay())) {
 				// Checkmate
 				return GameState.LOSS;
 			} else {
@@ -194,14 +191,14 @@ public class GameController {
 		}
 
 		List<Move> history = game.getHistory();
-		if (history.size() >= 6) {
+		if (history.size() >= 10) {
 			Move move6 = history.get(history.size()-1);
-			Move move4 = history.get(history.size()-3);
-			Move move2 = history.get(history.size()-5);
+			Move move4 = history.get(history.size()-5);
+			Move move2 = history.get(history.size()-9);
 			Move move5 = history.get(history.size()-2);
-			Move move3 = history.get(history.size()-4);
-			Move move1 = history.get(history.size()-6);
-			if (move6 == move4 && move6 == move2 && move5 == move3 && move5 == move1) {
+			Move move3 = history.get(history.size()-6);
+			Move move1 = history.get(history.size()-10);
+			if (move6.equals(move4) && move6.equals(move2) && move5.equals(move3) && move5.equals(move1)) {
 				// Threefold repetition
 				return GameState.DRAW;
 			}
@@ -216,5 +213,9 @@ public class GameController {
 		}
 
 		return GameState.IN_PROGRESS;
+	}
+
+	private void cleanSelectedSquare() {
+		this.selectedSquare = null;
 	}
 }

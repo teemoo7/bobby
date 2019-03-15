@@ -61,8 +61,12 @@ public class BoardView extends JFrame {
         }
     }
 
-    public void popup(String message) {
-        JOptionPane.showMessageDialog(this, message);
+    public void popupInfo(String message) {
+        JOptionPane.showMessageDialog(this, message, "Info", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public void popupError(String message) {
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     private void addFilesLabels() {

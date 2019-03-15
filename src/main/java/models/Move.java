@@ -1,5 +1,7 @@
 package models;
 
+import java.util.Objects;
+
 import models.pieces.Piece;
 
 public class Move {
@@ -62,5 +64,19 @@ public class Move {
 	private static String convertXToLetter(int x) {
 		final int aAscii = (int) 'a';
 		return String.valueOf((char) (aAscii + x));
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Move move = (Move) o;
+		return fromX == move.fromX && fromY == move.fromY && toX == move.toX && toY == move.toY
+			&& isTaking == move.isTaking && isChecking == move.isChecking && Objects.equals(piece, move.piece);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(piece, fromX, fromY, toX, toY, isTaking, isChecking);
 	}
 }

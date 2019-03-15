@@ -19,7 +19,7 @@ import models.pieces.Queen;
 import models.pieces.Rook;
 
 public class MoveService {
-	static final int MAX_MOVE = SIZE - 1;
+	private static final int MAX_MOVE = SIZE - 1;
 
 	public boolean canMove(Board board, Color color) {
 		for (int i = 0; i < SIZE; i++) {
