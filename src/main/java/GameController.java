@@ -46,15 +46,15 @@ public class GameController {
 		if (getGameState(game) == GameState.IN_PROGRESS) {
 			Color colorToPlay = game.getToPlay();
 			Player nextPlayer = game.getPlayerByColor(colorToPlay);
-			if (!nextPlayer.isBot()) {
+			if (nextPlayer instanceof Bot) {
+				Bot bot = (Bot) nextPlayer;
+				List<Move> moves = moveService.computeAllMoves(board, colorToPlay);
+				Move move = bot.selectMove(moves);
+				doMove(move);
+				play();
+			} else {
 				resetAllClickables();
 				markSquaresClickableByColor(colorToPlay);
-			} else {
-				//todo: refactor bot IA
-				List<Move> moves = moveService.computeAllMoves(board, colorToPlay);
-				Move randomMove = moves.get(new Random().nextInt(moves.size()));
-				doMove(randomMove);
-				play();
 			}
 		}
 	}
@@ -186,7 +186,8 @@ public class GameController {
 	}
 
 	private void error(Exception exception) {
-		System.err.println(exception);
+		System.err.println("An error happened: " + exception.getMessage());
+		exception.printStackTrace();
 		view.popupError(exception.getMessage());
 	}
 

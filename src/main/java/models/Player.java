@@ -2,11 +2,9 @@ package models;
 
 public abstract class Player {
     private final String name;
-    private final boolean isBot;
 
-    public Player(String name, boolean isBot) {
+    public Player(String name) {
         this.name = name;
-        this.isBot = isBot;
     }
 
     public String getName() {
@@ -14,6 +12,6 @@ public abstract class Player {
     }
 
     public boolean isBot() {
-        return isBot;
+        return this instanceof Bot;
     }
 }
