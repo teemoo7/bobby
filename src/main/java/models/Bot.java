@@ -7,5 +7,5 @@ public abstract class Bot extends Player {
         super(name);
     }
 
-    public abstract Move selectMove(List<Move> moves);
+    public abstract Move selectMove(List<Move> moves, Board board);
 }

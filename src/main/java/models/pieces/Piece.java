@@ -17,6 +17,10 @@ public abstract class Piece {
         return color;
     }
 
+    public int getValue() {
+        return value;
+    }
+
     public String toString() {
         return this.color + " " + this.getClass().getSimpleName();
     }

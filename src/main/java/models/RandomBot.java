@@ -8,7 +8,7 @@ public class RandomBot extends Bot {
         super("Random Bot");
     }
 
-    public Move selectMove(List<Move> moves) {
+    public Move selectMove(List<Move> moves, Board board) {
         return moves.get(new Random().nextInt(moves.size()));
     }
 }

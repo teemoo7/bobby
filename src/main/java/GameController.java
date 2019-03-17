@@ -49,7 +49,7 @@ public class GameController {
 			if (nextPlayer instanceof Bot) {
 				Bot bot = (Bot) nextPlayer;
 				List<Move> moves = moveService.computeAllMoves(board, colorToPlay);
-				Move move = bot.selectMove(moves);
+				Move move = bot.selectMove(moves, board);
 				doMove(move);
 				play();
 			} else {
@@ -82,15 +82,15 @@ public class GameController {
 				case LOSS:
 					Color winningColor = allowedMove.getPiece().getColor();
 					Player winner = game.getPlayerByColor(winningColor);
-					info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!");
+					info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!", !player.isBot());
 					break;
 				case DRAW:
-					info("Draw. The game is over.");
+					info("Draw. The game is over.", !player.isBot());
 					break;
 				case IN_PROGRESS:
 				default:
 					if (allowedMove.isChecking()) {
-						info("Check!");
+						info("Check!", !player.isBot());
 					}
 					break;
 			}
@@ -129,7 +129,7 @@ public class GameController {
 				try {
 					squareClicked(square);
 				} catch (Exception exception) {
-					error(exception);
+					error(exception, true);
 				}
 			}
 
@@ -181,14 +181,22 @@ public class GameController {
 	}
 
 	private void info(String text) {
-		System.out.println("[INFO] " + text);
-		view.popupInfo(text);
+		info(text, true);
 	}
 
-	private void error(Exception exception) {
+	private void info(String text, boolean withPopup) {
+		System.out.println("[INFO] " + text);
+		if (withPopup) {
+			view.popupInfo(text);
+		}
+	}
+
+	private void error(Exception exception, boolean withPopup) {
 		System.err.println("An error happened: " + exception.getMessage());
 		exception.printStackTrace();
-		view.popupError(exception.getMessage());
+		if (withPopup) {
+			view.popupError(exception.getMessage());
+		}
 	}
 
 	private void cleanSquaresBorder() {
@@ -227,7 +235,7 @@ public class GameController {
 		}
 
 		if (history.size() >= 50) {
-			List<Move> last50Moves = history.subList(history.size() - 1 - 50, history.size() - 1);
+			List<Move> last50Moves = history.subList(history.size() - 50, history.size() - 1);
 			if (last50Moves.stream().noneMatch(move -> move.isTaking() || move.getPiece() instanceof Pawn)) {
 				// 50-move (no pawn moved, no capture)
 				return GameState.DRAW;
