@@ -66,12 +66,16 @@ public class Move {
 		return String.valueOf((char) (aAscii + x));
 	}
 
+	public boolean equalsForPositions(Move move) {
+		return fromX == move.fromX && fromY == move.fromY && toX == move.toX && toY == move.toY;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		Move move = (Move) o;
-		return fromX == move.fromX && fromY == move.fromY && toX == move.toX && toY == move.toY
+		return equalsForPositions(move)
 			&& isTaking == move.isTaking && isChecking == move.isChecking && Objects.equals(piece, move.piece);
 	}
 

@@ -6,6 +6,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
@@ -38,8 +39,64 @@ public class GameController {
 
 	private void init() {
 		view.display(board.getBoard());
-		resetAllClickables();
-		markSquaresClickableByColor(game.getToPlay());
+		play();
+	}
+
+	public void play() {
+		if (getGameState(game) == GameState.IN_PROGRESS) {
+			Color colorToPlay = game.getToPlay();
+			Player nextPlayer = game.getPlayerByColor(colorToPlay);
+			if (!nextPlayer.isBot()) {
+				resetAllClickables();
+				markSquaresClickableByColor(colorToPlay);
+			} else {
+				//todo: refactor bot IA
+				List<Move> moves = moveService.computeAllMoves(board, colorToPlay);
+				Move randomMove = moves.get(new Random().nextInt(moves.size()));
+				doMove(randomMove);
+				play();
+			}
+		}
+	}
+
+	private void doMove(Move move) {
+		Player player = game.getPlayerByColor(move.getPiece().getColor());
+		if (!player.isBot()) {
+			cleanSelectedSquare();
+			cleanSquaresBorder();
+			resetAllClickables();
+		}
+
+		List<Move> allowedMoves = moveService.computeMoves(board, move.getPiece(), move.getFromX(), move.getFromY());
+		Optional<Move> allowedMoveOpt = allowedMoves.stream().filter(m -> m.equalsForPositions(move)).findAny();
+		if (allowedMoveOpt.isPresent()) {
+			final Move allowedMove = allowedMoveOpt.get();
+			// We use allowedMove instead of given move since it contains additional info like taking and check
+			board.doMove(allowedMove);
+			view.refresh(board.getBoard());
+			game.addMoveToHistory(allowedMove);
+			game.setToPlay(swap(allowedMove.getPiece().getColor()));
+
+			GameState state = getGameState(game);
+			switch (state) {
+				case LOSS:
+					Color winningColor = allowedMove.getPiece().getColor();
+					Player winner = game.getPlayerByColor(winningColor);
+					info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!");
+					break;
+				case DRAW:
+					info("Draw. The game is over.");
+					break;
+				case IN_PROGRESS:
+				default:
+					if (allowedMove.isChecking()) {
+						info("Check!");
+					}
+					break;
+			}
+		} else {
+			throw new RuntimeException("Unauthorized move");
+		}
 	}
 
 	private void resetAllClickables() {
@@ -95,53 +152,17 @@ public class GameController {
 				resetAllClickables();
 				markSquaresClickableByColor(game.getToPlay());
 			} else {
-				//check if move is authorized
-				List<Move> moves = moveService
-					.computeMoves(board, selectedSquare.getPiece(), selectedSquare.getPosition().getX(), selectedSquare.getPosition().getY());
-
-				Optional<Move> moveOpt = moves.stream().filter(move -> move.getToX() == square.getPosition().getX() && move.getToY() == square.getPosition().getY()).findAny();
-				boolean isAuthorized = moveOpt.isPresent();
-				if (isAuthorized) {
-					cleanSelectedSquare();
-					cleanSquaresBorder();
-					resetAllClickables();
-
-					Move move = moveOpt.get();
-					board.doMove(move);
-					view.refresh(board.getBoard());
-					game.addMoveToHistory(move);
-					game.setToPlay(swap(move.getPiece().getColor()));
-
-					GameState state = getGameState(game);
-					switch (state) {
-					case LOSS:
-						Color winningColor = move.getPiece().getColor();
-						Player winner = game.getPlayerByColor(winningColor);
-						info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!");
-						break;
-					case DRAW:
-						info("Draw. The game is over.");
-						break;
-					case IN_PROGRESS:
-					default:
-						if (move.isChecking()) {
-							info("Check!");
-						}
-						markSquaresClickableByColor(game.getToPlay());
-						break;
-					}
-				} else {
-					throw new RuntimeException("Unauthorized move!");
-				}
+				doMove(new Move(selectedSquare.getPiece(), selectedSquare.getPosition().getX(), selectedSquare.getPosition().getY(), square.getPosition().getX(), square.getPosition().getY()));
+				play();
 			}
 		} else {
 			if (square.getPiece() != null) {
 				if (square.getPiece().getColor() == game.getToPlay()) {
+					selectedSquare = square;
 					cleanSquaresBorder();
 					resetAllClickables();
-					// to unselect
+					// Self piece is clickable so that it selection can be cancelled
 					markSquareClickable(square);
-					selectedSquare = square;
 					square.setBorder(RED_BORDER);
 					List<Move> moves = moveService
 						.computeMoves(board, square.getPiece(), square.getPosition().getX(), square.getPosition().getY());

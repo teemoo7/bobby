@@ -22,18 +22,21 @@ public class MoveService {
 	private static final int MAX_MOVE = SIZE - 1;
 
 	public boolean canMove(Board board, Color color) {
+		List<Move> moves = computeAllMoves(board, color);
+		return !moves.isEmpty();
+	}
+
+	public List<Move> computeAllMoves(Board board, Color color) {
+		List<Move> moves = new ArrayList<>();
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
 				Optional<Piece> piece = board.getPiece(i, j);
 				if (piece.isPresent() && piece.get().getColor() == color) {
-					List<Move> moves = computeMoves(board, piece.get(), i, j);
-					if (!moves.isEmpty()) {
-						return true;
-					}
+					moves.addAll(computeMoves(board, piece.get(), i, j));
 				}
 			}
 		}
-		return false;
+		return moves;
 	}
 
 	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY) {

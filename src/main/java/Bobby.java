@@ -7,5 +7,6 @@ public class Bobby {
         Game game = new Game(new HumanPlayer("Player 1"), new HumanPlayer("Player 2"));
         BoardView boardView = new BoardView("Bobby chess game");
         GameController gameController = new GameController(boardView, game);
+        gameController.play();
     }
 }
