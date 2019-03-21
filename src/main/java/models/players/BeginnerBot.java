@@ -50,7 +50,7 @@ public class BeginnerBot extends Bot {
                 // we focus the fire on the king proximity (since the king moves by one square only)
                 if (historyCopy.size() > 3) {
                     Move previousMove = historyCopy.get(historyCopy.size() - 3);
-                    if (previousMove.isChecking() && previousMove.getPiece() != move.getPiece()) {
+                    if (previousMove.isChecking() && !previousMove.getPiece().equals(move.getPiece())) {
                         score += 10;
                     }
                 }

@@ -18,6 +18,8 @@ public class Rook extends Piece {
 
     @Override
     public Piece clone() {
-        return new Rook(color);
-    }
+        Piece clone = new Rook(color);
+		clone.setId(id);
+		return clone;
+	}
 }

@@ -1,14 +1,18 @@
 package models.pieces;
 
+import java.util.UUID;
+
 import models.Color;
 
 public abstract class Piece {
     final protected Color color;
     final protected int value;
+    protected UUID id;
 
     public Piece(Color color, int value) {
         this.color = color;
         this.value = value;
+        this.id = UUID.randomUUID();
     }
 
     abstract public String getUnicode();
@@ -21,7 +25,16 @@ public abstract class Piece {
         return value;
     }
 
-    public String toString() {
+	public UUID getId() {
+		return id;
+	}
+
+	protected void setId(UUID id) {
+    	// for cloning with same ID
+    	this.id = id;
+	}
+
+	public String toString() {
         return this.color + " " + this.getClass().getSimpleName();
     }
 

@@ -18,6 +18,8 @@ public class Pawn extends Piece {
 
     @Override
     public Piece clone() {
-        return new Pawn(color);
-    }
+        Piece clone = new Pawn(color);
+		clone.setId(id);
+		return clone;
+	}
 }

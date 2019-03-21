@@ -18,6 +18,8 @@ public class Knight extends Piece {
 
     @Override
     public Piece clone() {
-        return new Knight(color);
-    }
+        Piece clone = new Knight(color);
+		clone.setId(id);
+		return clone;
+	}
 }
