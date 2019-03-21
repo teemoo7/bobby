@@ -6,7 +6,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
@@ -14,7 +13,13 @@ import javax.swing.border.Border;
 
 import gui.BoardView;
 import gui.Square;
-import models.*;
+import models.Board;
+import models.Bot;
+import models.Color;
+import models.Game;
+import models.GameState;
+import models.Move;
+import models.Player;
 import models.pieces.Pawn;
 import models.pieces.Piece;
 
@@ -43,19 +48,20 @@ public class GameController {
 	}
 
 	public void play() {
-		if (getGameState(game) == GameState.IN_PROGRESS) {
-			Color colorToPlay = game.getToPlay();
-			Player nextPlayer = game.getPlayerByColor(colorToPlay);
-			if (nextPlayer instanceof Bot) {
-				Bot bot = (Bot) nextPlayer;
-				List<Move> moves = moveService.computeAllMoves(board, colorToPlay);
-				Move move = bot.selectMove(moves, board);
-				doMove(move);
-				play();
-			} else {
-				resetAllClickables();
-				markSquaresClickableByColor(colorToPlay);
+		while (game.getPlayerToPlay().isBot() && !isGameOver(game)) {
+			Player player = game.getPlayerToPlay();
+			if (!(player instanceof Bot)) {
+				throw new RuntimeException("Player has to be a bot");
 			}
+			Bot bot = (Bot) player;
+			List<Move> moves = moveService.computeAllMoves(board, game.getToPlay());
+			Move move = bot.selectMove(moves, board);
+			doMove(move);
+		}
+
+		if (!game.getPlayerToPlay().isBot() && !isGameOver(game)) {
+			resetAllClickables();
+			markSquaresClickableByColor(game.getToPlay());
 		}
 	}
 
@@ -74,6 +80,7 @@ public class GameController {
 			// We use allowedMove instead of given move since it contains additional info like taking and check
 			board.doMove(allowedMove);
 			view.refresh(board.getBoard());
+			info(move.getPrettyNotation(), false);
 			game.addMoveToHistory(allowedMove);
 			game.setToPlay(swap(allowedMove.getPiece().getColor()));
 
@@ -82,9 +89,15 @@ public class GameController {
 				case LOSS:
 					Color winningColor = allowedMove.getPiece().getColor();
 					Player winner = game.getPlayerByColor(winningColor);
+					if (winningColor == Color.WHITE) {
+						info("1-0", false);
+					} else {
+						info("0-1", false);
+					}
 					info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!", !player.isBot());
 					break;
 				case DRAW:
+					info("½–½", false);
 					info("Draw. The game is over.", !player.isBot());
 					break;
 				case IN_PROGRESS:
@@ -207,6 +220,10 @@ public class GameController {
 				square.setBorder(NO_BORDER);
 			}
 		}
+	}
+
+	private boolean isGameOver(Game game) {
+		return getGameState(game) != GameState.IN_PROGRESS;
 	}
 
 	private GameState getGameState(Game game) {

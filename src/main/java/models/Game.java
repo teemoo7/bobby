@@ -76,6 +76,10 @@ public class Game {
         throw new RuntimeException("Unexpected color");
     }
 
+    public Player getPlayerToPlay() {
+        return getPlayerByColor(toPlay);
+    }
+
     private Piece[][] getInitialPiecesPositions() {
         Piece[][] pos = new Piece[SIZE][SIZE];
         pos[0][0] = new Rook(Color.WHITE);

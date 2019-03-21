@@ -57,8 +57,28 @@ public class Move {
 		isChecking = checking;
 	}
 
+	public String getPrettyNotation() {
+		StringBuilder builder = new StringBuilder()
+			.append(piece.getColor())
+			.append(" ")
+			.append(getBasicNotation())
+			.append(" (")
+			.append(piece.getClass().getSimpleName())
+			.append(")");
+		return builder.toString();
+	}
+
 	public String getBasicNotation() {
-		return convertXToLetter(fromX) + fromY + "-" + convertXToLetter(toX) + toY;
+		StringBuilder builder = new StringBuilder();
+		builder.append(convertXToLetter(fromX))
+			.append(fromY)
+			.append("-")
+			.append(convertXToLetter(toX))
+			.append(toY);
+		if (isChecking) {
+			builder.append("+");
+		}
+		return builder.toString();
 	}
 
 	private static String convertXToLetter(int x) {
