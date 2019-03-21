@@ -1,4 +1,4 @@
-package models;
+package models.players;
 
 public abstract class Player {
     private final String name;

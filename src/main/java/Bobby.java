@@ -1,8 +1,7 @@
 import gui.BoardView;
-import models.BeginnerBot;
+import models.players.BeginnerBot;
 import models.Game;
-import models.HumanPlayer;
-import models.RandomBot;
+import models.players.RandomBot;
 
 public class Bobby {
     public static void main(String args[]) {

@@ -1,3 +1,5 @@
+package services;
+
 import static helpers.ColorHelper.swap;
 import static models.Board.SIZE;
 
@@ -8,6 +10,7 @@ import java.util.stream.Collectors;
 
 import models.Board;
 import models.Color;
+import models.GameState;
 import models.Move;
 import models.Position;
 import models.pieces.Bishop;
@@ -21,7 +24,7 @@ import models.pieces.Rook;
 public class MoveService {
 	private static final int MAX_MOVE = SIZE - 1;
 
-	public boolean canMove(Board board, Color color) {
+	private boolean canMove(Board board, Color color) {
 		List<Move> moves = computeAllMoves(board, color);
 		return !moves.isEmpty();
 	}
@@ -72,13 +75,48 @@ public class MoveService {
 		}).collect(Collectors.toList());
 	}
 
-	public boolean isInCheck(Board board, Color color) {
+	private boolean isInCheck(Board board, Color color) {
 		final Position kingPosition = findKingPosition(board, color).orElseThrow(() -> new RuntimeException("King not found"));
 
 		return isInStraightCheck(board, kingPosition, color)
 			|| isInDiagonalCheck(board, kingPosition, color)
 			|| isInLCheck(board, kingPosition, color)
 			|| isInPawnCheck(board, kingPosition, color);
+	}
+
+	public GameState getGameState(Board board, Color colorToPlay, List<Move> history) {
+		if (!canMove(board, colorToPlay)) {
+			if (isInCheck(board, colorToPlay)) {
+				// Checkmate
+				return GameState.LOSS;
+			} else {
+				// Stalemate
+				return GameState.DRAW_STALEMATE;
+			}
+		}
+
+		if (history.size() >= 10) {
+			Move move6 = history.get(history.size()-1);
+			Move move4 = history.get(history.size()-5);
+			Move move2 = history.get(history.size()-9);
+			Move move5 = history.get(history.size()-2);
+			Move move3 = history.get(history.size()-6);
+			Move move1 = history.get(history.size()-10);
+			if (move6.equals(move4) && move6.equals(move2) && move5.equals(move3) && move5.equals(move1)) {
+				// Threefold repetition
+				return GameState.DRAW_THREEFOLD;
+			}
+		}
+
+		if (history.size() >= 50) {
+			List<Move> last50Moves = history.subList(history.size() - 50, history.size() - 1);
+			if (last50Moves.stream().noneMatch(move -> move.isTaking() || move.getPiece() instanceof Pawn)) {
+				// 50-move (no pawn moved, no capture)
+				return GameState.DRAW_50_MOVES;
+			}
+		}
+
+		return GameState.IN_PROGRESS;
 	}
 
 	private List<Move> computePawnMoves(Piece piece, int posX, int posY, Board board) {

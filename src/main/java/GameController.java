@@ -14,14 +14,14 @@ import javax.swing.border.Border;
 import gui.BoardView;
 import gui.Square;
 import models.Board;
-import models.Bot;
 import models.Color;
 import models.Game;
 import models.GameState;
 import models.Move;
-import models.Player;
-import models.pieces.Pawn;
 import models.pieces.Piece;
+import models.players.Bot;
+import models.players.Player;
+import services.MoveService;
 
 public class GameController {
 	private static final Border RED_BORDER = BorderFactory.createLineBorder(java.awt.Color.red, 3, true);
@@ -54,8 +54,7 @@ public class GameController {
 				throw new RuntimeException("Player has to be a bot");
 			}
 			Bot bot = (Bot) player;
-			List<Move> moves = moveService.computeAllMoves(board, game.getToPlay());
-			Move move = bot.selectMove(moves, board);
+			Move move = bot.selectMove(game, moveService);
 			doMove(move);
 		}
 
@@ -83,33 +82,48 @@ public class GameController {
 			info(move.getPrettyNotation(), false);
 			game.addMoveToHistory(allowedMove);
 			game.setToPlay(swap(allowedMove.getPiece().getColor()));
-
-			GameState state = getGameState(game);
-			switch (state) {
-				case LOSS:
-					Color winningColor = allowedMove.getPiece().getColor();
-					Player winner = game.getPlayerByColor(winningColor);
-					if (winningColor == Color.WHITE) {
-						info("1-0", false);
-					} else {
-						info("0-1", false);
-					}
-					info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!", !player.isBot());
-					break;
-				case DRAW:
-					info("½–½", false);
-					info("Draw. The game is over.", !player.isBot());
-					break;
-				case IN_PROGRESS:
-				default:
-					if (allowedMove.isChecking()) {
-						info("Check!", !player.isBot());
-					}
-					break;
-			}
+			displayGameInfo(player, allowedMove);
 		} else {
 			throw new RuntimeException("Unauthorized move");
 		}
+	}
+
+	private void displayGameInfo(Player player, Move move) {
+		GameState state = moveService.getGameState(game.getBoard(), game.getToPlay(), game.getHistory());
+		switch (state) {
+			case LOSS:
+				Color winningColor = move.getPiece().getColor();
+				Player winner = game.getPlayerByColor(winningColor);
+				if (winningColor == Color.WHITE) {
+					info("1-0" + getNbMovesInfo(game), false);
+				} else {
+					info("0-1" + getNbMovesInfo(game), false);
+				}
+				info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!", !player.isBot());
+				break;
+			case DRAW_STALEMATE:
+				info("½–½" + getNbMovesInfo(game), false);
+				info("Draw (Stalemate). The game is over.", !player.isBot());
+				break;
+			case DRAW_50_MOVES:
+				info("½–½" + getNbMovesInfo(game), false);
+				info("Draw (50 moves). The game is over.", !player.isBot());
+				break;
+			case DRAW_THREEFOLD:
+				info("½–½" + getNbMovesInfo(game), false);
+				info("Draw (threefold). The game is over.", !player.isBot());
+				break;
+			case IN_PROGRESS:
+			default:
+				if (move.isChecking()) {
+					info("Check!", !player.isBot());
+				}
+				break;
+		}
+	}
+
+	private String getNbMovesInfo(Game game) {
+		return "(" + game.getHistory().size() + " moves)";
 	}
 
 	private void resetAllClickables() {
@@ -223,43 +237,7 @@ public class GameController {
 	}
 
 	private boolean isGameOver(Game game) {
-		return getGameState(game) != GameState.IN_PROGRESS;
-	}
-
-	private GameState getGameState(Game game) {
-		if (!moveService.canMove(game.getBoard(), game.getToPlay())) {
-			if (moveService.isInCheck(game.getBoard(), game.getToPlay())) {
-				// Checkmate
-				return GameState.LOSS;
-			} else {
-				// Stalemate
-				return GameState.DRAW;
-			}
-		}
-
-		List<Move> history = game.getHistory();
-		if (history.size() >= 10) {
-			Move move6 = history.get(history.size()-1);
-			Move move4 = history.get(history.size()-5);
-			Move move2 = history.get(history.size()-9);
-			Move move5 = history.get(history.size()-2);
-			Move move3 = history.get(history.size()-6);
-			Move move1 = history.get(history.size()-10);
-			if (move6.equals(move4) && move6.equals(move2) && move5.equals(move3) && move5.equals(move1)) {
-				// Threefold repetition
-				return GameState.DRAW;
-			}
-		}
-
-		if (history.size() >= 50) {
-			List<Move> last50Moves = history.subList(history.size() - 50, history.size() - 1);
-			if (last50Moves.stream().noneMatch(move -> move.isTaking() || move.getPiece() instanceof Pawn)) {
-				// 50-move (no pawn moved, no capture)
-				return GameState.DRAW;
-			}
-		}
-
-		return GameState.IN_PROGRESS;
+		return moveService.getGameState(game.getBoard(), game.getToPlay(), game.getHistory()) != GameState.IN_PROGRESS;
 	}
 
 	private void cleanSelectedSquare() {

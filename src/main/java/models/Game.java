@@ -12,6 +12,7 @@ import models.pieces.Pawn;
 import models.pieces.Piece;
 import models.pieces.Queen;
 import models.pieces.Rook;
+import models.players.Player;
 
 public class Game {
     final Player whitePlayer;
