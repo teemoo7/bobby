@@ -123,7 +123,7 @@ public class GameController {
 	}
 
 	private String getNbMovesInfo(Game game) {
-		return "(" + game.getHistory().size() + " moves)";
+		return " (" + game.getHistory().size() + " moves)";
 	}
 
 	private void resetAllClickables() {

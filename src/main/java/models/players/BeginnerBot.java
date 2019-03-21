@@ -33,22 +33,38 @@ public class BeginnerBot extends Bot {
             boardAfter.doMove(move);
             List<Move> historyCopy = new ArrayList<>(game.getHistory());
             historyCopy.add(move);
+            int score = 0;
+
+            // Basically, taking a piece improves your situation
             final Color opponentColor = swap(move.getPiece().getColor());
             int myScore = getPiecesScore(boardAfter, move.getPiece().getColor());
             int opponentScore = getPiecesScore(boardAfter, opponentColor);
+            score += myScore-opponentScore;
 
             // Checking is a good direction, add a bonus
             if (move.isChecking()) {
-                myScore += 2;
+                score += 2;
+
+                // To checkmate, the idea is to reduce the king's moves. One may see that if we had put the king under
+                // check at the previous move, and that we can put him under check now with another piece than before,
+                // we focus the fire on the king proximity (since the king moves by one square only)
+                if (historyCopy.size() > 3) {
+                    Move previousMove = historyCopy.get(historyCopy.size() - 3);
+                    if (previousMove.isChecking() && previousMove.getPiece() != move.getPiece()) {
+                        score += 10;
+                    }
+                }
             }
 
             GameState gameState = moveService.getGameState(boardAfter, opponentColor, historyCopy);
             if (gameState == GameState.LOSS) {
                 // Opponent is checkmate, that the best move to do!
-                myScore = Integer.MAX_VALUE;
+                score = Integer.MAX_VALUE;
+            } else if (gameState == GameState.DRAW_50_MOVES || gameState == GameState.DRAW_STALEMATE || gameState == GameState.DRAW_THREEFOLD) {
+                // Let us be aggressive, a draw is not a good move, we want to win
+                score -= 2;
             }
 
-            int score = myScore-opponentScore;
             if (score > highestScore) {
                 bestMove = move;
                 highestScore = score;
