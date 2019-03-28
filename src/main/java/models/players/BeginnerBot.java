@@ -62,7 +62,7 @@ public class BeginnerBot extends Bot {
                 score = Integer.MAX_VALUE;
             } else if (gameState == GameState.DRAW_50_MOVES || gameState == GameState.DRAW_STALEMATE || gameState == GameState.DRAW_THREEFOLD) {
                 // Let us be aggressive, a draw is not a good move, we want to win
-                score -= 2;
+                score -= 20;
             }
 
             if (score > highestScore) {

@@ -4,15 +4,12 @@ import static helpers.ColorHelper.swap;
 import static models.Board.SIZE;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import models.Board;
-import models.Color;
-import models.GameState;
-import models.Move;
-import models.Position;
+import models.*;
 import models.pieces.Bishop;
 import models.pieces.King;
 import models.pieces.Knight;
@@ -149,7 +146,15 @@ public class MoveService {
 		move3.ifPresent(moves::add);
 		Optional<Move> move4 = getAllowedMove(piece, posX, posY, 1, factor, board);
 		move4.ifPresent(moves::add);
-		return moves;
+
+		return moves.stream().map(move -> {
+			if (move.getToY() == initialY + factor * 6) {
+				// Pawn promotion - simplified, always a queen
+				return new PromotionMove(move, new Queen(move.getPiece().getColor()));
+			} else {
+				return move;
+			}
+		}).collect(Collectors.toList());
 	}
 
 	private List<Move> computeLShapeMoves(Piece piece, int posX, int posY, Board board) {

@@ -41,7 +41,12 @@ public class Board {
 
     public void doMove(Move move) {
         removePiece(move.getFromX(), move.getFromY());
-        setPiece(move.getToX(), move.getToY(), move.getPiece());
+        Piece piece = move.getPiece();
+        if (move instanceof PromotionMove) {
+            PromotionMove promotionMove = (PromotionMove) move;
+            piece = promotionMove.getPromotedPiece();
+        }
+        setPiece(move.getToX(), move.getToY(), piece);
     }
 
     private void setPiece(int x, int y, Piece piece) {
