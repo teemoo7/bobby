@@ -20,23 +20,45 @@ public class BeginnerBot extends Bot {
     }
 
     public Move selectMove(Game game, MoveService moveService) {
-        // Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
         Board board = game.getBoard();
         Color color = game.getToPlay();
+        List<Move> history = game.getHistory();
+        return selectMove(board, color, history, moveService, 1);
+    }
+
+    public Move selectMove(Board board, Color color, List<Move> history, MoveService moveService, int depth) {
+        // Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
 
         List<Move> moves = moveService.computeAllMoves(board, color);
 
         int highestScore = Integer.MIN_VALUE;
         Move bestMove = null;
         for(Move move: moves) {
-            Board boardAfter = board.clone();
-            boardAfter.doMove(move);
-            List<Move> historyCopy = new ArrayList<>(game.getHistory());
-            historyCopy.add(move);
             int score = 0;
 
-            // Basically, taking a piece improves your situation
+            Board boardAfter = board.clone();
+            boardAfter.doMove(move);
+            List<Move> historyCopy = new ArrayList<>(history);
+            historyCopy.add(move);
             final Color opponentColor = swap(move.getPiece().getColor());
+            final GameState gameState = moveService.getGameState(boardAfter, opponentColor, historyCopy);
+
+            // Compute the probable next move for the opponent and see if our current move is a real benefit in the end
+            if (depth > 0 && gameState == GameState.IN_PROGRESS) {
+                Move opponentMove = selectMove(boardAfter, opponentColor, historyCopy, moveService, depth-1);
+                boardAfter.doMove(opponentMove);
+                historyCopy.add(opponentMove);
+                final GameState gameStateAfterOpponent = moveService.getGameState(boardAfter, opponentColor, historyCopy);
+                if (gameStateAfterOpponent == GameState.LOSS) {
+                    // I am checkmate, that the worst move to do!
+                    score = Integer.MIN_VALUE;
+                } else if (gameStateAfterOpponent == GameState.DRAW_50_MOVES || gameStateAfterOpponent == GameState.DRAW_STALEMATE || gameStateAfterOpponent == GameState.DRAW_THREEFOLD) {
+                    // Let us be aggressive, a draw is not a good move, we want to win
+                    score -= 20;
+                }
+            }
+
+            // Basically, taking a piece improves your situation
             int myScore = getPiecesScore(boardAfter, move.getPiece().getColor());
             int opponentScore = getPiecesScore(boardAfter, opponentColor);
             score += myScore-opponentScore;
@@ -56,7 +78,6 @@ public class BeginnerBot extends Bot {
                 }
             }
 
-            GameState gameState = moveService.getGameState(boardAfter, opponentColor, historyCopy);
             if (gameState == GameState.LOSS) {
                 // Opponent is checkmate, that the best move to do!
                 score = Integer.MAX_VALUE;
