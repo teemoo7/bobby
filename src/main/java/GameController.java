@@ -237,7 +237,7 @@ public class GameController {
 	}
 
 	private boolean isGameOver(Game game) {
-		return moveService.getGameState(game.getBoard(), game.getToPlay(), game.getHistory()) != GameState.IN_PROGRESS;
+		return !moveService.getGameState(game.getBoard(), game.getToPlay(), game.getHistory()).isInProgress();
 	}
 
 	private void cleanSelectedSquare() {

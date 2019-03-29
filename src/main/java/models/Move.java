@@ -71,10 +71,10 @@ public class Move {
 	public String getBasicNotation() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(convertXToLetter(fromX))
-			.append(fromY)
+			.append(fromY + 1)
 			.append("-")
 			.append(convertXToLetter(toX))
-			.append(toY);
+			.append(toY + 1);
 		if (isChecking) {
 			builder.append("+");
 		}
@@ -102,5 +102,10 @@ public class Move {
 	@Override
 	public int hashCode() {
 		return Objects.hash(piece, fromX, fromY, toX, toY, isTaking, isChecking);
+	}
+
+	@Override
+	public String toString() {
+		return getPrettyNotation();
 	}
 }

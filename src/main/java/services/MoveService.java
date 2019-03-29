@@ -4,12 +4,16 @@ import static helpers.ColorHelper.swap;
 import static models.Board.SIZE;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import models.*;
+import models.Board;
+import models.Color;
+import models.GameState;
+import models.Move;
+import models.Position;
+import models.PromotionMove;
 import models.pieces.Bishop;
 import models.pieces.King;
 import models.pieces.Knight;
@@ -368,6 +372,7 @@ public class MoveService {
 				}
 			}
 		}
+		System.out.println(board);
 		return Optional.empty();
 	}
 }

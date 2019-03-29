@@ -15,4 +15,8 @@ public class PromotionMove extends Move {
     public Piece getPromotedPiece() {
         return promotedPiece;
     }
+
+    public String getPrettyNotation() {
+        return super.getPrettyNotation() + " (promoted to " + getPromotedPiece().getClass().getSimpleName() + ")";
+    }
 }

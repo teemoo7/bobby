@@ -5,6 +5,7 @@ import static helpers.ColorHelper.swap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import models.Board;
 import models.Color;
@@ -32,9 +33,9 @@ public class BeginnerBot extends Bot {
         List<Move> moves = moveService.computeAllMoves(board, color);
 
         int highestScore = Integer.MIN_VALUE;
-        Move bestMove = null;
+        List<Move> bestMoves = new ArrayList<>();
         for(Move move: moves) {
-            int score = 0;
+            int score = Integer.MIN_VALUE;
 
             Board boardAfter = board.clone();
             boardAfter.doMove(move);
@@ -43,25 +44,35 @@ public class BeginnerBot extends Bot {
             final Color opponentColor = swap(move.getPiece().getColor());
             final GameState gameState = moveService.getGameState(boardAfter, opponentColor, historyCopy);
 
+            if (gameState.isLost()) {
+                // Opponent is checkmate, that the best move to do!
+                score = Integer.MAX_VALUE;
+            } else if (gameState.isDraw()) {
+                // Let us be aggressive, a draw is not a good move, we want to win
+                score -= 20;
+            }
+
             // Compute the probable next move for the opponent and see if our current move is a real benefit in the end
-            if (depth > 0 && gameState == GameState.IN_PROGRESS) {
+            if (depth > 0 && gameState.isInProgress()) {
                 Move opponentMove = selectMove(boardAfter, opponentColor, historyCopy, moveService, depth-1);
                 boardAfter.doMove(opponentMove);
                 historyCopy.add(opponentMove);
-                final GameState gameStateAfterOpponent = moveService.getGameState(boardAfter, opponentColor, historyCopy);
-                if (gameStateAfterOpponent == GameState.LOSS) {
+                final GameState gameStateAfterOpponent = moveService.getGameState(boardAfter, color, historyCopy);
+                if (gameStateAfterOpponent.isLost()) {
                     // I am checkmate, that the worst move to do!
                     score = Integer.MIN_VALUE;
-                } else if (gameStateAfterOpponent == GameState.DRAW_50_MOVES || gameStateAfterOpponent == GameState.DRAW_STALEMATE || gameStateAfterOpponent == GameState.DRAW_THREEFOLD) {
+                } else if (gameStateAfterOpponent.isDraw()) {
                     // Let us be aggressive, a draw is not a good move, we want to win
                     score -= 20;
                 }
             }
 
             // Basically, taking a piece improves your situation
-            int myScore = getPiecesScore(boardAfter, move.getPiece().getColor());
-            int opponentScore = getPiecesScore(boardAfter, opponentColor);
-            score += myScore-opponentScore;
+            int piecesValue = getPiecesValueSum(boardAfter, move.getPiece().getColor());
+            int opponentPiecesValue = getPiecesValueSum(boardAfter, opponentColor);
+            int deltaPiecesValue = piecesValue-opponentPiecesValue;
+
+            score += deltaPiecesValue;
 
             // Checking is a good direction, add a bonus
             if (move.isChecking()) {
@@ -78,32 +89,27 @@ public class BeginnerBot extends Bot {
                 }
             }
 
-            if (gameState == GameState.LOSS) {
-                // Opponent is checkmate, that the best move to do!
-                score = Integer.MAX_VALUE;
-            } else if (gameState == GameState.DRAW_50_MOVES || gameState == GameState.DRAW_STALEMATE || gameState == GameState.DRAW_THREEFOLD) {
-                // Let us be aggressive, a draw is not a good move, we want to win
-                score -= 20;
-            }
-
-            if (score > highestScore) {
-                bestMove = move;
-                highestScore = score;
+            if (score >= highestScore) {
+                if (score > highestScore) {
+                    bestMoves.clear();
+                    highestScore = score;
+                }
+                bestMoves.add(move);
             }
         }
-        return bestMove;
+        return bestMoves.get(new Random().nextInt(bestMoves.size()));
     }
 
-    private int getPiecesScore(Board board, Color color) {
-        int score = 0;
+    private int getPiecesValueSum(Board board, Color color) {
+        int sum = 0;
         for (int i = 0; i < Board.SIZE; i++) {
             for (int j = 0; j < Board.SIZE; j++) {
                 Optional<Piece> pieceOpt = board.getPiece(i, j);
                 if (pieceOpt.isPresent() && pieceOpt.get().getColor() == color) {
-                    score += pieceOpt.get().getValue();
+                    sum += pieceOpt.get().getValue();
                 }
             }
         }
-        return score;
+        return sum;
     }
 }

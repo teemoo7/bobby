@@ -22,8 +22,21 @@ public class Board {
     }
 
     public String toString() {
-        //for (Piece[] )
-        return "";
+        StringBuilder builder = new StringBuilder();
+        for (int i = SIZE - 1; i >= 0; i--) {
+            for (int j = 0; j < SIZE; j++) {
+                builder.append(" ");
+                Optional<Piece> piece = getPiece(j, i);
+                if (piece.isPresent()) {
+                    builder.append(piece.get().getUnicode());
+                } else {
+                    builder.append(" ");
+                }
+                builder.append(" ");
+            }
+            builder.append("\n");
+        }
+        return builder.toString();
     }
 
     public Board clone() {

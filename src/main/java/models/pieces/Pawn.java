@@ -12,7 +12,8 @@ public class Pawn extends Piece {
         if (color == Color.WHITE) {
             return "\u2659";
         } else {
-            return "\u265F";
+            return "P";
+            //return "\u265F";
         }
     }
 
