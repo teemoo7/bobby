@@ -318,7 +318,7 @@ public class MoveService {
 		int y = kingPosition.getY() + factor;
 		if (y >= 0 && y <= MAX_MOVE) {
 			List<Piece> destinations = new ArrayList<>();
-			if (kingPosition.getX() > 1) {
+			if (kingPosition.getX() >= 1) {
 				board.getPiece(kingPosition.getX() - 1, y).ifPresent(destinations::add);
 			}
 			if (kingPosition.getX() < MAX_MOVE) {

@@ -3,9 +3,11 @@ package models.players;
 import static helpers.ColorHelper.swap;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 
 import models.Board;
 import models.Color;
@@ -16,6 +18,10 @@ import models.pieces.Piece;
 import services.MoveService;
 
 public class BeginnerBot extends Bot {
+    private final static int WORST = -1000;
+    private final static int BEST = 1000;
+    private final static int NEUTRAL = 0;
+
     public BeginnerBot() {
         super("Beginner Bot");
     }
@@ -31,11 +37,10 @@ public class BeginnerBot extends Bot {
         // Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
 
         List<Move> moves = moveService.computeAllMoves(board, color);
+        Map<Move, Integer> moveScores = new HashMap<>(moves.size());
 
-        int highestScore = Integer.MIN_VALUE;
-        List<Move> bestMoves = new ArrayList<>();
         for(Move move: moves) {
-            int score = Integer.MIN_VALUE;
+            int score = NEUTRAL;
 
             Board boardAfter = board.clone();
             boardAfter.doMove(move);
@@ -46,7 +51,7 @@ public class BeginnerBot extends Bot {
 
             if (gameState.isLost()) {
                 // Opponent is checkmate, that the best move to do!
-                score = Integer.MAX_VALUE;
+                score = BEST;
             } else if (gameState.isDraw()) {
                 // Let us be aggressive, a draw is not a good move, we want to win
                 score -= 20;
@@ -60,7 +65,7 @@ public class BeginnerBot extends Bot {
                 final GameState gameStateAfterOpponent = moveService.getGameState(boardAfter, color, historyCopy);
                 if (gameStateAfterOpponent.isLost()) {
                     // I am checkmate, that the worst move to do!
-                    score = Integer.MIN_VALUE;
+                    score = WORST;
                 } else if (gameStateAfterOpponent.isDraw()) {
                     // Let us be aggressive, a draw is not a good move, we want to win
                     score -= 20;
@@ -89,15 +94,9 @@ public class BeginnerBot extends Bot {
                 }
             }
 
-            if (score >= highestScore) {
-                if (score > highestScore) {
-                    bestMoves.clear();
-                    highestScore = score;
-                }
-                bestMoves.add(move);
-            }
+            moveScores.put(move, score);
         }
-        return bestMoves.get(new Random().nextInt(bestMoves.size()));
+        return getBestMove(moveScores);
     }
 
     private int getPiecesValueSum(Board board, Color color) {
@@ -111,5 +110,17 @@ public class BeginnerBot extends Bot {
             }
         }
         return sum;
+    }
+
+    private Move getBestMove(Map<Move, Integer> moveScores) {
+        System.out.println(moveScores);
+        return getMaxValue(moveScores).orElseThrow(() -> new RuntimeException("At least one move must be done"))
+            .getKey();
+    }
+
+    private <K, V extends Comparable<V>> Optional<Map.Entry<K,V>> getMaxValue(Map<K, V> map) {
+        return map.entrySet()
+            .stream()
+            .max(Comparator.comparing(Map.Entry::getValue));
     }
 }
