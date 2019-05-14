@@ -4,11 +4,18 @@ import static models.Board.SIZE;
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.swing.BorderFactory;
+import javax.swing.*;
 import javax.swing.border.Border;
 
 import gui.BoardView;
@@ -29,8 +36,8 @@ public class GameController {
 	private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
 
 	private final BoardView view;
-	private final Board board;
-	private final Game game;
+	private Board board;
+	private Game game;
 	private final MoveService moveService = new MoveService();
 
 	private Square selectedSquare = null;
@@ -40,11 +47,13 @@ public class GameController {
 		this.game = game;
 		this.board = game.getBoard();
 		init();
+		play();
 	}
 
 	private void init() {
 		view.display(board.getBoard());
-		play();
+		view.setItemLoadActionListener(actionEvent -> loadGame());
+		view.setItemSaveActionListener(actionEvent -> saveGame());
 	}
 
 	public void play() {
@@ -242,5 +251,48 @@ public class GameController {
 
 	private void cleanSelectedSquare() {
 		this.selectedSquare = null;
+	}
+
+	private void saveGame() {
+		final JFileChooser fileChooser = new JFileChooser();
+		int returnVal = fileChooser.showSaveDialog(view);
+
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			File file = fileChooser.getSelectedFile();
+			Path path = Paths.get(file.toURI());
+			try {
+				Files.write(path, game.getHistory().stream().map(Move::getBasicNotation).collect(Collectors.toList()));
+			} catch (IOException e) {
+				error(e, true);
+			}
+		}
+	}
+
+	private void loadGame() {
+		final JFileChooser fileChooser = new JFileChooser();
+		int returnVal = fileChooser.showOpenDialog(view);
+
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			File file = fileChooser.getSelectedFile();
+			Path path = Paths.get(file.toURI());
+			List<String> lines = new ArrayList<>();
+			try {
+				lines.addAll(Files.readAllLines(path));
+			} catch (IOException e) {
+				error(e, true);
+			}
+			//todo: here we assume that the game to load is played in the same config as currently
+			Game loadedGame = new Game(game.getWhitePlayer(), game.getBlackPlayer());
+			this.game = loadedGame;
+			this.board = loadedGame.getBoard();
+			//todo: reset game (pieces position)
+			for (String line: lines) {
+				Move move = Move.fromBasicNotation(line);
+				Piece piece = board.getPiece(move.getFromX(), move.getFromY())
+						.orElseThrow(() -> new RuntimeException("Unexpected move, no piece at this location"));
+				doMove(new Move(piece, move.getFromX(), move.getFromY(), move.getToX(), move.getToY()));
+			}
+			play();
+		}
 	}
 }

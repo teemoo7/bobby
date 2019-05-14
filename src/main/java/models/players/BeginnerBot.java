@@ -113,7 +113,7 @@ public class BeginnerBot extends Bot {
     }
 
     private Move getBestMove(Map<Move, Integer> moveScores) {
-        System.out.println(moveScores);
+        //System.out.println(moveScores);
         return getMaxValue(moveScores).orElseThrow(() -> new RuntimeException("At least one move must be done"))
             .getKey();
     }

@@ -70,10 +70,10 @@ public class Move {
 
 	public String getBasicNotation() {
 		StringBuilder builder = new StringBuilder();
-		builder.append(convertXToLetter(fromX))
+		builder.append(convertXToChar(fromX))
 			.append(fromY + 1)
 			.append("-")
-			.append(convertXToLetter(toX))
+			.append(convertXToChar(toX))
 			.append(toY + 1);
 		if (isChecking) {
 			builder.append("+");
@@ -81,9 +81,38 @@ public class Move {
 		return builder.toString();
 	}
 
-	private static String convertXToLetter(int x) {
+	public static Move fromBasicNotation(String notation) {
+		if (notation == null || notation.length() < 5) {
+			//todo: improve with regex
+			throw new RuntimeException("Unexpected format for basic notation move: " + notation);
+		}
+		char fromXChar = notation.charAt(0);
+		char fromYChar = notation.charAt(1);
+		char toXChar = notation.charAt(3);
+		char toYChar = notation.charAt(4);
+
+		Move move = new Move(null, convertCharToX(fromXChar), Character.getNumericValue(fromYChar) - 1,
+				convertCharToX(toXChar), Character.getNumericValue(toYChar) - 1);
+
+		if (notation.length() > 5) {
+			char checkChar = notation.charAt(5);
+			if (checkChar == '!') {
+				move.setChecking(true);
+			}
+		}
+
+		return move;
+	}
+
+	private static String convertXToChar(int x) {
 		final int aAscii = (int) 'a';
 		return String.valueOf((char) (aAscii + x));
+	}
+
+	private static int convertCharToX(char character) {
+		final int aAscii = (int) 'a';
+		final int charAscii = (int) character;
+		return charAscii - aAscii;
 	}
 
 	public boolean equalsForPositions(Move move) {

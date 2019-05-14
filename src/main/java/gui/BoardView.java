@@ -4,9 +4,9 @@ import static models.Board.SIZE;
 
 import java.awt.Container;
 import java.awt.GridLayout;
+import java.awt.event.ActionListener;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 import models.Position;
 import models.pieces.Piece;
@@ -15,6 +15,9 @@ import models.pieces.Piece;
 public class BoardView extends JFrame {
     private final Container contentPane;
     private Square[][] squares = new Square[SIZE][SIZE];
+
+    private JMenuItem itemSave;
+    private JMenuItem itemLoad;
 
     public BoardView(String title) {
         setTitle(title);
@@ -25,10 +28,19 @@ public class BoardView extends JFrame {
         contentPane.setLayout(gridLayout);
         setSize(600, 600);
         setLocationRelativeTo(null);
+        setMenu();
     }
 
     public Square[][] getSquares() {
         return squares;
+    }
+
+    public void setItemSaveActionListener(ActionListener actionListener) {
+        itemSave.addActionListener(actionListener);
+    }
+
+    public void setItemLoadActionListener(ActionListener actionListener) {
+        itemLoad.addActionListener(actionListener);
     }
 
     public void display(Piece[][] positions) {
@@ -67,6 +79,27 @@ public class BoardView extends JFrame {
 
     public void popupError(String message) {
         JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void setMenu() {
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+
+        JMenu fileMenu = new JMenu("File");
+        menuBar.add(fileMenu);
+
+        JMenuItem itemExit = new JMenuItem("Exit");
+        fileMenu.add(itemExit);
+        itemExit.addActionListener(actionEvent -> System.exit(0));
+
+        JMenu gameMenu = new JMenu("Game");
+        menuBar.add(gameMenu);
+
+        this.itemSave = new JMenuItem("Save");
+        gameMenu.add(itemSave);
+
+        this.itemLoad = new JMenuItem("Load");
+        gameMenu.add(itemLoad);
     }
 
     private void addFilesLabels() {
