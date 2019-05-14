@@ -14,6 +14,7 @@ import models.Color;
 import models.Game;
 import models.GameState;
 import models.Move;
+import models.pieces.King;
 import models.pieces.Piece;
 import services.MoveService;
 
@@ -83,6 +84,9 @@ public class BeginnerBot extends Bot {
             if (move.isChecking()) {
                 score += 2;
 
+                //todo: following heuristic is not bad but has a major drawback: it is not based on current situation
+                //todo: but on history too
+
                 // To checkmate, the idea is to reduce the king's moves. One may see that if we had put the king under
                 // check at the previous move, and that we can put him under check now with another piece than before,
                 // we focus the fire on the king proximity (since the king moves by one square only)
@@ -93,6 +97,20 @@ public class BeginnerBot extends Bot {
                     }
                 }
             }
+
+            if (move.getPiece() instanceof King) {
+                // In many cases, moving the king is a poor choice, except when rooking (not implemented yet), add malus
+                score -= 2;
+            }
+
+            //todo: compute a the fire heat map to see which squares are controlled (under fire) and which squares are
+            //todo: important to control (centered).
+            //fixme: we should compute moves for pawns in case of taking, not straight moves
+            List<Move> allMoves = moveService.computeAllMoves(boardAfter, color);
+            int[][] heatmap = getInitialHeatmap();
+            //todo: add king position heat
+            int heatScore = allMoves.stream().mapToInt(m -> heatmap[m.getToX()][m.getToY()]).sum();
+            score += heatScore;
 
             moveScores.put(move, score);
         }
@@ -122,5 +140,21 @@ public class BeginnerBot extends Bot {
         return map.entrySet()
             .stream()
             .max(Comparator.comparing(Map.Entry::getValue));
+    }
+
+    private int[][] getInitialHeatmap() {
+        int[][] heatmap = new int[Board.SIZE][Board.SIZE];
+        for (int i = 0; i < Board.SIZE; i++) {
+            for (int j = 0; j < Board.SIZE; j++) {
+                int heat = 0;
+                if ((i == 3 || i == 4) && (j == 3 | j == 4)) {
+                    heat = 2;
+                } else if ((i == 2 || i == 5) && (j == 2 | j == 5)) {
+                    heat = 1;
+                }
+                heatmap[i][j] = heat;
+            }
+        }
+        return heatmap;
     }
 }
