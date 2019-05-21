@@ -14,7 +14,6 @@ import models.Color;
 import models.Game;
 import models.GameState;
 import models.Move;
-import models.pieces.King;
 import models.pieces.Piece;
 import services.MoveService;
 
@@ -108,7 +107,7 @@ public class BeginnerBot extends Bot {
             //todo: important to control (centered).
             //fixme: we should compute moves for pawns in case of taking, not straight moves
             List<Move> allMoves = moveService.computeAllMoves(boardAfter, color, false);
-            int[][] heatmap = getInitialHeatmap();
+            int[][] heatmap = getHeatmap(true);
             //todo: add king position heat
             int heatScore = allMoves.stream().mapToInt(m -> heatmap[m.getToX()][m.getToY()]).sum();
 
@@ -143,15 +142,17 @@ public class BeginnerBot extends Bot {
             .max(Comparator.comparing(Map.Entry::getValue));
     }
 
-    private int[][] getInitialHeatmap() {
+    private int[][] getHeatmap(boolean centered) {
         int[][] heatmap = new int[Board.SIZE][Board.SIZE];
         for (int i = 0; i < Board.SIZE; i++) {
             for (int j = 0; j < Board.SIZE; j++) {
                 int heat = 0;
-                if ((i == 3 || i == 4) && (j == 3 | j == 4)) {
-                    heat = 2;
-                } else if ((i == 2 || i == 5) && (j == 2 | j == 5)) {
-                    heat = 1;
+                if (centered) {
+                    if ((i == 3 || i == 4) && (j == 3 | j == 4)) {
+                        heat = 2;
+                    } else if ((i == 2 || i == 5) && (j == 2 | j == 5)) {
+                        heat = 1;
+                    }
                 }
                 heatmap[i][j] = heat;
             }
