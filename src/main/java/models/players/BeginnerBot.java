@@ -37,12 +37,10 @@ public class BeginnerBot extends Bot {
     public Move selectMove(Board board, Color color, List<Move> history, MoveService moveService, int depth) {
         // Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
 
-        List<Move> moves = moveService.computeAllMoves(board, color);
+        List<Move> moves = moveService.computeAllMoves(board, color, true);
         Map<Move, Integer> moveScores = new HashMap<>(moves.size());
 
         for(Move move: moves) {
-            int score = NEUTRAL;
-
             Board boardAfter = board.clone();
             boardAfter.doMove(move);
             List<Move> historyCopy = new ArrayList<>(history);
@@ -50,12 +48,13 @@ public class BeginnerBot extends Bot {
             final Color opponentColor = swap(move.getPiece().getColor());
             final GameState gameState = moveService.getGameState(boardAfter, opponentColor, historyCopy);
 
+            int gameStateScore = NEUTRAL;
             if (gameState.isLost()) {
                 // Opponent is checkmate, that the best move to do!
-                score = BEST;
+                gameStateScore = BEST;
             } else if (gameState.isDraw()) {
                 // Let us be aggressive, a draw is not a good move, we want to win
-                score -= 20;
+                gameStateScore -= 20;
             }
 
             // Compute the probable next move for the opponent and see if our current move is a real benefit in the end
@@ -66,20 +65,19 @@ public class BeginnerBot extends Bot {
                 final GameState gameStateAfterOpponent = moveService.getGameState(boardAfter, color, historyCopy);
                 if (gameStateAfterOpponent.isLost()) {
                     // I am checkmate, that the worst move to do!
-                    score = WORST;
+                    gameStateScore = WORST;
                 } else if (gameStateAfterOpponent.isDraw()) {
                     // Let us be aggressive, a draw is not a good move, we want to win
-                    score -= 20;
+                    gameStateScore -= 20;
                 }
             }
 
             // Basically, taking a piece improves your situation
             int piecesValue = getPiecesValueSum(boardAfter, move.getPiece().getColor());
             int opponentPiecesValue = getPiecesValueSum(boardAfter, opponentColor);
-            int deltaPiecesValue = piecesValue-opponentPiecesValue;
+            int piecesScore = piecesValue-opponentPiecesValue;
 
-            score += deltaPiecesValue;
-
+            /*
             // Checking is a good direction, add a bonus
             if (move.isChecking()) {
                 score += 2;
@@ -97,21 +95,24 @@ public class BeginnerBot extends Bot {
                     }
                 }
             }
+            */
 
+            /*
             if (move.getPiece() instanceof King) {
                 // In many cases, moving the king is a poor choice, except when rooking (not implemented yet), add malus
                 score -= 2;
             }
+            */
 
             //todo: compute a the fire heat map to see which squares are controlled (under fire) and which squares are
             //todo: important to control (centered).
             //fixme: we should compute moves for pawns in case of taking, not straight moves
-            List<Move> allMoves = moveService.computeAllMoves(boardAfter, color);
+            List<Move> allMoves = moveService.computeAllMoves(boardAfter, color, false);
             int[][] heatmap = getInitialHeatmap();
             //todo: add king position heat
             int heatScore = allMoves.stream().mapToInt(m -> heatmap[m.getToX()][m.getToY()]).sum();
-            score += heatScore;
 
+            int score = 1 * gameStateScore + 4 * piecesScore + 1 * heatScore;
             moveScores.put(move, score);
         }
         return getBestMove(moveScores);

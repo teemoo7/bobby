@@ -13,7 +13,7 @@ public class RandomBot extends Bot {
     }
 
     public Move selectMove(Game game, MoveService moveService) {
-        List<Move> moves = moveService.computeAllMoves(game.getBoard(), game.getToPlay());
+        List<Move> moves = moveService.computeAllMoves(game.getBoard(), game.getToPlay(), true);
         return moves.get(new Random().nextInt(moves.size()));
     }
 }

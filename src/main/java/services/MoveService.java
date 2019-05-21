@@ -26,24 +26,24 @@ public class MoveService {
 	private static final int MAX_MOVE = SIZE - 1;
 
 	private boolean canMove(Board board, Color color) {
-		List<Move> moves = computeAllMoves(board, color);
+		List<Move> moves = computeAllMoves(board, color, true);
 		return !moves.isEmpty();
 	}
 
-	public List<Move> computeAllMoves(Board board, Color color) {
+	public List<Move> computeAllMoves(Board board, Color color, boolean withAdditionalInfo) {
 		List<Move> moves = new ArrayList<>();
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
 				Optional<Piece> piece = board.getPiece(i, j);
 				if (piece.isPresent() && piece.get().getColor() == color) {
-					moves.addAll(computeMoves(board, piece.get(), i, j));
+					moves.addAll(computeMoves(board, piece.get(), i, j, withAdditionalInfo));
 				}
 			}
 		}
 		return moves;
 	}
 
-	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY) {
+	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY, boolean withAdditionalInfo) {
 		List<Move> moves = new ArrayList<>();
 		final Color color = piece.getColor();
 
@@ -65,15 +65,19 @@ public class MoveService {
 			throw new RuntimeException("Unexpected piece type");
 		}
 
-		return moves.stream().filter(move -> {
-			Board boardAfterMove = board.clone();
-			boardAfterMove.doMove(move);
+		if (withAdditionalInfo) {
+			return moves.stream().filter(move -> {
+				Board boardAfterMove = board.clone();
+				boardAfterMove.doMove(move);
 
-			// Checking opponent's king
-			move.setChecking(isInCheck(boardAfterMove, swap(color)));
+				// Checking opponent's king
+				move.setChecking(isInCheck(boardAfterMove, swap(color)));
 
-			return isValidSituation(boardAfterMove, color);
-		}).collect(Collectors.toList());
+				return isValidSituation(boardAfterMove, color);
+			}).collect(Collectors.toList());
+		} else {
+			return moves;
+		}
 	}
 
 	private boolean isInCheck(Board board, Color color) {

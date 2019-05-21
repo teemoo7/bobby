@@ -81,7 +81,7 @@ public class GameController {
 			resetAllClickables();
 		}
 
-		List<Move> allowedMoves = moveService.computeMoves(board, move.getPiece(), move.getFromX(), move.getFromY());
+		List<Move> allowedMoves = moveService.computeMoves(board, move.getPiece(), move.getFromX(), move.getFromY(), true);
 		Optional<Move> allowedMoveOpt = allowedMoves.stream().filter(m -> m.equalsForPositions(move)).findAny();
 		if (allowedMoveOpt.isPresent()) {
 			final Move allowedMove = allowedMoveOpt.get();
@@ -201,7 +201,7 @@ public class GameController {
 					markSquareClickable(square);
 					square.setBorder(RED_BORDER);
 					List<Move> moves = moveService
-						.computeMoves(board, square.getPiece(), square.getPosition().getX(), square.getPosition().getY());
+							.computeMoves(board, square.getPiece(), square.getPosition().getX(), square.getPosition().getY(), true);
 					for (Move move : moves) {
 						Square destination = view.getSquares()[move.getToY()][move.getToX()];
 						destination.setBorder(BLUE_BORDER);
