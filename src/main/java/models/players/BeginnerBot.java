@@ -2,12 +2,7 @@ package models.players;
 
 import static helpers.ColorHelper.swap;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import models.Board;
 import models.Color;
@@ -131,9 +126,28 @@ public class BeginnerBot extends Bot {
     }
 
     private Move getBestMove(Map<Move, Integer> moveScores) {
-        //System.out.println(moveScores);
-        return getMaxValue(moveScores).orElseThrow(() -> new RuntimeException("At least one move must be done"))
-            .getKey();
+        return getMaxScoreWithRandomChoice(moveScores)
+                .orElseThrow(() -> new RuntimeException("At least one move must be done"));
+    }
+
+    private Optional<Move> getMaxScoreWithRandomChoice(Map<Move, Integer> moveScores) {
+        // Instead of just search for the max score, we search for all moves that have the max score, and if there are
+        // more than one move, then we randomly choose one. It shall give a bit of variation in games.
+        if (moveScores.isEmpty()) {
+            return Optional.empty();
+        }
+        List<Move> bestMoves = new ArrayList<>();
+        Integer highestScore = null;
+        for (Map.Entry<Move, Integer> entry: moveScores.entrySet()) {
+            if (highestScore == null || entry.getValue() > highestScore) {
+                highestScore = entry.getValue();
+                bestMoves.clear();
+                bestMoves.add(entry.getKey());
+            } else if (entry.getValue() == highestScore) {
+                bestMoves.add(entry.getKey());
+            }
+        }
+        return Optional.of(bestMoves.get(new Random().nextInt(bestMoves.size())));
     }
 
     private <K, V extends Comparable<V>> Optional<Map.Entry<K,V>> getMaxValue(Map<K, V> map) {
