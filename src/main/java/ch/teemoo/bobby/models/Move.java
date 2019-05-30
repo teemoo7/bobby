@@ -84,7 +84,7 @@ public class Move {
 	public static Move fromBasicNotation(String notation) {
 		if (notation == null || notation.length() < 5) {
 			//todo: improve with regex
-			throw new RuntimeException("Unexpected format for basic notation move: " + notation);
+			throw new IllegalArgumentException("Unexpected format for basic notation move: " + notation);
 		}
 		char fromXChar = notation.charAt(0);
 		char fromYChar = notation.charAt(1);
@@ -96,7 +96,7 @@ public class Move {
 
 		if (notation.length() > 5) {
 			char checkChar = notation.charAt(5);
-			if (checkChar == '!') {
+			if (checkChar == '+') {
 				move.setChecking(true);
 			}
 		}
