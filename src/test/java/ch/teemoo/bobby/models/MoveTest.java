@@ -1,6 +1,7 @@
 package ch.teemoo.bobby.models;
 
 import ch.teemoo.bobby.models.pieces.Piece;
+import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.pieces.Rook;
 import org.junit.Test;
 
@@ -55,6 +56,31 @@ public class MoveTest {
     public void testFromBasicNotationEmpty() {
         assertThatIllegalArgumentException().isThrownBy(() -> Move.fromBasicNotation(""));
         assertThatIllegalArgumentException().isThrownBy(() -> Move.fromBasicNotation(null));
+    }
+
+    @Test
+    public void testToString() {
+        Move move = new Move(new Rook(Color.WHITE), 0, 0, 0, 5);
+        assertThat(move.toString()).isEqualTo(move.getPrettyNotation());
+    }
+
+    @Test
+    public void testEqualsForPosition() {
+        Move move = new Move(new Rook(Color.WHITE), 0, 0, 0, 5);
+        Move move2 = new Move(new Rook(Color.BLACK), move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+        assertThat(move.equalsForPositions(move2)).isTrue();
+        assertThat(move.equals(move2)).isFalse();
+    }
+
+    @Test
+    public void testEquals() {
+        Piece rook1 = new Rook(Color.WHITE);
+        Piece rook2 = new Rook(Color.WHITE);
+        Move move = new Move(rook1, 0, 0, 0, 5);
+        Move move2 = new Move(rook2, move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+        Move move3 = new Move(rook1, move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+        assertThat(move.equals(move2)).isFalse();
+        assertThat(move.equals(move3)).isTrue();
     }
 
 }
