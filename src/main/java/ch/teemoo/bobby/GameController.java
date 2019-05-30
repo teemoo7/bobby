@@ -90,7 +90,7 @@ public class GameController {
 			// We use allowedMove instead of given move since it contains additional info like taking and check
 			board.doMove(allowedMove);
 			view.refresh(board.getBoard());
-			info(move.getPrettyNotation(), false);
+			info(allowedMove.getPrettyNotation(), false);
 			game.addMoveToHistory(allowedMove);
 			game.setToPlay(swap(allowedMove.getPiece().getColor()));
 			displayGameInfo(player, allowedMove);

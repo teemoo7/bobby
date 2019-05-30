@@ -4,16 +4,12 @@ import static ch.teemoo.bobby.helpers.ColorHelper.swap;
 import static ch.teemoo.bobby.models.Board.SIZE;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import ch.teemoo.bobby.models.Board;
-import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.GameState;
-import ch.teemoo.bobby.models.Move;
-import ch.teemoo.bobby.models.Position;
-import ch.teemoo.bobby.models.PromotionMove;
+import ch.teemoo.bobby.models.*;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Knight;
@@ -61,6 +57,7 @@ public class MoveService {
 		} else if (piece instanceof King) {
 			moves.addAll(computeStraightMoves(piece, posX, posY, board, 1));
 			moves.addAll(computeDiagonalMoves(piece, posX, posY, board, 1));
+			moves.addAll(computeCastlingMoves(piece, posX, posY, board));
 		} else {
 			throw new RuntimeException("Unexpected piece type");
 		}
@@ -257,6 +254,61 @@ public class MoveService {
 				break;
 			}
 		}
+		return moves;
+	}
+
+	private List<Move> computeCastlingMoves(Piece piece, int posX, int posY, Board board) {
+		//todo: take game history into account, both king and rook must not have moved yet
+		final Color color = piece.getColor();
+
+		// Check king position
+		Optional<Piece> kingOpt;
+		if (color == Color.WHITE) {
+			kingOpt = board.getPiece(4, 0);
+		} else {
+			kingOpt = board.getPiece(4, 7);
+		}
+
+		if (!(kingOpt.isPresent() && kingOpt.get() instanceof King && kingOpt.get().getColor() == color)) {
+			return Collections.emptyList();
+		}
+		// Check king is not under check
+		if (isInCheck(board, color)) {
+			return Collections.emptyList();
+		}
+
+		List<Move> moves = new ArrayList<>();
+
+		// Check rooks position
+		Optional<Piece> rookOptQueenside = board.getPiece(0, posY);
+		if (rookOptQueenside.isPresent() && rookOptQueenside.get() instanceof Rook && rookOptQueenside.get().getColor() == color) {
+			// Check room between rook and king
+			boolean isEmpty = true;
+			for (int x = 1; x < 4; x++) {
+				Optional<Piece> space = board.getPiece(x, posY);
+				if (space.isPresent()) {
+					isEmpty = false;
+					break;
+				}
+			}
+			if (isEmpty) {
+				// Check king move not under fire
+				boolean isInCheck = false;
+				for (int x = 2; x < 4; x++) {
+					Board boardAfter = board.clone();
+					boardAfter.doMove(new Move(piece, posX, posY, x, posY));
+					if (isInCheck(boardAfter, color)) {
+						isInCheck = true;
+						break;
+					}
+				}
+				if (!isInCheck) {
+					//Finally, the castling is a valid move
+					moves.add(new CastlingMove(piece, posX, posY, posX - 2, posY, rookOptQueenside.get(), 0, posY, 0 + 3, posY));
+				}
+			}
+		}
+
 		return moves;
 	}
 

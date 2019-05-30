@@ -60,6 +60,11 @@ public class Board {
             piece = promotionMove.getPromotedPiece();
         }
         setPiece(move.getToX(), move.getToY(), piece);
+        if (move instanceof CastlingMove) {
+            CastlingMove castlingMove = (CastlingMove) move;
+            removePiece(castlingMove.getRookFromX(), castlingMove.getFromY());
+            setPiece(castlingMove.getRookToX(), castlingMove.getRookToY(), castlingMove.getRook());
+        }
     }
 
     private void setPiece(int x, int y, Piece piece) {
