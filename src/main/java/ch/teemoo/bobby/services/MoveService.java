@@ -364,7 +364,7 @@ public class MoveService {
 		});
 	}
 
-	private Optional<Position> findKingPosition(Board board, Color color) {
+	Optional<Position> findKingPosition(Board board, Color color) {
 		for (int x = 0; x < SIZE; x++) {
 			for (int y = 0; y < SIZE; y++) {
 				Optional<Piece> pieceOpt = board.getPiece(x, y);
