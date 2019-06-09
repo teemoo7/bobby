@@ -376,7 +376,7 @@ public class MoveService {
 				// Move diagonal, taking is mandatory, dest must be other color
 				if (destPiece.isPresent()) {
 					if (destPiece.get().getColor() != piece.getColor()) {
-						move.setTaking(true);
+						move.setTookPiece(destPiece.get());
 					} else {
 						return Optional.empty();
 					}
@@ -387,7 +387,7 @@ public class MoveService {
 		} else {
 			if (destPiece.isPresent()) {
 				if (destPiece.get().getColor() != piece.getColor()) {
-					move.setTaking(true);
+					move.setTookPiece(destPiece.get());
 				} else {
 					// Same color
 					return Optional.empty();

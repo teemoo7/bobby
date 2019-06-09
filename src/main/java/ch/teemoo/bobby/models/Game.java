@@ -81,6 +81,10 @@ public class Game {
         return getPlayerByColor(toPlay);
     }
 
+    public void removeLastMoveFromHistory() {
+        this.history.remove(this.history.size() - 1);
+    }
+
     private Piece[][] getInitialPiecesPositions() {
         Piece[][] pos = new Piece[SIZE][SIZE];
         pos[0][0] = new Rook(Color.WHITE);

@@ -62,6 +62,7 @@ public class GameController {
 		view.setItemSaveActionListener(actionEvent -> saveGame());
 		view.setItemPrintToConsoleActionListener(actionEvent -> printGameToConsole());
 		view.setItemSuggestMoveActionListener(actionEvent -> suggestMove());
+		view.setItemUndoMoveActionListener(actionEvent -> undoLastMove());
 	}
 
 	public void play() {
@@ -108,6 +109,21 @@ public class GameController {
 		} else {
 			throw new RuntimeException("Unauthorized move");
 		}
+	}
+
+	private void undoLastMove(Move move) {
+		Player player = game.getPlayerByColor(move.getPiece().getColor());
+		if (!player.isBot()) {
+			cleanSelectedSquare();
+			cleanSquaresBorder();
+			resetAllClickables();
+		}
+
+		board.undoMove(move);
+		view.refresh(board.getBoard());
+		info("Undo: " + move.getPrettyNotation(), false);
+		game.removeLastMoveFromHistory();
+		game.setToPlay(move.getPiece().getColor());
 	}
 
 	private void displayGameInfo(Player player, Move move) {
@@ -317,5 +333,20 @@ public class GameController {
 		Bot bot = new BeginnerBot();
 		Move move = bot.selectMove(game, moveService);
 		info("Suggested move is : " + move.toString(), true);
+	}
+
+	private void undoLastMove() {
+		if (game.getHistory().size() < 2) {
+			return;
+		}
+		Move lastMove = getLastMove();
+		undoLastMove(lastMove);
+		Move secondLastMove = getLastMove();
+		undoLastMove(secondLastMove);
+		play();
+	}
+
+	private Move getLastMove() {
+		return game.getHistory().get(game.getHistory().size() - 1);
 	}
 }

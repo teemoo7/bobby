@@ -9,7 +9,7 @@ public class PromotionMove extends Move {
         super(move.getPiece(), move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
         this.promotedPiece = promotedPiece;
         setChecking(move.isChecking());
-        setTaking(move.isTaking());
+        setTookPiece(move.getTookPiece());
     }
 
     public Piece getPromotedPiece() {

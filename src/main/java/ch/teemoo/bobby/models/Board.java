@@ -62,8 +62,22 @@ public class Board {
         setPiece(move.getToX(), move.getToY(), piece);
         if (move instanceof CastlingMove) {
             CastlingMove castlingMove = (CastlingMove) move;
-            removePiece(castlingMove.getRookFromX(), castlingMove.getFromY());
+            removePiece(castlingMove.getRookFromX(), castlingMove.getRookFromY());
             setPiece(castlingMove.getRookToX(), castlingMove.getRookToY(), castlingMove.getRook());
+        }
+    }
+
+    public void undoMove(Move move) {
+        removePiece(move.getToX(), move.getToY());
+        Piece piece = move.getPiece();
+        setPiece(move.getFromX(), move.getFromY(), piece);
+        if (move.isTaking()) {
+            setPiece(move.getToX(), move.getToY(), move.getTookPiece());
+        }
+        if (move instanceof CastlingMove) {
+            CastlingMove castlingMove = (CastlingMove) move;
+            removePiece(castlingMove.getRookToX(), castlingMove.getRookToY());
+            setPiece(castlingMove.getRookFromX(), castlingMove.getRookFromY(), castlingMove.getRook());
         }
     }
 

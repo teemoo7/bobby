@@ -10,7 +10,7 @@ public class Move {
 	private final int fromY;
 	private final int toX;
 	private final int toY;
-	private boolean isTaking;
+	private Piece tookPiece = null;
 	private boolean isChecking;
 
 	public Move(Piece piece, int fromX, int fromY, int toX, int toY) {
@@ -42,11 +42,15 @@ public class Move {
 	}
 
 	public boolean isTaking() {
-		return isTaking;
+		return tookPiece != null;
 	}
 
-	public void setTaking(boolean taking) {
-		isTaking = taking;
+	public Piece getTookPiece() {
+		return tookPiece;
+	}
+
+	public void setTookPiece(Piece tookPiece) {
+		this.tookPiece = tookPiece;
 	}
 
 	public boolean isChecking() {
@@ -125,12 +129,12 @@ public class Move {
 		if (o == null || getClass() != o.getClass()) return false;
 		Move move = (Move) o;
 		return equalsForPositions(move)
-			&& isTaking == move.isTaking && isChecking == move.isChecking && Objects.equals(piece, move.piece);
+			&& tookPiece == move.tookPiece && isChecking == move.isChecking && Objects.equals(piece, move.piece);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(piece, fromX, fromY, toX, toY, isTaking, isChecking);
+		return Objects.hash(piece, fromX, fromY, toX, toY, tookPiece, isChecking);
 	}
 
 	@Override
