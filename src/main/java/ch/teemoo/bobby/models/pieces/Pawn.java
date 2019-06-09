@@ -12,7 +12,7 @@ public class Pawn extends Piece {
         if (color == Color.WHITE) {
             return "\u2659";
         } else {
-            if (System.getProperty("os.name").toLowerCase().indexOf("mac") > 0) {
+            if (System.getProperty("os.name").toLowerCase().contains("mac")) {
                 //fixme: for some unclear reason, the black pawn char is not correctly rendered on Mac
                 return "P";
             } else {

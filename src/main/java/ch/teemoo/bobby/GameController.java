@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +43,7 @@ public class GameController {
 	private Board board;
 	private Game game;
 	private final MoveService moveService = new MoveService();
+	private final boolean showTiming = true;
 
 	private Square selectedSquare = null;
 
@@ -65,7 +68,12 @@ public class GameController {
 				throw new RuntimeException("Player has to be a bot");
 			}
 			Bot bot = (Bot) player;
+			Instant start = Instant.now();
 			Move move = bot.selectMove(game, moveService);
+			Instant end = Instant.now();
+			if (showTiming) {
+				System.out.println("Time to select move: " + Duration.between(start, end));
+			}
 			doMove(move);
 		}
 

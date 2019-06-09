@@ -5,11 +5,20 @@ import static ch.teemoo.bobby.models.Board.SIZE;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import ch.teemoo.bobby.models.*;
+import ch.teemoo.bobby.models.Board;
+import ch.teemoo.bobby.models.CastlingMove;
+import ch.teemoo.bobby.models.Color;
+import ch.teemoo.bobby.models.GameState;
+import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.Position;
+import ch.teemoo.bobby.models.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Knight;
@@ -20,6 +29,9 @@ import ch.teemoo.bobby.models.pieces.Rook;
 
 public class MoveService {
 	private static final int MAX_MOVE = SIZE - 1;
+	private Map<String, List<Move>> movesMap = new ConcurrentHashMap<>();
+	private long hits = 0;
+	private long miss = 0;
 
 	private boolean canMove(Board board, Color color) {
 		List<Move> moves = computeAllMoves(board, color, true);
@@ -27,19 +39,34 @@ public class MoveService {
 	}
 
 	public List<Move> computeAllMoves(Board board, Color color, boolean withAdditionalInfo) {
-		List<Move> moves = new ArrayList<>();
+		Map<Position, Piece> positionsWithPiece = new HashMap<>();
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
 				Optional<Piece> piece = board.getPiece(i, j);
 				if (piece.isPresent() && piece.get().getColor() == color) {
-					moves.addAll(computeMoves(board, piece.get(), i, j, withAdditionalInfo));
+					positionsWithPiece.put(new Position(i, j), piece.get());
 				}
 			}
 		}
+		//todo: check if usage of parallel stream can speed up computation here
+		List<Move> moves = positionsWithPiece.entrySet().stream().flatMap(entry ->
+			computeMoves(board, entry.getValue(), entry.getKey().getX(), entry.getKey().getY(), withAdditionalInfo)
+				.stream()).collect(Collectors.toList());
+		//System.out.println("Accuracy: " + 100 * hits / (hits + miss) + "% (" + hits + "/" + (hits + miss) + ")");
 		return moves;
 	}
 
 	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY, boolean withAdditionalInfo) {
+		//Note: usage of this cache has a 6% efficiency, not sure it is worthy
+		String key = generateKey(board, piece, posX, posY);
+		List<Move> computedMoves = movesMap.get(key);
+		if (computedMoves != null) {
+			hits++;
+			return computedMoves;
+		} else {
+			miss++;
+		}
+
 		List<Move> moves = new ArrayList<>();
 		final Color color = piece.getColor();
 
@@ -63,7 +90,7 @@ public class MoveService {
 		}
 
 		if (withAdditionalInfo) {
-			return moves.stream().filter(move -> {
+			computedMoves = moves.stream().filter(move -> {
 				Board boardAfterMove = board.clone();
 				boardAfterMove.doMove(move);
 
@@ -72,6 +99,8 @@ public class MoveService {
 
 				return isValidSituation(boardAfterMove, color);
 			}).collect(Collectors.toList());
+			movesMap.put(key, computedMoves);
+			return computedMoves;
 		} else {
 			return moves;
 		}
@@ -259,57 +288,76 @@ public class MoveService {
 
 	private List<Move> computeCastlingMoves(Piece piece, int posX, int posY, Board board) {
 		//todo: take game history into account, both king and rook must not have moved yet
-		final Color color = piece.getColor();
 
-		// Check king position
-		Optional<Piece> kingOpt;
-		if (color == Color.WHITE) {
-			kingOpt = board.getPiece(4, 0);
-		} else {
-			kingOpt = board.getPiece(4, 7);
-		}
-
-		if (!(kingOpt.isPresent() && kingOpt.get() instanceof King && kingOpt.get().getColor() == color)) {
-			return Collections.emptyList();
-		}
-		// Check king is not under check
-		if (isInCheck(board, color)) {
+		if (!isValidKingPositionForCastling(piece, posX, posY, board)) {
 			return Collections.emptyList();
 		}
 
 		List<Move> moves = new ArrayList<>();
 
-		// Check rooks position
-		Optional<Piece> rookOptQueenside = board.getPiece(0, posY);
-		if (rookOptQueenside.isPresent() && rookOptQueenside.get() instanceof Rook && rookOptQueenside.get().getColor() == color) {
-			// Check room between rook and king
-			boolean isEmpty = true;
-			for (int x = 1; x < 4; x++) {
-				Optional<Piece> space = board.getPiece(x, posY);
-				if (space.isPresent()) {
-					isEmpty = false;
-					break;
-				}
-			}
-			if (isEmpty) {
-				// Check king move not under fire
-				boolean isInCheck = false;
-				for (int x = 2; x < 4; x++) {
-					Board boardAfter = board.clone();
-					boardAfter.doMove(new Move(piece, posX, posY, x, posY));
-					if (isInCheck(boardAfter, color)) {
-						isInCheck = true;
-						break;
-					}
-				}
-				if (!isInCheck) {
-					//Finally, the castling is a valid move
-					moves.add(new CastlingMove(piece, posX, posY, posX - 2, posY, rookOptQueenside.get(), 0, posY, 0 + 3, posY));
-				}
+		// Queenside castling theoretical positions
+		getCastlingMove(board, piece, posX, posY, 2, 0, 3).ifPresent(moves::add);
+		// Kingside castling theoretical positions
+		getCastlingMove(board, piece, posX, posY, 6, 7, 5).ifPresent(moves::add);
+
+		return moves;
+	}
+
+	private Optional<Move> getCastlingMove(Board board, Piece piece, int kingFromX, int kingFromY, int kingToX,
+		int rookFromX, int rookToX) {
+		final Color color = piece.getColor();
+
+		// Check rook position
+		Optional<Piece> rookOpt = board.getPiece(rookFromX, kingFromY);
+		if (!(rookOpt.isPresent() && rookOpt.get() instanceof Rook && rookOpt.get().getColor() == color)) {
+			return Optional.empty();
+		}
+
+		// Check room between rook and king
+		for (int x = Math.min(rookFromX, kingFromX) + 1; x < Math.max(kingFromX, rookFromX); x++) {
+			Optional<Piece> pieceBetween = board.getPiece(x, kingFromY);
+			if (pieceBetween.isPresent()) {
+				return Optional.empty();
 			}
 		}
 
-		return moves;
+		// Check that king does not cross fire during move
+		for (int x = Math.min(kingToX, kingFromX + 1); x < Math.max(kingFromX, kingToX + 1); x++) {
+			Board boardAfter = board.clone();
+			boardAfter.doMove(new Move(piece, kingFromX, kingFromY, x, kingFromY));
+			if (isInCheck(boardAfter, color)) {
+				return Optional.empty();
+			}
+		}
+
+		return Optional
+			.of(new CastlingMove(piece, kingFromX, kingFromY, kingToX, kingFromY, rookOpt.get(), rookFromX, kingFromY,
+				rookToX, kingFromY));
+	}
+
+	private boolean isValidKingPositionForCastling(Piece piece, int posX, int posY, Board board) {
+		final Color color = piece.getColor();
+		if (posX != 4) {
+			return false;
+		} else {
+			if (color == Color.WHITE) {
+				if (posY != 0) {
+					return false;
+				}
+			} else {
+				if (posY != 7) {
+					return false;
+				}
+			}
+		}
+		Optional<Piece> kingOpt = board.getPiece(posX, posY);
+		if (!(kingOpt.isPresent() && kingOpt.get().equals(piece))) {
+			return false;
+		}
+		if (isInCheck(board, color)) {
+			return false;
+		}
+		return true;
 	}
 
 	private Optional<Move> getAllowedMove(Piece piece, int posX, int posY, int deltaX, int deltaY, Board board) {
@@ -416,7 +464,7 @@ public class MoveService {
 		});
 	}
 
-	Optional<Position> findKingPosition(Board board, Color color) {
+	public Optional<Position> findKingPosition(Board board, Color color) {
 		for (int x = 0; x < SIZE; x++) {
 			for (int y = 0; y < SIZE; y++) {
 				Optional<Piece> pieceOpt = board.getPiece(x, y);
@@ -430,5 +478,9 @@ public class MoveService {
 		}
 		System.out.println(board);
 		return Optional.empty();
+	}
+
+	private String generateKey(Board board, Piece piece, int posX, int posY) {
+		return piece.toString() + String.valueOf(posX) + String.valueOf(posY) + board.toString();
 	}
 }

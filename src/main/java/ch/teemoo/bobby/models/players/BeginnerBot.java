@@ -9,6 +9,7 @@ import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameState;
 import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.Position;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.services.MoveService;
 
@@ -102,9 +103,12 @@ public class BeginnerBot extends Bot {
             //todo: important to control (centered).
             //fixme: we should compute moves for pawns in case of taking, not straight moves
             List<Move> allMoves = moveService.computeAllMoves(boardAfter, color, false);
-            int[][] heatmap = getHeatmap(true);
-            //todo: add king position heat
-            int heatScore = allMoves.stream().mapToInt(m -> heatmap[m.getToX()][m.getToY()]).sum();
+            int[][] heatmapCenter = getHeatmapForCenter();
+            Position opponentKing = moveService.findKingPosition(boardAfter, opponentColor)
+                .orElseThrow(() -> new RuntimeException("King expected here"));
+            int[][] heatmapOpponentKing = getHeatmapAroundLocation(opponentKing.getX(), opponentKing.getY());
+            int heatScore = allMoves.stream().mapToInt(
+                m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapOpponentKing[m.getToX()][m.getToY()]).sum();
 
             int score = 1 * gameStateScore + 4 * piecesScore + 1 * heatScore;
             moveScores.put(move, score);
@@ -156,17 +160,40 @@ public class BeginnerBot extends Bot {
             .max(Comparator.comparing(Map.Entry::getValue));
     }
 
-    private int[][] getHeatmap(boolean centered) {
+    private int[][] getHeatmapForCenter() {
         int[][] heatmap = new int[Board.SIZE][Board.SIZE];
         for (int i = 0; i < Board.SIZE; i++) {
             for (int j = 0; j < Board.SIZE; j++) {
                 int heat = 0;
-                if (centered) {
-                    if ((i == 3 || i == 4) && (j == 3 | j == 4)) {
-                        heat = 2;
-                    } else if ((i == 2 || i == 5) && (j == 2 | j == 5)) {
-                        heat = 1;
-                    }
+                if ((i == 3 || i == 4) && (j == 3 | j == 4)) {
+                    heat = 2;
+                } else if ((i == 2 || i == 5) && (j == 2 | j == 5)) {
+                    heat = 1;
+                }
+                heatmap[i][j] = heat;
+            }
+        }
+        return heatmap;
+    }
+
+    private int[][] getHeatmapAroundLocation(int x, int y) {
+        int[][] heatmap = new int[Board.SIZE][Board.SIZE];
+        for (int i = 0; i < Board.SIZE; i++) {
+            for (int j = 0; j < Board.SIZE; j++) {
+                int distanceToHeat = Math.max(Math.abs(x-i), Math.abs(y-j));
+                int heat;
+                switch (distanceToHeat) {
+                case 0:
+                    heat = 3;
+                    break;
+                case 1:
+                    heat = 2;
+                    break;
+                case 2:
+                    heat = 1;
+                    break;
+                default:
+                    heat = 0;
                 }
                 heatmap[i][j] = heat;
             }
