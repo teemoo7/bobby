@@ -30,6 +30,7 @@ import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameState;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.pieces.Piece;
+import ch.teemoo.bobby.models.players.BeginnerBot;
 import ch.teemoo.bobby.models.players.Bot;
 import ch.teemoo.bobby.models.players.Player;
 import ch.teemoo.bobby.services.MoveService;
@@ -59,6 +60,8 @@ public class GameController {
 		view.display(board.getBoard());
 		view.setItemLoadActionListener(actionEvent -> loadGame());
 		view.setItemSaveActionListener(actionEvent -> saveGame());
+		view.setItemPrintToConsoleActionListener(actionEvent -> printGameToConsole());
+		view.setItemSuggestMoveActionListener(actionEvent -> suggestMove());
 	}
 
 	public void play() {
@@ -304,5 +307,15 @@ public class GameController {
 			}
 			play();
 		}
+	}
+
+	private void printGameToConsole() {
+		System.out.println(board.toString());
+	}
+
+	private void suggestMove() {
+		Bot bot = new BeginnerBot();
+		Move move = bot.selectMove(game, moveService);
+		info("Suggested move is : " + move.toString(), true);
 	}
 }

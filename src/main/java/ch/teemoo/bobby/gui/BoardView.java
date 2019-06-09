@@ -18,6 +18,8 @@ public class BoardView extends JFrame {
 
     private JMenuItem itemSave;
     private JMenuItem itemLoad;
+    private JMenuItem itemPrintToConsole;
+    private JMenuItem itemSuggestMove;
 
     public BoardView(String title) {
         setTitle(title);
@@ -41,6 +43,14 @@ public class BoardView extends JFrame {
 
     public void setItemLoadActionListener(ActionListener actionListener) {
         itemLoad.addActionListener(actionListener);
+    }
+
+    public void setItemPrintToConsoleActionListener(ActionListener actionListener) {
+        itemPrintToConsole.addActionListener(actionListener);
+    }
+
+    public void setItemSuggestMoveActionListener(ActionListener actionListener) {
+        itemSuggestMove.addActionListener(actionListener);
     }
 
     public void display(Piece[][] positions) {
@@ -100,6 +110,16 @@ public class BoardView extends JFrame {
 
         this.itemLoad = new JMenuItem("Load");
         gameMenu.add(itemLoad);
+
+        gameMenu.addSeparator();
+
+        this.itemPrintToConsole = new JMenuItem("Print to console");
+        gameMenu.add(itemPrintToConsole);
+
+        gameMenu.addSeparator();
+
+        this.itemSuggestMove = new JMenuItem("Suggest move");
+        gameMenu.add(itemSuggestMove);
     }
 
     private void addFilesLabels() {
