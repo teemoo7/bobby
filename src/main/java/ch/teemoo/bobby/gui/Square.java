@@ -4,7 +4,9 @@ import java.awt.Font;
 
 import javax.swing.JLabel;
 
+import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Position;
+import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Piece;
 
 public class Square extends JLabel {
@@ -36,6 +38,14 @@ public class Square extends JLabel {
     }
 
     private static String getPieceText(Piece piece) {
-        return piece != null ? piece.getUnicode() : "";
+        if (piece != null) {
+            if (piece instanceof Pawn && piece.getColor() == Color.BLACK && System.getProperty("os.name").toLowerCase()
+                .contains("mac")) {
+                //fixme: for some unclear reason, the black pawn char is not correctly rendered on Mac
+                return "P";
+            }
+            return piece.getUnicode();
+        }
+        return "";
     }
 }
