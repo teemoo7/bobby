@@ -5,9 +5,7 @@ import static ch.teemoo.bobby.models.Board.SIZE;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,26 +27,8 @@ import ch.teemoo.bobby.models.pieces.Rook;
 public class MoveService {
 	private static final int MAX_MOVE = SIZE - 1;
 
-	private boolean canMove(Board board, Color color) {
-		List<Move> moves = computeAllMoves(board, color, true);
-		return !moves.isEmpty();
-	}
-
 	public List<Move> computeAllMoves(Board board, Color color, boolean withAdditionalInfo) {
-		Map<Position, Piece> positionsWithPiece = new HashMap<>();
-		for (int i = 0; i < SIZE; i++) {
-			for (int j = 0; j < SIZE; j++) {
-				Optional<Piece> piece = board.getPiece(i, j);
-				if (piece.isPresent() && piece.get().getColor() == color) {
-					positionsWithPiece.put(new Position(i, j), piece.get());
-				}
-			}
-		}
-		//todo: check if usage of parallel stream can speed up computation here
-		List<Move> moves = positionsWithPiece.entrySet().stream().flatMap(entry ->
-			computeMoves(board, entry.getValue(), entry.getKey().getX(), entry.getKey().getY(), withAdditionalInfo)
-				.stream()).collect(Collectors.toList());
-		return moves;
+		return computeBoardMoves(board, color, withAdditionalInfo, false);
 	}
 
 	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY, boolean withAdditionalInfo) {
@@ -89,15 +69,6 @@ public class MoveService {
 		}
 	}
 
-	private boolean isInCheck(Board board, Color color) {
-		final Position kingPosition = findKingPosition(board, color).orElseThrow(() -> new RuntimeException("King not found"));
-
-		return isInStraightCheck(board, kingPosition, color)
-			|| isInDiagonalCheck(board, kingPosition, color)
-			|| isInLCheck(board, kingPosition, color)
-			|| isInPawnCheck(board, kingPosition, color);
-	}
-
 	public GameState getGameState(Board board, Color colorToPlay, List<Move> history) {
 		if (!canMove(board, colorToPlay)) {
 			if (isInCheck(board, colorToPlay)) {
@@ -131,6 +102,52 @@ public class MoveService {
 		}
 
 		return GameState.IN_PROGRESS;
+	}
+
+	public Optional<Position> findKingPosition(Board board, Color color) {
+		for (int x = 0; x < SIZE; x++) {
+			for (int y = 0; y < SIZE; y++) {
+				Optional<Piece> pieceOpt = board.getPiece(x, y);
+				if (pieceOpt.isPresent()) {
+					Piece piece = pieceOpt.get();
+					if (piece instanceof King && piece.getColor() == color) {
+						return Optional.of(new Position(x, y));
+					}
+				}
+			}
+		}
+		return Optional.empty();
+	}
+
+	private boolean canMove(Board board, Color color) {
+		List<Move> moves = computeBoardMoves(board, color, true, true);
+		return !moves.isEmpty();
+	}
+
+	private List<Move> computeBoardMoves(Board board, Color color, boolean withAdditionalInfo, boolean returnFirstPieceMoves) {
+		List<Move> moves = new ArrayList<>();
+		for (int i = 0; i < SIZE; i++) {
+			for (int j = 0; j < SIZE; j++) {
+				Optional<Piece> piece = board.getPiece(i, j);
+				if (piece.isPresent() && piece.get().getColor() == color) {
+					List<Move> pieceMoves = computeMoves(board, piece.get(), i, j, withAdditionalInfo);
+					if (!pieceMoves.isEmpty() && returnFirstPieceMoves) {
+						return pieceMoves;
+					}
+					moves.addAll(pieceMoves);
+				}
+			}
+		}
+		return moves;
+	}
+
+	private boolean isInCheck(Board board, Color color) {
+		final Position kingPosition = findKingPosition(board, color).orElseThrow(() -> new RuntimeException("King not found"));
+
+		return isInStraightCheck(board, kingPosition, color)
+			|| isInDiagonalCheck(board, kingPosition, color)
+			|| isInLCheck(board, kingPosition, color)
+			|| isInPawnCheck(board, kingPosition, color);
 	}
 
 	private List<Move> computePawnMoves(Piece piece, int posX, int posY, Board board) {
@@ -337,10 +354,7 @@ public class MoveService {
 		if (!(kingOpt.isPresent() && kingOpt.get().equals(piece))) {
 			return false;
 		}
-		if (isInCheck(board, color)) {
-			return false;
-		}
-		return true;
+		return !isInCheck(board, color);
 	}
 
 	private Optional<Move> getAllowedMove(Piece piece, int posX, int posY, int deltaX, int deltaY, Board board) {
@@ -445,21 +459,5 @@ public class MoveService {
 				.orElseThrow(() -> new RuntimeException("Cannot take an empty piece!"));
 			return takenPiece instanceof Rook || takenPiece instanceof Queen;
 		});
-	}
-
-	public Optional<Position> findKingPosition(Board board, Color color) {
-		for (int x = 0; x < SIZE; x++) {
-			for (int y = 0; y < SIZE; y++) {
-				Optional<Piece> pieceOpt = board.getPiece(x, y);
-				if (pieceOpt.isPresent()) {
-					Piece piece = pieceOpt.get();
-					if (piece instanceof King && piece.getColor() == color) {
-						return Optional.of(new Position(x, y));
-					}
-				}
-			}
-		}
-		System.out.println(board);
-		return Optional.empty();
 	}
 }

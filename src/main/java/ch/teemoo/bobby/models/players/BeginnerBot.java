@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
@@ -33,8 +32,7 @@ public class BeginnerBot extends Bot {
         Board board = game.getBoard();
         Color color = game.getToPlay();
         List<Move> history = game.getHistory();
-        Move move = selectMove(board, color, history, moveService, 2);
-        return move;
+        return selectMove(board, color, history, moveService, 2);
     }
 
     public Move selectMove(Board board, Color color, List<Move> history, MoveService moveService, int depth) {
@@ -44,14 +42,7 @@ public class BeginnerBot extends Bot {
         //todo: try optimization here - sort move by the most powerful first
         Map<Move, Integer> moveScores = new ConcurrentHashMap<>(moves.size());
 
-        Stream<Move> moveStream;
-        if (depth == 2)  {
-            moveStream = moves.stream().parallel();
-        } else {
-            moveStream = moves.stream();
-        }
-        //for(Move move: moves) {
-        moveStream.forEach(move -> {
+        for(Move move: moves) {
             Board boardAfter = board.clone();
             boardAfter.doMove(move);
             List<Move> historyCopy = new ArrayList<>(history);
@@ -72,7 +63,7 @@ public class BeginnerBot extends Bot {
             }
 
             // Compute the probable next move for the opponent and see if our current move is a real benefit in the end
-            if (depth > 0 && gameState.isInProgress()) {
+            if (depth >= 1 && gameState.isInProgress()) {
                 Move opponentMove = selectMove(boardAfter, opponentColor, historyCopy, moveService, depth-1);
                 boardAfter.doMove(opponentMove);
                 historyCopy.add(opponentMove);
@@ -84,12 +75,11 @@ public class BeginnerBot extends Bot {
                     // Let us be aggressive, a draw is not a good move, we want to win
                     gameStateScore -= 20;
                 }
-                if (depth > 1 && gameStateAfterOpponent.isInProgress()) {
+                if (depth >= 2 && gameStateAfterOpponent.isInProgress()) {
                     //todo: determine which pieces move must be evaluated to reduce computation time
                     Move nextMove = selectMove(boardAfter, color, historyCopy, moveService, depth - 2);
                     boardAfter.doMove(nextMove);
                     historyCopy.add(nextMove);
-                    //todo: compute game state here?
                 }
             }
 
@@ -97,33 +87,6 @@ public class BeginnerBot extends Bot {
             int piecesValue = getPiecesValueSum(boardAfter, move.getPiece().getColor());
             int opponentPiecesValue = getPiecesValueSum(boardAfter, opponentColor);
             int piecesScore = piecesValue-opponentPiecesValue;
-
-            /*
-            // Checking is a good direction, add a bonus
-            if (move.isChecking()) {
-                score += 2;
-
-                //todo: following heuristic is not bad but has a major drawback: it is not based on current situation
-                //todo: but on history too
-
-                // To checkmate, the idea is to reduce the king's moves. One may see that if we had put the king under
-                // check at the previous move, and that we can put him under check now with another piece than before,
-                // we focus the fire on the king proximity (since the king moves by one square only)
-                if (historyCopy.size() > 3) {
-                    Move previousMove = historyCopy.get(historyCopy.size() - 3);
-                    if (previousMove.isChecking() && !previousMove.getPiece().equals(move.getPiece())) {
-                        score += 10;
-                    }
-                }
-            }
-            */
-
-            /*
-            if (move.getPiece() instanceof King) {
-                // In many cases, moving the king is a poor choice, except when rooking (not implemented yet), add malus
-                score -= 2;
-            }
-            */
 
             //fixme: we should compute moves for pawns in case of taking, not straight moves
             List<Move> allMoves = moveService.computeAllMoves(boardAfter, color, false);
@@ -136,7 +99,10 @@ public class BeginnerBot extends Bot {
 
             int score = 1 * gameStateScore + 4 * piecesScore + 1 * heatScore;
             moveScores.put(move, score);
-        });
+        }
+        if (depth == 2) {
+            System.out.println(moveScores);
+        }
         return getBestMove(moveScores);
     }
 
