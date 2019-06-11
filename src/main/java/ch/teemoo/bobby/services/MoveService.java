@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import ch.teemoo.bobby.models.Board;
@@ -29,9 +28,6 @@ import ch.teemoo.bobby.models.pieces.Rook;
 
 public class MoveService {
 	private static final int MAX_MOVE = SIZE - 1;
-	private Map<String, List<Move>> movesMap = new ConcurrentHashMap<>();
-	private long hits = 0;
-	private long miss = 0;
 
 	private boolean canMove(Board board, Color color) {
 		List<Move> moves = computeAllMoves(board, color, true);
@@ -52,21 +48,10 @@ public class MoveService {
 		List<Move> moves = positionsWithPiece.entrySet().stream().flatMap(entry ->
 			computeMoves(board, entry.getValue(), entry.getKey().getX(), entry.getKey().getY(), withAdditionalInfo)
 				.stream()).collect(Collectors.toList());
-		//System.out.println("Accuracy: " + 100 * hits / (hits + miss) + "% (" + hits + "/" + (hits + miss) + ")");
 		return moves;
 	}
 
 	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY, boolean withAdditionalInfo) {
-		//Note: usage of this cache has a 6% efficiency, not sure it is worthy
-		String key = generateKey(board, piece, posX, posY);
-		List<Move> computedMoves = movesMap.get(key);
-		if (computedMoves != null) {
-			hits++;
-			return computedMoves;
-		} else {
-			miss++;
-		}
-
 		List<Move> moves = new ArrayList<>();
 		final Color color = piece.getColor();
 
@@ -90,7 +75,7 @@ public class MoveService {
 		}
 
 		if (withAdditionalInfo) {
-			computedMoves = moves.stream().filter(move -> {
+			return moves.stream().filter(move -> {
 				Board boardAfterMove = board.clone();
 				boardAfterMove.doMove(move);
 
@@ -99,8 +84,6 @@ public class MoveService {
 
 				return isValidSituation(boardAfterMove, color);
 			}).collect(Collectors.toList());
-			movesMap.put(key, computedMoves);
-			return computedMoves;
 		} else {
 			return moves;
 		}
@@ -478,9 +461,5 @@ public class MoveService {
 		}
 		System.out.println(board);
 		return Optional.empty();
-	}
-
-	private String generateKey(Board board, Piece piece, int posX, int posY) {
-		return piece.toString() + String.valueOf(posX) + String.valueOf(posY) + board.toString();
 	}
 }

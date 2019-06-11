@@ -2,7 +2,14 @@ package ch.teemoo.bobby.models.players;
 
 import static ch.teemoo.bobby.helpers.ColorHelper.swap;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
@@ -26,16 +33,25 @@ public class BeginnerBot extends Bot {
         Board board = game.getBoard();
         Color color = game.getToPlay();
         List<Move> history = game.getHistory();
-        return selectMove(board, color, history, moveService, 1);
+        Move move = selectMove(board, color, history, moveService, 2);
+        return move;
     }
 
     public Move selectMove(Board board, Color color, List<Move> history, MoveService moveService, int depth) {
         // Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
 
         List<Move> moves = moveService.computeAllMoves(board, color, true);
-        Map<Move, Integer> moveScores = new HashMap<>(moves.size());
+        //todo: try optimization here - sort move by the most powerful first
+        Map<Move, Integer> moveScores = new ConcurrentHashMap<>(moves.size());
 
-        for(Move move: moves) {
+        Stream<Move> moveStream;
+        if (depth == 2)  {
+            moveStream = moves.stream().parallel();
+        } else {
+            moveStream = moves.stream();
+        }
+        //for(Move move: moves) {
+        moveStream.forEach(move -> {
             Board boardAfter = board.clone();
             boardAfter.doMove(move);
             List<Move> historyCopy = new ArrayList<>(history);
@@ -47,6 +63,9 @@ public class BeginnerBot extends Bot {
             if (gameState.isLost()) {
                 // Opponent is checkmate, that the best move to do!
                 gameStateScore = BEST;
+                //todo: try optimization here
+                moveScores.put(move, gameStateScore);
+                //break;
             } else if (gameState.isDraw()) {
                 // Let us be aggressive, a draw is not a good move, we want to win
                 gameStateScore -= 20;
@@ -64,6 +83,13 @@ public class BeginnerBot extends Bot {
                 } else if (gameStateAfterOpponent.isDraw()) {
                     // Let us be aggressive, a draw is not a good move, we want to win
                     gameStateScore -= 20;
+                }
+                if (depth > 1 && gameStateAfterOpponent.isInProgress()) {
+                    //todo: determine which pieces move must be evaluated to reduce computation time
+                    Move nextMove = selectMove(boardAfter, color, historyCopy, moveService, depth - 2);
+                    boardAfter.doMove(nextMove);
+                    historyCopy.add(nextMove);
+                    //todo: compute game state here?
                 }
             }
 
@@ -99,8 +125,6 @@ public class BeginnerBot extends Bot {
             }
             */
 
-            //todo: compute a the fire heat map to see which squares are controlled (under fire) and which squares are
-            //todo: important to control (centered).
             //fixme: we should compute moves for pawns in case of taking, not straight moves
             List<Move> allMoves = moveService.computeAllMoves(boardAfter, color, false);
             int[][] heatmapCenter = getHeatmapForCenter();
@@ -112,7 +136,7 @@ public class BeginnerBot extends Bot {
 
             int score = 1 * gameStateScore + 4 * piecesScore + 1 * heatScore;
             moveScores.put(move, score);
-        }
+        });
         return getBestMove(moveScores);
     }
 
