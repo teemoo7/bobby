@@ -35,7 +35,7 @@ public class BeginnerBot extends Bot {
         return selectMove(board, color, history, moveService, 2);
     }
 
-    public Move selectMove(Board board, Color color, List<Move> history, MoveService moveService, int depth) {
+    private Move selectMove(Board board, Color color, List<Move> history, MoveService moveService, int depth) {
         // Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
 
         List<Move> moves = moveService.computeAllMoves(board, color, true);
@@ -54,9 +54,8 @@ public class BeginnerBot extends Bot {
             if (gameState.isLost()) {
                 // Opponent is checkmate, that the best move to do!
                 gameStateScore = BEST;
-                //todo: try optimization here
                 moveScores.put(move, gameStateScore);
-                //break;
+                break;
             } else if (gameState.isDraw()) {
                 // Let us be aggressive, a draw is not a good move, we want to win
                 gameStateScore -= 20;
@@ -71,6 +70,8 @@ public class BeginnerBot extends Bot {
                 if (gameStateAfterOpponent.isLost()) {
                     // I am checkmate, that the worst move to do!
                     gameStateScore = WORST;
+                    moveScores.put(move, gameStateScore);
+                    break;
                 } else if (gameStateAfterOpponent.isDraw()) {
                     // Let us be aggressive, a draw is not a good move, we want to win
                     gameStateScore -= 20;
@@ -101,6 +102,7 @@ public class BeginnerBot extends Bot {
             moveScores.put(move, score);
         }
         if (depth == 2) {
+            //todo: for debugging
             System.out.println(moveScores);
         }
         return getBestMove(moveScores);

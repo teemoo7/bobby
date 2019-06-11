@@ -76,7 +76,7 @@ public class Move {
 		StringBuilder builder = new StringBuilder();
 		builder.append(convertXToChar(fromX))
 			.append(fromY + 1)
-			.append("-")
+			.append(isTaking() ? "x" : "-")
 			.append(convertXToChar(toX))
 			.append(toY + 1);
 		if (isChecking) {
