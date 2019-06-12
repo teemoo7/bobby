@@ -316,7 +316,7 @@ public class GameController {
 			this.board = loadedGame.getBoard();
 			//todo: reset game (pieces position)
 			for (String line: lines) {
-				Move move = Move.fromBasicNotation(line);
+				Move move = Move.fromBasicNotation(line, game.getToPlay());
 				Piece piece = board.getPiece(move.getFromX(), move.getFromY())
 						.orElseThrow(() -> new RuntimeException("Unexpected move, no piece at this location"));
 				doMove(new Move(piece, move.getFromX(), move.getFromY(), move.getToX(), move.getToY()));

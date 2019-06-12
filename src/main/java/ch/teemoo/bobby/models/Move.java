@@ -85,8 +85,35 @@ public class Move {
 		return builder.toString();
 	}
 
-	public static Move fromBasicNotation(String notation) {
-		if (notation == null || notation.length() < 5) {
+	public static Move fromBasicNotation(String notation, Color color) {
+		if (notation == null) {
+			throw new IllegalArgumentException("Unexpected format for basic notation move: " + notation);
+		}
+
+		Move move;
+		if (notation.equalsIgnoreCase("0-0")) {
+			if (color == Color.WHITE) {
+				move = new CastlingMove(null, 4, 0, 6, 0, null, 7, 0, 5, 0);
+			} else {
+				move = new CastlingMove(null, 4, 7, 6, 7, null, 7, 7, 5, 7);
+			}
+			if (notation.indexOf('+') > -1) {
+				move.setChecking(true);
+			}
+			return move;
+		} else if (notation.equalsIgnoreCase("0-0-0")) {
+			if (color == Color.WHITE) {
+				move = new CastlingMove(null, 4, 0, 2, 0, null, 0, 0, 3, 0);
+			} else {
+				move = new CastlingMove(null, 4, 7, 2, 7, null, 0, 7, 3, 7);
+			}
+			if (notation.indexOf('+') > -1) {
+				move.setChecking(true);
+			}
+			return move;
+		}
+
+		if (notation.length() < 5) {
 			//todo: improve with regex
 			throw new IllegalArgumentException("Unexpected format for basic notation move: " + notation);
 		}
@@ -95,14 +122,11 @@ public class Move {
 		char toXChar = notation.charAt(3);
 		char toYChar = notation.charAt(4);
 
-		Move move = new Move(null, convertCharToX(fromXChar), Character.getNumericValue(fromYChar) - 1,
+		move = new Move(null, convertCharToX(fromXChar), Character.getNumericValue(fromYChar) - 1,
 				convertCharToX(toXChar), Character.getNumericValue(toYChar) - 1);
 
-		if (notation.length() > 5) {
-			char checkChar = notation.charAt(5);
-			if (checkChar == '+') {
-				move.setChecking(true);
-			}
+		if (notation.indexOf('+') > -1) {
+			move.setChecking(true);
 		}
 
 		return move;

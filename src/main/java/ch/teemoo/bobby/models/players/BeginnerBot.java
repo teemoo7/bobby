@@ -23,6 +23,7 @@ public class BeginnerBot extends Bot {
     private final static int WORST = -1000;
     private final static int BEST = 1000;
     private final static int NEUTRAL = 0;
+    private final static int[][] heatmapCenter = generateCenteredHeatmap();
 
     public BeginnerBot() {
         super("Beginner Bot");
@@ -71,7 +72,6 @@ public class BeginnerBot extends Bot {
                     // I am checkmate, that the worst move to do!
                     gameStateScore = WORST;
                     moveScores.put(move, gameStateScore);
-                    break;
                 } else if (gameStateAfterOpponent.isDraw()) {
                     // Let us be aggressive, a draw is not a good move, we want to win
                     gameStateScore -= 20;
@@ -91,7 +91,6 @@ public class BeginnerBot extends Bot {
 
             //fixme: we should compute moves for pawns in case of taking, not straight moves
             List<Move> allMoves = moveService.computeAllMoves(boardAfter, color, false);
-            int[][] heatmapCenter = getHeatmapForCenter();
             Position opponentKing = moveService.findKingPosition(boardAfter, opponentColor)
                 .orElseThrow(() -> new RuntimeException("King expected here"));
             int[][] heatmapOpponentKing = getHeatmapAroundLocation(opponentKing.getX(), opponentKing.getY());
@@ -152,22 +151,6 @@ public class BeginnerBot extends Bot {
             .max(Comparator.comparing(Map.Entry::getValue));
     }
 
-    private int[][] getHeatmapForCenter() {
-        int[][] heatmap = new int[Board.SIZE][Board.SIZE];
-        for (int i = 0; i < Board.SIZE; i++) {
-            for (int j = 0; j < Board.SIZE; j++) {
-                int heat = 0;
-                if ((i == 3 || i == 4) && (j == 3 | j == 4)) {
-                    heat = 2;
-                } else if ((i == 2 || i == 5) && (j == 2 | j == 5)) {
-                    heat = 1;
-                }
-                heatmap[i][j] = heat;
-            }
-        }
-        return heatmap;
-    }
-
     private int[][] getHeatmapAroundLocation(int x, int y) {
         int[][] heatmap = new int[Board.SIZE][Board.SIZE];
         for (int i = 0; i < Board.SIZE; i++) {
@@ -186,6 +169,22 @@ public class BeginnerBot extends Bot {
                     break;
                 default:
                     heat = 0;
+                }
+                heatmap[i][j] = heat;
+            }
+        }
+        return heatmap;
+    }
+
+    private static int[][] generateCenteredHeatmap() {
+        int[][] heatmap = new int[Board.SIZE][Board.SIZE];
+        for (int i = 0; i < Board.SIZE; i++) {
+            for (int j = 0; j < Board.SIZE; j++) {
+                int heat = 0;
+                if ((i == 3 || i == 4) && (j == 3 | j == 4)) {
+                    heat = 2;
+                } else if ((i == 2 || i == 5) && (j == 2 | j == 5)) {
+                    heat = 1;
                 }
                 heatmap[i][j] = heat;
             }
