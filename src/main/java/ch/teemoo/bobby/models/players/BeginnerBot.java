@@ -16,6 +16,7 @@ import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameState;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.Position;
+import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.services.MoveService;
 
@@ -43,12 +44,16 @@ public class BeginnerBot extends Bot {
         //todo: try optimization here - sort move by the most powerful first
         Map<Move, Integer> moveScores = new ConcurrentHashMap<>(moves.size());
 
+        final Color opponentColor = swap(color);
+        final Position opponentKingOriginalPosition = moveService.findKingPosition(board, opponentColor)
+            .orElseThrow(() -> new RuntimeException("King expected here"));
+
         for(Move move: moves) {
+            Position opponentKingPosition = opponentKingOriginalPosition;
             Board boardAfter = board.clone();
             boardAfter.doMove(move);
             List<Move> historyCopy = new ArrayList<>(history);
             historyCopy.add(move);
-            final Color opponentColor = swap(move.getPiece().getColor());
             final GameState gameState = moveService.getGameState(boardAfter, opponentColor, historyCopy);
 
             int gameStateScore = NEUTRAL;
@@ -67,6 +72,11 @@ public class BeginnerBot extends Bot {
                 Move opponentMove = selectMove(boardAfter, opponentColor, historyCopy, moveService, depth-1);
                 boardAfter.doMove(opponentMove);
                 historyCopy.add(opponentMove);
+                if (move.getPiece() instanceof King) {
+                    // We must consider the current king position
+                    opponentKingPosition = new Position(move.getToX(), move.getToY());
+
+                }
                 final GameState gameStateAfterOpponent = moveService.getGameState(boardAfter, color, historyCopy);
                 if (gameStateAfterOpponent.isLost()) {
                     // I am checkmate, that the worst move to do!
@@ -91,9 +101,7 @@ public class BeginnerBot extends Bot {
 
             //fixme: we should compute moves for pawns in case of taking, not straight moves
             List<Move> allMoves = moveService.computeAllMoves(boardAfter, color, false);
-            Position opponentKing = moveService.findKingPosition(boardAfter, opponentColor)
-                .orElseThrow(() -> new RuntimeException("King expected here"));
-            int[][] heatmapOpponentKing = getHeatmapAroundLocation(opponentKing.getX(), opponentKing.getY());
+            int[][] heatmapOpponentKing = getHeatmapAroundLocation(opponentKingPosition.getX(), opponentKingPosition.getY());
             int heatScore = allMoves.stream().mapToInt(
                 m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapOpponentKing[m.getToX()][m.getToY()]).sum();
 
