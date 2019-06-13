@@ -3,12 +3,14 @@ package ch.teemoo.bobby.models.players;
 import static ch.teemoo.bobby.helpers.ColorHelper.swap;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
@@ -41,7 +43,6 @@ public class BeginnerBot extends Bot {
         // Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
 
         List<Move> moves = moveService.computeAllMoves(board, color, true);
-        //todo: try optimization here - sort move by the most powerful first
         Map<Move, Integer> moveScores = new ConcurrentHashMap<>(moves.size());
 
         final Color opponentColor = swap(color);
@@ -56,15 +57,9 @@ public class BeginnerBot extends Bot {
             historyCopy.add(move);
             final GameState gameState = moveService.getGameState(boardAfter, opponentColor, historyCopy);
 
-            int gameStateScore = NEUTRAL;
-            if (gameState.isLost()) {
-                // Opponent is checkmate, that the best move to do!
-                gameStateScore = BEST;
-                moveScores.put(move, gameStateScore);
+            int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition, moveService);
+            if (score >= BEST) {
                 break;
-            } else if (gameState.isDraw()) {
-                // Let us be aggressive, a draw is not a good move, we want to win
-                gameStateScore -= 20;
             }
 
             // Compute the probable next move for the opponent and see if our current move is a real benefit in the end
@@ -72,47 +67,66 @@ public class BeginnerBot extends Bot {
                 Move opponentMove = selectMove(boardAfter, opponentColor, historyCopy, moveService, depth-1);
                 boardAfter.doMove(opponentMove);
                 historyCopy.add(opponentMove);
-                if (move.getPiece() instanceof King) {
+                if (opponentMove.getPiece() instanceof King) {
                     // We must consider the current king position
-                    opponentKingPosition = new Position(move.getToX(), move.getToY());
-
+                    opponentKingPosition = new Position(opponentMove.getToX(), opponentMove.getToY());
                 }
                 final GameState gameStateAfterOpponent = moveService.getGameState(boardAfter, color, historyCopy);
-                if (gameStateAfterOpponent.isLost()) {
-                    // I am checkmate, that the worst move to do!
-                    gameStateScore = WORST;
-                    moveScores.put(move, gameStateScore);
-                } else if (gameStateAfterOpponent.isDraw()) {
-                    // Let us be aggressive, a draw is not a good move, we want to win
-                    gameStateScore -= 20;
-                }
+                score = evaluateBoard(boardAfter, color, opponentColor, gameStateAfterOpponent, opponentKingPosition, moveService);
+
                 if (depth >= 2 && gameStateAfterOpponent.isInProgress()) {
                     //todo: determine which pieces move must be evaluated to reduce computation time
                     Move nextMove = selectMove(boardAfter, color, historyCopy, moveService, depth - 2);
                     boardAfter.doMove(nextMove);
                     historyCopy.add(nextMove);
+                    final GameState gameStateAfterOpponentAfterMove = moveService.getGameState(boardAfter, opponentColor, historyCopy);
+                    int scoreAfterOpponentAfterMove = evaluateBoard(boardAfter, color, color, gameStateAfterOpponentAfterMove, opponentKingPosition, moveService);
+                    score += 0.5 * scoreAfterOpponentAfterMove;
                 }
             }
-
-            // Basically, taking a piece improves your situation
-            int piecesValue = getPiecesValueSum(boardAfter, move.getPiece().getColor());
-            int opponentPiecesValue = getPiecesValueSum(boardAfter, opponentColor);
-            int piecesScore = piecesValue-opponentPiecesValue;
-
-            //fixme: we should compute moves for pawns in case of taking, not straight moves
-            List<Move> allMoves = moveService.computeAllMoves(boardAfter, color, false);
-            int[][] heatmapOpponentKing = getHeatmapAroundLocation(opponentKingPosition.getX(), opponentKingPosition.getY());
-            int heatScore = allMoves.stream().mapToInt(
-                m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapOpponentKing[m.getToX()][m.getToY()]).sum();
-
-            int score = 1 * gameStateScore + 4 * piecesScore + 1 * heatScore;
             moveScores.put(move, score);
         }
         if (depth == 2) {
             //todo: for debugging
-            System.out.println(moveScores);
+            System.out.println(moveScores.entrySet().stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(e -> e.getKey().toString() + "=" + e.getValue().toString()).collect(
+                    Collectors.joining(", ")));
         }
         return getBestMove(moveScores);
+    }
+
+    private int evaluateBoard(Board board, Color colorToEvaluate, Color lastPlayer, GameState gameState, Position opponentKingPosition, MoveService moveService) {
+        int gameStateScore = NEUTRAL;
+        if (!gameState.isInProgress()) {
+            // Game is over
+            if (gameState.isLost()) {
+                if (lastPlayer == colorToEvaluate) {
+                    // Opponent is checkmate, that the best move to do!
+                    gameStateScore = BEST;
+                } else {
+                    // I am checkmate, that the worst move to do!
+                    gameStateScore = WORST;
+                }
+            } else if (gameState.isDraw()) {
+                // Let us be aggressive, a draw is not a good move, we want to win
+                gameStateScore -= 20;
+            }
+            return gameStateScore;
+        }
+
+        // Basically, taking a piece improves your situation
+        int piecesValue = getPiecesValueSum(board, colorToEvaluate);
+        int opponentPiecesValue = getPiecesValueSum(board, swap(colorToEvaluate));
+        int piecesScore = piecesValue-opponentPiecesValue;
+
+        //fixme: we should compute moves for pawns in case of taking, not straight moves
+        List<Move> allMoves = moveService.computeAllMoves(board, colorToEvaluate, false);
+        int[][] heatmapOpponentKing = getHeatmapAroundLocation(opponentKingPosition.getX(), opponentKingPosition.getY());
+        int heatScore = allMoves.stream().mapToInt(
+            m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapOpponentKing[m.getToX()][m.getToY()]).sum();
+
+        int score = gameStateScore + 10 * piecesScore + heatScore;
+        return score;
     }
 
     private int getPiecesValueSum(Board board, Color color) {
