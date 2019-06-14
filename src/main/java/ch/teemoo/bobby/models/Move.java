@@ -2,6 +2,7 @@ package ch.teemoo.bobby.models;
 
 import java.util.Objects;
 
+import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Piece;
 
 public class Move {
@@ -86,8 +87,8 @@ public class Move {
 	}
 
 	public static Move fromBasicNotation(String notation, Color color) {
-		if (notation == null) {
-			throw new IllegalArgumentException("Unexpected format for basic notation move: " + notation);
+		if (notation == null || color == null) {
+			throw new IllegalArgumentException("Unexpected format for basic notation move: " + notation + " (" + color + ")");
 		}
 
 		Move move;
@@ -119,6 +120,7 @@ public class Move {
 		}
 		char fromXChar = notation.charAt(0);
 		char fromYChar = notation.charAt(1);
+		char takingChar = notation.charAt(2);
 		char toXChar = notation.charAt(3);
 		char toYChar = notation.charAt(4);
 
@@ -127,6 +129,11 @@ public class Move {
 
 		if (notation.indexOf('+') > -1) {
 			move.setChecking(true);
+		}
+
+		if (takingChar == 'x') {
+			//fixme: do not know here what piece is on the board at this place but we must mark the move as taking
+			move.setTookPiece(new Pawn(color == Color.WHITE ? Color.BLACK : Color.WHITE));
 		}
 
 		return move;

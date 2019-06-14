@@ -80,6 +80,23 @@ public class BoardTest {
     }
 
     @Test
+    public void testUndoMove() {
+        Piece knight = initialBoard.getPiece(1, 0).orElseThrow(() -> new RuntimeException("Expected piece here"));
+        Move move = new Move(knight, 1, 0, 2, 2);
+        initialBoard.doMove(move);
+        assertThat(initialBoard.getPiece(1, 0)).isEmpty();
+        assertThat(initialBoard.getPiece(2, 2)).isPresent().get().isEqualTo(knight);
+        initialBoard.undoMove(move);
+        assertThat(initialBoard.getPiece(1, 0)).isPresent().get().isEqualTo(knight);
+        assertThat(initialBoard.getPiece(2, 2)).isEmpty();
+    }
+
+    @Test
+    public void testDoMoveCastling() {
+        //todo:
+    }
+
+    @Test
     public void testDoMoveWithPromotion() {
         final int fromX = 3;
         final int fromY = 6;

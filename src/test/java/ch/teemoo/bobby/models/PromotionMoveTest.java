@@ -1,5 +1,6 @@
 package ch.teemoo.bobby.models;
 
+import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
@@ -15,7 +16,7 @@ public class PromotionMoveTest {
         Piece queen = new Queen(Color.WHITE);
         Move move = new Move(pawn, 4, 6, 4, 7);
         move.setChecking(true);
-        move.setTaking(true);
+        move.setTookPiece(new Bishop(Color.BLACK));
         PromotionMove promotionMove = new PromotionMove(move, queen);
         assertThat(promotionMove.getFromX()).isEqualTo(move.getFromX());
         assertThat(promotionMove.getFromY()).isEqualTo(move.getFromY());
