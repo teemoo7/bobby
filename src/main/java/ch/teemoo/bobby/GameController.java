@@ -34,8 +34,12 @@ import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.models.players.Bot;
 import ch.teemoo.bobby.models.players.Player;
 import ch.teemoo.bobby.services.MoveService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GameController {
+	private final static Logger logger = LoggerFactory.getLogger(GameController.class);
+
 	private static final Border RED_BORDER = BorderFactory.createLineBorder(java.awt.Color.red, 3, true);
 	private static final Border BLUE_BORDER = BorderFactory.createLineBorder(java.awt.Color.blue, 3, true);
 	private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
@@ -77,7 +81,7 @@ public class GameController {
 			Move move = bot.selectMove(game, moveService);
 			Instant end = Instant.now();
 			if (showTiming) {
-				System.out.println("Time to select move: " + Duration.between(start, end));
+				logger.debug("Time to select move: {}", Duration.between(start, end));
 			}
 			doMove(move);
 		}
@@ -251,15 +255,14 @@ public class GameController {
 	}
 
 	private void info(String text, boolean withPopup) {
-		System.out.println("[INFO] " + text);
+		logger.info("[INFO] {}", text);
 		if (withPopup) {
 			view.popupInfo(text);
 		}
 	}
 
 	private void error(Exception exception, boolean withPopup) {
-		System.err.println("An error happened: " + exception.getMessage());
-		exception.printStackTrace();
+		logger.error("An error happened: {}", exception.getMessage(), exception);
 		if (withPopup) {
 			view.popupError(exception.getMessage());
 		}
@@ -327,7 +330,7 @@ public class GameController {
 	}
 
 	private void printGameToConsole() {
-		System.out.println(board.toString());
+		logger.debug("Current board: \n{}", board.toString());
 	}
 
 	private void suggestMove() {

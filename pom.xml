@@ -23,6 +23,9 @@
     <maven.plugin.project-info-reports.version>3.0.0</maven.plugin.project-info-reports.version>
     <maven.plugin.site.version>3.7.1</maven.plugin.site.version>
 
+    <!-- Dependencies -->
+    <logback.version>1.2.3</logback.version>
+
     <!-- Testing -->
     <assertj.version>3.12.2</assertj.version>
     <junit.version>4.12</junit.version>
@@ -30,6 +33,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
 
     <!-- Testing -->
     <dependency>

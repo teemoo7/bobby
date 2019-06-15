@@ -15,8 +15,12 @@ import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.pieces.Rook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MoveService {
+	private final static Logger logger = LoggerFactory.getLogger(MoveService.class);
+
 	private final static int MAX_MOVE = SIZE - 1;
 	private final static int WORST = -1000;
 	private final static int BEST = 1000;
@@ -167,7 +171,7 @@ public class MoveService {
 		}
 		if (depth == 2) {
 			//todo: for debugging
-			System.out.println(moveScores.entrySet().stream()
+			logger.debug(moveScores.entrySet().stream()
 					.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(e -> e.getKey().toString() + "=" + e.getValue().toString()).collect(
 							Collectors.joining(", ")));
 		}
@@ -238,7 +242,7 @@ public class MoveService {
 				highestScore = entry.getValue();
 				bestMoves.clear();
 				bestMoves.add(entry.getKey());
-			} else if (entry.getValue() == highestScore) {
+			} else if (highestScore.intValue() == entry.getValue()) {
 				bestMoves.add(entry.getKey());
 			}
 		}
@@ -617,9 +621,9 @@ public class MoveService {
 		for (int i = 0; i < Board.SIZE; i++) {
 			for (int j = 0; j < Board.SIZE; j++) {
 				int heat = 0;
-				if ((i == 3 || i == 4) && (j == 3 | j == 4)) {
+				if ((i == 3 || i == 4) && (j == 3 || j == 4)) {
 					heat = 2;
-				} else if ((i == 2 || i == 5) && (j == 2 | j == 5)) {
+				} else if ((i == 2 || i == 5) && (j == 2 || j == 5)) {
 					heat = 1;
 				}
 				heatmap[i][j] = heat;
