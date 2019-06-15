@@ -12,12 +12,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import ch.teemoo.bobby.models.Board;
-import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.GameState;
-import ch.teemoo.bobby.models.Move;
-import ch.teemoo.bobby.models.Position;
+import ch.teemoo.bobby.models.*;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.services.MoveService;
@@ -59,7 +54,7 @@ public class BeginnerBot extends Bot {
 
             int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition, moveService);
             if (score >= BEST) {
-                break;
+                return move;
             }
 
             // Compute the probable next move for the opponent and see if our current move is a real benefit in the end
