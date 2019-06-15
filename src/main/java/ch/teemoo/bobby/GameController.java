@@ -30,7 +30,7 @@ import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameState;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.pieces.Piece;
-import ch.teemoo.bobby.models.players.BeginnerBot;
+import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.models.players.Bot;
 import ch.teemoo.bobby.models.players.Player;
 import ch.teemoo.bobby.services.MoveService;
@@ -44,6 +44,7 @@ public class GameController {
 	private Board board;
 	private Game game;
 	private final MoveService moveService = new MoveService();
+	private final Bot botToSuggestMove = new TraditionalBot(2);
 	private final boolean showTiming = true;
 
 	private Square selectedSquare = null;
@@ -330,8 +331,7 @@ public class GameController {
 	}
 
 	private void suggestMove() {
-		Bot bot = new BeginnerBot();
-		Move move = bot.selectMove(game, moveService);
+		Move move = botToSuggestMove.selectMove(game, moveService);
 		info("Suggested move is : " + move.toString(), true);
 	}
 

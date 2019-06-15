@@ -3,19 +3,11 @@ package ch.teemoo.bobby.services;
 import static ch.teemoo.bobby.helpers.ColorHelper.swap;
 import static ch.teemoo.bobby.models.Board.SIZE;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import ch.teemoo.bobby.models.Board;
-import ch.teemoo.bobby.models.CastlingMove;
-import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.GameState;
-import ch.teemoo.bobby.models.Move;
-import ch.teemoo.bobby.models.Position;
-import ch.teemoo.bobby.models.PromotionMove;
+import ch.teemoo.bobby.models.*;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Knight;
@@ -25,7 +17,11 @@ import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.pieces.Rook;
 
 public class MoveService {
-	private static final int MAX_MOVE = SIZE - 1;
+	private final static int MAX_MOVE = SIZE - 1;
+	private final static int WORST = -1000;
+	private final static int BEST = 1000;
+	private final static int NEUTRAL = 0;
+	private final static int[][] heatmapCenter = generateCenteredHeatmap();
 
 	public List<Move> computeAllMoves(Board board, Color color, boolean withAdditionalInfo) {
 		return computeBoardMoves(board, color, withAdditionalInfo, false);
@@ -117,6 +113,136 @@ public class MoveService {
 			}
 		}
 		return Optional.empty();
+	}
+
+	public Move selectMove(Game game, int depth) {
+		return selectMove(game.getBoard(), game.getToPlay(), game.getHistory(), depth);
+	}
+
+	private Move selectMove(Board board, Color color, List<Move> history, int depth) {
+		// Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
+
+		List<Move> moves = computeAllMoves(board, color, true);
+		Map<Move, Integer> moveScores = new ConcurrentHashMap<>(moves.size());
+
+		final Color opponentColor = swap(color);
+		final Position opponentKingOriginalPosition = findKingPosition(board, opponentColor)
+				.orElseThrow(() -> new RuntimeException("King expected here"));
+
+		for(Move move: moves) {
+			Position opponentKingPosition = opponentKingOriginalPosition;
+			Board boardAfter = board.clone();
+			boardAfter.doMove(move);
+			List<Move> historyCopy = new ArrayList<>(history);
+			historyCopy.add(move);
+			final GameState gameState = getGameState(boardAfter, opponentColor, historyCopy);
+
+			int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition);
+			if (score >= BEST) {
+				return move;
+			}
+
+			// Compute the probable next move for the opponent and see if our current move is a real benefit in the end
+			if (depth >= 1 && gameState.isInProgress()) {
+				Move opponentMove = selectMove(boardAfter, opponentColor, historyCopy, depth-1);
+				boardAfter.doMove(opponentMove);
+				historyCopy.add(opponentMove);
+				if (opponentMove.getPiece() instanceof King) {
+					// We must consider the current king position
+					opponentKingPosition = new Position(opponentMove.getToX(), opponentMove.getToY());
+				}
+				final GameState gameStateAfterOpponent = getGameState(boardAfter, color, historyCopy);
+				score = evaluateBoard(boardAfter, color, opponentColor, gameStateAfterOpponent, opponentKingPosition);
+
+				if (depth >= 2 && gameStateAfterOpponent.isInProgress()) {
+					//todo: determine which pieces move must be evaluated to reduce computation time
+					Move nextMove = selectMove(boardAfter, color, historyCopy, depth - 2);
+					boardAfter.doMove(nextMove);
+					historyCopy.add(nextMove);
+					final GameState gameStateAfterOpponentAfterMove = getGameState(boardAfter, opponentColor, historyCopy);
+					score = evaluateBoard(boardAfter, color, color, gameStateAfterOpponentAfterMove, opponentKingPosition);
+				}
+			}
+			moveScores.put(move, score);
+		}
+		if (depth == 2) {
+			//todo: for debugging
+			System.out.println(moveScores.entrySet().stream()
+					.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(e -> e.getKey().toString() + "=" + e.getValue().toString()).collect(
+							Collectors.joining(", ")));
+		}
+		return getBestMove(moveScores);
+	}
+
+	private int evaluateBoard(Board board, Color colorToEvaluate, Color lastPlayer, GameState gameState, Position opponentKingPosition) {
+		int gameStateScore = NEUTRAL;
+		if (!gameState.isInProgress()) {
+			// Game is over
+			if (gameState.isLost()) {
+				if (lastPlayer == colorToEvaluate) {
+					// Opponent is checkmate, that the best move to do!
+					gameStateScore = BEST;
+				} else {
+					// I am checkmate, that the worst move to do!
+					gameStateScore = WORST;
+				}
+			} else if (gameState.isDraw()) {
+				// Let us be aggressive, a draw is not a good move, we want to win
+				gameStateScore -= 20;
+			}
+			return gameStateScore;
+		}
+
+		// Basically, taking a piece improves your situation
+		int piecesValue = getPiecesValueSum(board, colorToEvaluate);
+		int opponentPiecesValue = getPiecesValueSum(board, swap(colorToEvaluate));
+		int piecesScore = piecesValue-opponentPiecesValue;
+
+		//fixme: we should compute moves for pawns in case of taking, not straight moves
+		List<Move> allMoves = computeAllMoves(board, colorToEvaluate, false);
+		int[][] heatmapOpponentKing = getHeatmapAroundLocation(opponentKingPosition.getX(), opponentKingPosition.getY());
+		int heatScore = allMoves.stream().mapToInt(
+				m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapOpponentKing[m.getToX()][m.getToY()]).sum();
+
+		return gameStateScore + 10 * piecesScore + heatScore;
+	}
+
+	private int getPiecesValueSum(Board board, Color color) {
+		int sum = 0;
+		for (int i = 0; i < Board.SIZE; i++) {
+			for (int j = 0; j < Board.SIZE; j++) {
+				Optional<Piece> pieceOpt = board.getPiece(i, j);
+				if (pieceOpt.isPresent() && pieceOpt.get().getColor() == color) {
+					sum += pieceOpt.get().getValue();
+				}
+			}
+		}
+		return sum;
+	}
+
+	private Move getBestMove(Map<Move, Integer> moveScores) {
+		return getMaxScoreWithRandomChoice(moveScores)
+				.orElseThrow(() -> new RuntimeException("At least one move must be done"));
+	}
+
+	private Optional<Move> getMaxScoreWithRandomChoice(Map<Move, Integer> moveScores) {
+		// Instead of just search for the max score, we search for all moves that have the max score, and if there are
+		// more than one move, then we randomly choose one. It shall give a bit of variation in games.
+		if (moveScores.isEmpty()) {
+			return Optional.empty();
+		}
+		List<Move> bestMoves = new ArrayList<>();
+		Integer highestScore = null;
+		for (Map.Entry<Move, Integer> entry: moveScores.entrySet()) {
+			if (highestScore == null || entry.getValue() > highestScore) {
+				highestScore = entry.getValue();
+				bestMoves.clear();
+				bestMoves.add(entry.getKey());
+			} else if (entry.getValue() == highestScore) {
+				bestMoves.add(entry.getKey());
+			}
+		}
+		return Optional.of(bestMoves.get(new Random().nextInt(bestMoves.size())));
 	}
 
 	private boolean canMove(Board board, Color color) {
@@ -459,5 +585,46 @@ public class MoveService {
 				.orElseThrow(() -> new RuntimeException("Cannot take an empty piece!"));
 			return takenPiece instanceof Rook || takenPiece instanceof Queen;
 		});
+	}
+
+	private int[][] getHeatmapAroundLocation(int x, int y) {
+		int[][] heatmap = new int[Board.SIZE][Board.SIZE];
+		for (int i = 0; i < Board.SIZE; i++) {
+			for (int j = 0; j < Board.SIZE; j++) {
+				int distanceToHeat = Math.max(Math.abs(x-i), Math.abs(y-j));
+				int heat;
+				switch (distanceToHeat) {
+					case 0:
+						heat = 3;
+						break;
+					case 1:
+						heat = 2;
+						break;
+					case 2:
+						heat = 1;
+						break;
+					default:
+						heat = 0;
+				}
+				heatmap[i][j] = heat;
+			}
+		}
+		return heatmap;
+	}
+
+	private static int[][] generateCenteredHeatmap() {
+		int[][] heatmap = new int[Board.SIZE][Board.SIZE];
+		for (int i = 0; i < Board.SIZE; i++) {
+			for (int j = 0; j < Board.SIZE; j++) {
+				int heat = 0;
+				if ((i == 3 || i == 4) && (j == 3 | j == 4)) {
+					heat = 2;
+				} else if ((i == 2 || i == 5) && (j == 2 | j == 5)) {
+					heat = 1;
+				}
+				heatmap[i][j] = heat;
+			}
+		}
+		return heatmap;
 	}
 }
