@@ -56,7 +56,7 @@ public class MoveService {
 
 		if (withAdditionalInfo) {
 			return moves.stream().filter(move -> {
-				Board boardAfterMove = board.clone();
+				Board boardAfterMove = board.copy();
 				boardAfterMove.doMove(move);
 
 				// Checking opponent's king
@@ -135,7 +135,7 @@ public class MoveService {
 
 		for(Move move: moves) {
 			Position opponentKingPosition = opponentKingOriginalPosition;
-			Board boardAfter = board.clone();
+			Board boardAfter = board.copy();
 			boardAfter.doMove(move);
 			List<Move> historyCopy = new ArrayList<>(history);
 			historyCopy.add(move);
@@ -453,7 +453,7 @@ public class MoveService {
 
 		// Check that king does not cross fire during move
 		for (int x = Math.min(kingToX, kingFromX + 1); x < Math.max(kingFromX, kingToX + 1); x++) {
-			Board boardAfter = board.clone();
+			Board boardAfter = board.copy();
 			boardAfter.doMove(new Move(piece, kingFromX, kingFromY, x, kingFromY));
 			if (isInCheck(boardAfter, color)) {
 				return Optional.empty();

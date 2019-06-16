@@ -39,13 +39,13 @@ public class Board {
         return builder.toString();
     }
 
-    public Board clone() {
+    public Board copy() {
         Board clone = new Board(new Piece[SIZE][SIZE]);
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 Optional<Piece> piece = getPiece(i, j);
                 if (piece.isPresent()) {
-                    clone.setPiece(i, j, piece.get().clone());
+                    clone.setPiece(i, j, piece.get().copy());
                 }
             }
         }

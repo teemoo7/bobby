@@ -17,7 +17,7 @@ public class Pawn extends Piece {
     }
 
     @Override
-    public Piece clone() {
+    public Piece copy() {
         Piece clone = new Pawn(color);
 		clone.setId(id);
 		return clone;

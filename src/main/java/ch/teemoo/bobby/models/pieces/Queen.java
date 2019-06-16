@@ -17,7 +17,7 @@ public class Queen extends Piece {
     }
 
     @Override
-    public Piece clone() {
+    public Piece copy() {
         Piece clone = new Queen(color);
 		clone.setId(id);
 		return clone;

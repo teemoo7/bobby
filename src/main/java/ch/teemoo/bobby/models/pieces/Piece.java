@@ -38,5 +38,5 @@ public abstract class Piece {
         return this.color + " " + this.getClass().getSimpleName();
     }
 
-    public abstract Piece clone();
+    public abstract Piece copy();
 }
