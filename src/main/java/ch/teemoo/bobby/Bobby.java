@@ -2,8 +2,8 @@ package ch.teemoo.bobby;
 
 import ch.teemoo.bobby.gui.BoardView;
 import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.models.players.Human;
+import ch.teemoo.bobby.models.players.TraditionalBot;
 
 public class Bobby {
     public static void main(String args[]) {

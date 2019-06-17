@@ -16,10 +16,14 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.border.Border;
 
 import ch.teemoo.bobby.gui.BoardView;
@@ -30,9 +34,9 @@ import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameState;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.pieces.Piece;
-import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.models.players.Bot;
 import ch.teemoo.bobby.models.players.Player;
+import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.services.MoveService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +46,7 @@ public class GameController {
 
 	private static final Border RED_BORDER = BorderFactory.createLineBorder(java.awt.Color.red, 3, true);
 	private static final Border BLUE_BORDER = BorderFactory.createLineBorder(java.awt.Color.blue, 3, true);
+	private static final Border GREEN_BORDER = BorderFactory.createLineBorder(java.awt.Color.green, 3, true);
 	private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
 
 	private final BoardView view;
@@ -58,7 +63,6 @@ public class GameController {
 		this.game = game;
 		this.board = game.getBoard();
 		init();
-		play();
 	}
 
 	private void init() {
@@ -71,32 +75,51 @@ public class GameController {
 	}
 
 	public void play() {
-		while (game.getPlayerToPlay().isBot() && !isGameOver(game)) {
-			Player player = game.getPlayerToPlay();
-			if (!(player instanceof Bot)) {
-				throw new RuntimeException("Player has to be a bot");
-			}
-			Bot bot = (Bot) player;
-			Instant start = Instant.now();
-			Move move = bot.selectMove(game, moveService);
-			Instant end = Instant.now();
-			if (showTiming) {
-				logger.debug("Time to select move: {}", Duration.between(start, end));
-			}
-			doMove(move);
-		}
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				while (game.getPlayerToPlay().isBot() && !isGameOver(game)) {
+					Player player = game.getPlayerToPlay();
+					if (!(player instanceof Bot)) {
+						throw new RuntimeException("Player has to be a bot");
+					}
+					Bot bot = (Bot) player;
+					Instant start = Instant.now();
+//					Move move = bot.selectMove(game, moveService);
 
-		if (!game.getPlayerToPlay().isBot() && !isGameOver(game)) {
-			resetAllClickables();
-			markSquaresClickableByColor(game.getToPlay());
-		}
+					FindBestMoveTask findBestMoveTask = new FindBestMoveTask(bot, game, moveService);
+					findBestMoveTask.execute();
+					Move move;
+
+					try {
+		//				CompletableFuture<Move> future = CompletableFuture.supplyAsync(() -> bot.selectMove(game, moveService));
+		//				//Move move = bot.selectMove(game, moveService);
+		//				move = future.get();
+						move = findBestMoveTask.get();
+					} catch (InterruptedException | ExecutionException e) {
+						throw new RuntimeException("Move computation failed", e);
+					}
+					Instant end = Instant.now();
+					if (showTiming) {
+						logger.debug("Time to select move: {}", Duration.between(start, end));
+					}
+					doMove(move);
+				}
+
+				if (!game.getPlayerToPlay().isBot() && !isGameOver(game)) {
+					resetAllClickables();
+					markSquaresClickableByColor(game.getToPlay());
+				}
+
+			}
+		});
 	}
 
 	private void doMove(Move move) {
 		Player player = game.getPlayerByColor(move.getPiece().getColor());
+		cleanSquaresBorder();
 		if (!player.isBot()) {
 			cleanSelectedSquare();
-			cleanSquaresBorder();
 			resetAllClickables();
 		}
 
@@ -107,6 +130,7 @@ public class GameController {
 			// We use allowedMove instead of given move since it contains additional info like taking and check
 			board.doMove(allowedMove);
 			view.refresh(board.getBoard());
+			addBorderToLastMoveSquares(move);
 			info(allowedMove.getPrettyNotation(), false);
 			game.addMoveToHistory(allowedMove);
 			game.setToPlay(swap(allowedMove.getPiece().getColor()));
@@ -211,6 +235,13 @@ public class GameController {
 				square.setCursor(Cursor.getDefaultCursor());
 			}
 		});
+	}
+
+	private void addBorderToLastMoveSquares(Move move) {
+		Square from = view.getSquares()[move.getFromY()][move.getFromX()];
+		Square to = view.getSquares()[move.getToY()][move.getToX()];
+		from.setBorder(GREEN_BORDER);
+		to.setBorder(GREEN_BORDER);
 	}
 
 	private void squareClicked(Square square) {
@@ -351,5 +382,22 @@ public class GameController {
 
 	private Move getLastMove() {
 		return game.getHistory().get(game.getHistory().size() - 1);
+	}
+
+	private static class FindBestMoveTask extends SwingWorker<Move, Object> {
+		final private Bot bot;
+		final private Game game;
+		final private MoveService moveService;
+
+		public FindBestMoveTask(Bot bot, Game game, MoveService moveService) {
+			this.bot = bot;
+			this.game = game;
+			this.moveService = moveService;
+		}
+
+		@Override
+		protected Move doInBackground() {
+			return bot.selectMove(game, moveService);
+		}
 	}
 }
