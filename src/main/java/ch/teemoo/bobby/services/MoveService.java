@@ -104,7 +104,7 @@ public class MoveService {
 		return GameState.IN_PROGRESS;
 	}
 
-	public Optional<Position> findKingPosition(Board board, Color color) {
+	Optional<Position> findKingPosition(Board board, Color color) {
 		for (int x = 0; x < SIZE; x++) {
 			for (int y = 0; y < SIZE; y++) {
 				Optional<Piece> pieceOpt = board.getPiece(x, y);
@@ -544,7 +544,7 @@ public class MoveService {
 		return !isInCheck(boardAfterMove, color);
 	}
 
-	private boolean isInPawnCheck(Board board, Position kingPosition, Color color) {
+	boolean isInPawnCheck(Board board, Position kingPosition, Color color) {
 		int factor = color == Color.BLACK ? -1 : 1;
 		int y = kingPosition.getY() + factor;
 		if (y >= 0 && y <= MAX_MOVE) {
@@ -561,7 +561,7 @@ public class MoveService {
 		return false;
 	}
 
-	private boolean isInLCheck(Board board, Position kingPosition, Color color) {
+	boolean isInLCheck(Board board, Position kingPosition, Color color) {
 		final Piece fakeKnight = new Knight(color);
 		return computeLShapeMoves(fakeKnight, kingPosition.getX(), kingPosition.getY(), board).stream()
 			.filter(Move::isTaking).anyMatch(move -> {
@@ -571,7 +571,7 @@ public class MoveService {
 		});
 	}
 
-	private boolean isInDiagonalCheck(Board board, Position kingPosition, Color color) {
+	boolean isInDiagonalCheck(Board board, Position kingPosition, Color color) {
 		final Piece fakeBishop = new Bishop(color);
 		return computeDiagonalMoves(fakeBishop, kingPosition.getX(), kingPosition.getY(), board).stream()
 			.filter(Move::isTaking).anyMatch(move -> {
@@ -581,7 +581,7 @@ public class MoveService {
 		});
 	}
 
-	private boolean isInStraightCheck(Board board, Position kingPosition, Color color) {
+	boolean isInStraightCheck(Board board, Position kingPosition, Color color) {
 		Piece fakeRook = new Rook(color);
 		return computeStraightMoves(fakeRook, kingPosition.getX(), kingPosition.getY(), board).stream()
 			.filter(Move::isTaking).anyMatch(move -> {
@@ -591,7 +591,7 @@ public class MoveService {
 		});
 	}
 
-	private int[][] getHeatmapAroundLocation(int x, int y) {
+	int[][] getHeatmapAroundLocation(int x, int y) {
 		int[][] heatmap = new int[Board.SIZE][Board.SIZE];
 		for (int i = 0; i < Board.SIZE; i++) {
 			for (int j = 0; j < Board.SIZE; j++) {
@@ -616,19 +616,20 @@ public class MoveService {
 		return heatmap;
 	}
 
-	private static int[][] generateCenteredHeatmap() {
+	static int[][] generateCenteredHeatmap() {
 		int[][] heatmap = new int[Board.SIZE][Board.SIZE];
-		for (int i = 0; i < Board.SIZE; i++) {
-			for (int j = 0; j < Board.SIZE; j++) {
-				int heat = 0;
-				if ((i == 3 || i == 4) && (j == 3 || j == 4)) {
-					heat = 2;
-				} else if ((i == 2 || i == 5) && (j == 2 || j == 5)) {
-					heat = 1;
-				}
-				heatmap[i][j] = heat;
-			}
-		}
+		heatmap[3][3] = 2;
+		heatmap[3][4] = 2;
+		heatmap[4][3] = 2;
+		heatmap[4][4] = 2;
+		heatmap[2][3] = 1;
+		heatmap[2][4] = 1;
+		heatmap[5][3] = 1;
+		heatmap[5][4] = 1;
+		heatmap[3][2] = 1;
+		heatmap[3][5] = 1;
+		heatmap[4][2] = 1;
+		heatmap[4][5] = 1;
 		return heatmap;
 	}
 }
