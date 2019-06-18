@@ -41,15 +41,22 @@ public class BoardTest {
     @Test
     public void testToString() {
         String expected = "" + //
-                " ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜ \n" + //
-                " ♟  ♟  ♟  ♟  ♟  ♟  ♟  ♟ \n" + //
-                "                        \n" + //
-                "                        \n" + //
-                "                        \n" + //
-                "                        \n" + //
-                " ♙  ♙  ♙  ♙  ♙  ♙  ♙  ♙ \n" + //
-                " ♖  ♘  ♗  ♕  ♔  ♗  ♘  ♖ \n";
+                "♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ \n" + //
+                "♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ \n" + //
+                "                \n" + //
+                "                \n" + //
+                "                \n" + //
+                "                \n" + //
+                "♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ \n" + //
+                "♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖ \n";
         assertThat(initialBoard.toString()).isEqualTo(expected);
+    }
+
+    @Test
+    public void fromString() {
+        String initialBoardStr = initialBoard.toString();
+        Board board = new Board(initialBoardStr);
+        assertThat(board.toString()).isEqualTo(initialBoardStr);
     }
 
     @Test
@@ -93,9 +100,25 @@ public class BoardTest {
     }
 
     @Test
-    @Ignore
     public void testDoMoveCastling() {
-        //todo:
+        Board board = new Board("" +
+                "♜ ♞ ♝   ♚ ♝   ♜ \n" +
+                "♟ ♟   ♟ ♞ ♟ ♟ ♟ \n" +
+                "    ♟           \n" +
+                "                \n" +
+                "      ♛         \n" +
+                "  ♕ ♘           \n" +
+                "♙ ♙   ♗ ♙ ♙ ♙ ♙ \n" +
+                "♖       ♔ ♗ ♘ ♖ \n" +
+                "");
+        Piece king = board.getPiece(4, 0).orElseThrow(() -> new RuntimeException("Piece expected here"));
+        Piece rook = board.getPiece(0, 0).orElseThrow(() -> new RuntimeException("Piece expected here"));
+        Move castlingMove = new CastlingMove(king, 4, 0, 2, 0, rook, 0, 0, 3, 0);
+        board.doMove(castlingMove);
+        assertThat(board.getPiece(2, 0)).isPresent().get().isEqualTo(king);
+        assertThat(board.getPiece(3, 0)).isPresent().get().isEqualTo(rook);
+        assertThat(board.getPiece(4, 0)).isEmpty();
+        assertThat(board.getPiece(0, 0)).isEmpty();
     }
 
     @Test

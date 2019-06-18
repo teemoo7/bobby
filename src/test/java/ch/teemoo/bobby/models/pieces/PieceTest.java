@@ -72,4 +72,21 @@ public class PieceTest {
         assertThat(blackKing.getValue()).isEqualTo(whiteKing.getValue());
         assertThat(blackKing.getValue()).isEqualTo(100);
     }
+
+    @Test
+    public void testFromUnicodeChar() {
+        assertThat(Piece.fromUnicodeChar('♜')).isInstanceOf(Rook.class).hasFieldOrPropertyWithValue("color", Color.BLACK);
+        assertThat(Piece.fromUnicodeChar('♞')).isInstanceOf(Knight.class).hasFieldOrPropertyWithValue("color", Color.BLACK);
+        assertThat(Piece.fromUnicodeChar('♝')).isInstanceOf(Bishop.class).hasFieldOrPropertyWithValue("color", Color.BLACK);
+        assertThat(Piece.fromUnicodeChar('♛')).isInstanceOf(Queen.class).hasFieldOrPropertyWithValue("color", Color.BLACK);
+        assertThat(Piece.fromUnicodeChar('♚')).isInstanceOf(King.class).hasFieldOrPropertyWithValue("color", Color.BLACK);
+        assertThat(Piece.fromUnicodeChar('♟')).isInstanceOf(Pawn.class).hasFieldOrPropertyWithValue("color", Color.BLACK);
+
+        assertThat(Piece.fromUnicodeChar('♖')).isInstanceOf(Rook.class).hasFieldOrPropertyWithValue("color", Color.WHITE);
+        assertThat(Piece.fromUnicodeChar('♘')).isInstanceOf(Knight.class).hasFieldOrPropertyWithValue("color", Color.WHITE);
+        assertThat(Piece.fromUnicodeChar('♗')).isInstanceOf(Bishop.class).hasFieldOrPropertyWithValue("color", Color.WHITE);
+        assertThat(Piece.fromUnicodeChar('♕')).isInstanceOf(Queen.class).hasFieldOrPropertyWithValue("color", Color.WHITE);
+        assertThat(Piece.fromUnicodeChar('♔')).isInstanceOf(King.class).hasFieldOrPropertyWithValue("color", Color.WHITE);
+        assertThat(Piece.fromUnicodeChar('♙')).isInstanceOf(Pawn.class).hasFieldOrPropertyWithValue("color", Color.WHITE);
+    }
 }

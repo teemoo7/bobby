@@ -2,7 +2,7 @@ package ch.teemoo.bobby.models;
 
 import java.util.Optional;
 
-import ch.teemoo.bobby.models.pieces.Piece;
+import ch.teemoo.bobby.models.pieces.*;
 
 public class Board {
     public final static int SIZE = 8;
@@ -11,6 +11,10 @@ public class Board {
 
     public Board(Piece[][] board) {
         this.board = board;
+    }
+
+    public Board(String representation) {
+        this.board = fromString(representation);
     }
 
     public Piece[][] getBoard() {
@@ -25,7 +29,6 @@ public class Board {
         StringBuilder builder = new StringBuilder();
         for (int i = SIZE - 1; i >= 0; i--) {
             for (int j = 0; j < SIZE; j++) {
-                builder.append(" ");
                 Optional<Piece> piece = getPiece(j, i);
                 if (piece.isPresent()) {
                     builder.append(piece.get().getUnicode());
@@ -91,4 +94,20 @@ public class Board {
         return toRemove;
     }
 
+    private Piece[][] fromString(String value) {
+        Piece[][] pieces = new Piece[SIZE][SIZE];
+        String[] lines = value.split("\n");
+        assert lines.length == SIZE;
+        for (int i = 0; i < SIZE; i++) {
+            String line = lines[i];
+            // Every piece is followed by a space, just ignore the spaces
+            for (int j = 0; j < SIZE; j++) {
+                char c = line.charAt(2 * j);
+                if (c != ' ') {
+                    pieces[SIZE-1-i][j] = Piece.fromUnicodeChar(c);
+                }
+            }
+        }
+        return pieces;
+    }
 }
