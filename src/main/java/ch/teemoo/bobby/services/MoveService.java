@@ -1,13 +1,31 @@
 package ch.teemoo.bobby.services;
 
+import static java.util.stream.Collectors.toList;
+
 import static ch.teemoo.bobby.helpers.ColorHelper.swap;
 import static ch.teemoo.bobby.models.Board.SIZE;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import ch.teemoo.bobby.models.*;
+import ch.teemoo.bobby.models.Board;
+import ch.teemoo.bobby.models.CastlingMove;
+import ch.teemoo.bobby.models.Color;
+import ch.teemoo.bobby.models.Game;
+import ch.teemoo.bobby.models.GameState;
+import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.MoveAnalysis;
+import ch.teemoo.bobby.models.Position;
+import ch.teemoo.bobby.models.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Knight;
@@ -63,7 +81,7 @@ public class MoveService {
 				move.setChecking(isInCheck(boardAfterMove, swap(color)));
 
 				return isValidSituation(boardAfterMove, color);
-			}).collect(Collectors.toList());
+			}).collect(toList());
 		} else {
 			return moves;
 		}
@@ -120,35 +138,57 @@ public class MoveService {
 	}
 
 	public Move selectMove(Game game, int depth) {
-		return selectMove(game.getBoard(), game.getToPlay(), game.getHistory(), depth);
+		MoveAnalysis moveAnalysis = selectMove(game.getBoard(), game.getToPlay(), game.getHistory(), depth);
+		return moveAnalysis.getMove();
 	}
 
-	private Move selectMove(Board board, Color color, List<Move> history, int depth) {
+	private MoveAnalysis selectMove(Board board, Color color, List<Move> history, int depth) {
 		// Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
 
 		List<Move> moves = computeAllMoves(board, color, true);
-		Map<Move, Integer> moveScores = new ConcurrentHashMap<>(moves.size());
+		Map<MoveAnalysis, Integer> moveScores = new ConcurrentHashMap<>(moves.size());
 
 		final Color opponentColor = swap(color);
 		final Position opponentKingOriginalPosition = findKingPosition(board, opponentColor)
 				.orElseThrow(() -> new RuntimeException("King expected here"));
+		final Position myKingOriginalPosition = findKingPosition(board, color)
+				.orElseThrow(() -> new RuntimeException("King expected here"));
+/*
+		if (depth == 2) {
+			Stream<Move> stream = moves.parallelStream().map(this::veryLongProcessing);
 
+			Callable<List<Move>> task = () -> stream.collect(toList());
+
+			ForkJoinPool forkJoinPool = new ForkJoinPool(4);
+
+			List<Move> newList = forkJoinPool.submit(task).get()
+		}
+*/
 		for(Move move: moves) {
+
+			MoveAnalysis moveAnalysis = new MoveAnalysis(move);
+
 			Position opponentKingPosition = opponentKingOriginalPosition;
+			Position myKingPosition = myKingOriginalPosition;
+			if (move.getPiece() instanceof King) {
+				myKingPosition = new Position(move.getToX(), move.getToY());
+			}
 			Board boardAfter = board.copy();
 			boardAfter.doMove(move);
 			List<Move> historyCopy = new ArrayList<>(history);
 			historyCopy.add(move);
 			final GameState gameState = getGameState(boardAfter, opponentColor, historyCopy);
 
-			int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition);
+			int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition, myKingPosition);
+			moveAnalysis.setScore(score);
 			if (score >= BEST) {
-				return move;
+				return moveAnalysis;
 			}
 
 			// Compute the probable next move for the opponent and see if our current move is a real benefit in the end
 			if (depth >= 1 && gameState.isInProgress()) {
-				Move opponentMove = selectMove(boardAfter, opponentColor, historyCopy, depth-1);
+				MoveAnalysis opponentMoveAnalysis = selectMove(boardAfter, opponentColor, historyCopy, depth-1);
+				Move opponentMove = opponentMoveAnalysis.getMove();
 				boardAfter.doMove(opponentMove);
 				historyCopy.add(opponentMove);
 				if (opponentMove.getPiece() instanceof King) {
@@ -156,31 +196,38 @@ public class MoveService {
 					opponentKingPosition = new Position(opponentMove.getToX(), opponentMove.getToY());
 				}
 				final GameState gameStateAfterOpponent = getGameState(boardAfter, color, historyCopy);
-				score = evaluateBoard(boardAfter, color, opponentColor, gameStateAfterOpponent, opponentKingPosition);
-
+				//score = evaluateBoard(boardAfter, color, opponentColor, gameStateAfterOpponent, opponentKingPosition, myKingPosition);
+				moveAnalysis.setNextProbableMove(opponentMoveAnalysis);
+				moveAnalysis.setScore(-opponentMoveAnalysis.getScore());
+/*
 				if (depth >= 2 && gameStateAfterOpponent.isInProgress()) {
 					//todo: determine which pieces move must be evaluated to reduce computation time
-					Move nextMove = selectMove(boardAfter, color, historyCopy, depth - 2);
-					boardAfter.doMove(nextMove);
-					historyCopy.add(nextMove);
+					MoveAnalysis nextMove = selectMove(boardAfter, color, historyCopy, depth - 2);
+					boardAfter.doMove(nextMove.getMove());
+					historyCopy.add(nextMove.getMove());
 					final GameState gameStateAfterOpponentAfterMove = getGameState(boardAfter, opponentColor, historyCopy);
-					score = evaluateBoard(boardAfter, color, color, gameStateAfterOpponentAfterMove, opponentKingPosition);
+					if (nextMove.getMove().getPiece() instanceof King) {
+						myKingPosition = new Position(nextMove.getMove().getToX(), nextMove.getMove().getToY());
+					}
+					//score = evaluateBoard(boardAfter, color, color, gameStateAfterOpponentAfterMove, opponentKingPosition, myKingPosition);
+					moveAnalysis.setScore(score);
 				}
+				*/
 			}
-			moveScores.put(move, score);
+			moveScores.put(moveAnalysis, moveAnalysis.getScore());
 		}
 		if (depth == 2) {
 			//todo: for debugging
 			logger.debug(moveScores.entrySet().stream()
-					.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(e -> e.getKey().toString() + "=" + e.getValue().toString()).collect(
+					.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(e -> e.getKey().getMove().toString() + "=" + e.getValue().toString()).collect(
 							Collectors.joining(", ")));
 		}
 		return getBestMove(moveScores);
 	}
 
-	private int evaluateBoard(Board board, Color colorToEvaluate, Color lastPlayer, GameState gameState, Position opponentKingPosition) {
-		int gameStateScore = NEUTRAL;
+	private int evaluateBoard(Board board, Color colorToEvaluate, Color lastPlayer, GameState gameState, Position opponentKingPosition, Position myKingPosition) {
 		if (!gameState.isInProgress()) {
+			int gameStateScore = NEUTRAL;
 			// Game is over
 			if (gameState.isLost()) {
 				if (lastPlayer == colorToEvaluate) {
@@ -205,10 +252,15 @@ public class MoveService {
 		//fixme: we should compute moves for pawns in case of taking, not straight moves
 		List<Move> allMoves = computeAllMoves(board, colorToEvaluate, false);
 		int[][] heatmapOpponentKing = getHeatmapAroundLocation(opponentKingPosition.getX(), opponentKingPosition.getY());
-		int heatScore = allMoves.stream().mapToInt(
+		int myHeatScore = allMoves.stream().mapToInt(
 				m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapOpponentKing[m.getToX()][m.getToY()]).sum();
+		List<Move> allOpponentMoves = computeAllMoves(board, swap(colorToEvaluate), false);
+		int[][] heatmapMyKing = getHeatmapAroundLocation(myKingPosition.getX(), myKingPosition.getY());
+		int opponentHeatScore = allOpponentMoves.stream().mapToInt(
+				m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapMyKing[m.getToX()][m.getToY()]).sum();
+		int heatScore = myHeatScore - opponentHeatScore;
 
-		return gameStateScore + 10 * piecesScore + heatScore;
+		return 10 * piecesScore + heatScore;
 	}
 
 	private int getPiecesValueSum(Board board, Color color) {
@@ -224,20 +276,20 @@ public class MoveService {
 		return sum;
 	}
 
-	private Move getBestMove(Map<Move, Integer> moveScores) {
+	private MoveAnalysis getBestMove(Map<MoveAnalysis, Integer> moveScores) {
 		return getMaxScoreWithRandomChoice(moveScores)
 				.orElseThrow(() -> new RuntimeException("At least one move must be done"));
 	}
 
-	private Optional<Move> getMaxScoreWithRandomChoice(Map<Move, Integer> moveScores) {
+	private Optional<MoveAnalysis> getMaxScoreWithRandomChoice(Map<MoveAnalysis, Integer> moveScores) {
 		// Instead of just search for the max score, we search for all moves that have the max score, and if there are
 		// more than one move, then we randomly choose one. It shall give a bit of variation in games.
 		if (moveScores.isEmpty()) {
 			return Optional.empty();
 		}
-		List<Move> bestMoves = new ArrayList<>();
+		List<MoveAnalysis> bestMoves = new ArrayList<>();
 		Integer highestScore = null;
-		for (Map.Entry<Move, Integer> entry: moveScores.entrySet()) {
+		for (Map.Entry<MoveAnalysis, Integer> entry: moveScores.entrySet()) {
 			if (highestScore == null || entry.getValue() > highestScore) {
 				highestScore = entry.getValue();
 				bestMoves.clear();
@@ -318,7 +370,7 @@ public class MoveService {
 			} else {
 				return move;
 			}
-		}).collect(Collectors.toList());
+		}).collect(toList());
 	}
 
 	private List<Move> computeLShapeMoves(Piece piece, int posX, int posY, Board board) {
