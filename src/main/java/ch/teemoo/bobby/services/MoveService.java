@@ -524,12 +524,12 @@ public class MoveService {
 		return Optional.of(move);
 	}
 
-	private boolean isOutOfBounds(Move move) {
+	boolean isOutOfBounds(Move move) {
 		// Board boundaries
 		return move.getToX() > MAX_MOVE || move.getToY() > MAX_MOVE || move.getToX() < 0 || move.getToY() < 0;
 	}
 
-	private boolean isValidSituation(Board boardAfterMove, Color color) {
+	boolean isValidSituation(Board boardAfterMove, Color color) {
 		// check kings mutual distance
 		Optional<Position> king1 = findKingPosition(boardAfterMove, color);
 		Optional<Position> king2 = findKingPosition(boardAfterMove, swap(color));
