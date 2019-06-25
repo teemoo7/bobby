@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class MoveServiceTest {
 
@@ -32,6 +33,224 @@ public class MoveServiceTest {
         Board emptyBoard = new Board(new Piece[8][8]);
         assertThat(moveService.findKingPosition(emptyBoard, Color.WHITE)).isEmpty();
         assertThat(moveService.findKingPosition(emptyBoard, Color.BLACK)).isEmpty();
+    }
+
+
+    @Test
+    public void testComputeCastlingMovesBothSides() {
+        Board board = new Board("" +
+                "♜       ♚     ♜ \n" +
+                "♟ ♟ ♟ ♛   ♟ ♟ ♟ \n" +
+                "    ♞ ♟         \n" +
+                "        ♟       \n" +
+                "        ♙       \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖     ♔   ♗ ♘ ♖ \n"
+        );
+        Piece blackKing = board.getPiece(4, 7).get();
+        assertThat(moveService.computeCastlingMoves(blackKing, 4, 7, board)).hasSize(2);
+        Piece whiteKing = board.getPiece(3, 0).get();
+        assertThat(moveService.computeCastlingMoves(whiteKing, 4, 0, board)).hasSize(0);
+    }
+
+    @Test
+    public void testGetCastlingMoveCorrect() {
+        Board board = new Board("" +
+                "♜ ♞   ♛ ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙       \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖       ♔ ♗ ♘ ♖ \n"
+        );
+        Piece whiteKing = board.getPiece(4, 0).get();
+        assertThat(moveService.getCastlingMove(board, whiteKing, 4, 0, 2, 0, 3)).isPresent().get().isInstanceOf(CastlingMove.class);
+        Piece blackKing = board.getPiece(4, 7).get();
+        assertThat(moveService.getCastlingMove(board, blackKing, 4, 7, 6, 7, 5)).isPresent().get().isInstanceOf(CastlingMove.class);
+    }
+
+    @Test
+    public void testGetCastlingMoveRookNotPresent() {
+        Board board = new Board("" +
+                "♜ ♞   ♛ ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙       \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "        ♔ ♗ ♘ ♖ \n"
+        );
+        Piece king = board.getPiece(4, 0).get();
+        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3)).isEmpty();
+
+        board = new Board("" +
+                "♜ ♞   ♛ ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙       \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♗       ♔   ♘ ♖ \n"
+        );
+        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3)).isEmpty();
+
+        board = new Board("" +
+                "  ♞   ♛ ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙       \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♜       ♔ ♗ ♘ ♖ \n"
+        );
+        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3)).isEmpty();
+    }
+
+    @Test
+    public void testGetCastlingMovePieceBetweenRookAndKing() {
+        Board board = new Board("" +
+                "♜ ♞   ♛ ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙       \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖     ♗ ♔   ♘ ♖ \n"
+        );
+        Piece king = board.getPiece(4, 0).get();
+        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3)).isEmpty();
+    }
+
+    @Test
+    public void testGetCastlingMoveKingCrossFire() {
+        Board board = new Board("" +
+                "♜ ♞     ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "    ♛   ♙       \n" +
+                "          ♙     \n" +
+                "♙ ♙   ♙     ♙ ♙ \n" +
+                "♖       ♔ ♗ ♘ ♖ \n"
+        );
+        Piece king = board.getPiece(4, 0).get();
+        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3)).isEmpty();
+    }
+
+    @Test
+    public void testIsValidKingPositionForCastlingKingHasMoved() {
+        Board board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙   ♕   \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖     ♔   ♗ ♘ ♖ \n"
+        );
+        Piece king = board.getPiece(3, 0).get();
+        assertThat(moveService.isValidKingPositionForCastling(king, 3, 0, board)).isFalse();
+
+        board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙   ♕   \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙ ♔   ♙ ♙ \n" +
+                "♖         ♗ ♘ ♖ \n"
+        );
+        king = board.getPiece(4, 1).get();
+        assertThat(moveService.isValidKingPositionForCastling(king, 4, 1, board)).isFalse();
+
+        board = new Board("" +
+                "♜ ♞ ♝ ♛       ♜ \n" +
+                "♟ ♟ ♟   ♚ ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙   ♕   \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙ ♔   ♙ ♙ \n" +
+                "♖         ♗ ♘ ♖ \n"
+        );
+        king = board.getPiece(4, 6).get();
+        assertThat(moveService.isValidKingPositionForCastling(king, 4, 6, board)).isFalse();
+    }
+
+
+    @Test
+    public void testIsValidKingPositionForCastlingWrongPiece() {
+        Board board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙       \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖     ♔ ♕ ♗ ♘ ♖ \n"
+        );
+        Piece king = board.getPiece(3, 0).get();
+        assertThat(moveService.isValidKingPositionForCastling(king, 4, 0, board)).isFalse();
+    }
+
+    @Test
+    public void testIsValidKingPositionForCastlingEmptyLocation() {
+        Board board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙       \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖     ♔   ♗ ♘ ♖ \n"
+        );
+        Piece king = board.getPiece(3, 0).get();
+        assertThat(moveService.isValidKingPositionForCastling(king, 4, 0, board)).isFalse();
+    }
+
+    @Test
+    public void testIsValidKingPositionForCastlingInCheck() {
+        Board board = new Board("" +
+                "♜ ♞   ♛ ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙     ♝ \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖       ♔ ♗ ♘ ♖ \n"
+        );
+        Piece king = board.getPiece(4, 0).get();
+        assertThat(moveService.isValidKingPositionForCastling(king, 4, 0, board)).isFalse();
+    }
+
+    @Test
+    public void testIsValidKingPositionForCastlingCorrect() {
+        Board board = new Board("" +
+                "♜ ♞   ♛ ♚     ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙       \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖       ♔ ♗ ♘ ♖ \n"
+        );
+        Piece whiteKing = board.getPiece(4, 0).get();
+        assertThat(moveService.isValidKingPositionForCastling(whiteKing, 4, 0, board)).isTrue();
+        Piece blackKing = board.getPiece(4, 7).get();
+        assertThat(moveService.isValidKingPositionForCastling(blackKing, 4, 7, board)).isTrue();
     }
 
     @Test

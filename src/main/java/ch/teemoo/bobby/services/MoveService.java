@@ -416,7 +416,7 @@ public class MoveService {
 		return moves;
 	}
 
-	private List<Move> computeCastlingMoves(Piece piece, int posX, int posY, Board board) {
+	List<Move> computeCastlingMoves(Piece piece, int posX, int posY, Board board) {
 		//todo: take game history into account, both king and rook must not have moved yet
 
 		if (!isValidKingPositionForCastling(piece, posX, posY, board)) {
@@ -433,7 +433,7 @@ public class MoveService {
 		return moves;
 	}
 
-	private Optional<Move> getCastlingMove(Board board, Piece piece, int kingFromX, int kingFromY, int kingToX,
+	Optional<Move> getCastlingMove(Board board, Piece piece, int kingFromX, int kingFromY, int kingToX,
 		int rookFromX, int rookToX) {
 		final Color color = piece.getColor();
 
@@ -465,7 +465,7 @@ public class MoveService {
 				rookToX, kingFromY));
 	}
 
-	private boolean isValidKingPositionForCastling(Piece piece, int posX, int posY, Board board) {
+	boolean isValidKingPositionForCastling(Piece piece, int posX, int posY, Board board) {
 		final Color color = piece.getColor();
 		if (posX != 4) {
 			return false;
