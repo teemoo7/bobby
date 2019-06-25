@@ -8,6 +8,7 @@ import ch.teemoo.bobby.models.players.RandomBot;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,6 +36,130 @@ public class MoveServiceTest {
         assertThat(moveService.findKingPosition(emptyBoard, Color.BLACK)).isEmpty();
     }
 
+
+    @Test
+    public void testComputeDiagonalMovesFreeSpace() {
+        Board board = new Board("" +
+                "                \n" +
+                "                \n" +
+                "                \n" +
+                "      ♗         \n" +
+                "                \n" +
+                "                \n" +
+                "                \n" +
+                "                \n"
+        );
+        Piece bishop = board.getPiece(3, 4).get();
+        List<Move> moves = moveService.computeDiagonalMoves(bishop, 3, 4, board);
+        assertThat(moves).containsExactlyInAnyOrder(
+                // up-right
+                new Move(bishop, 3, 4, 4, 5),
+                new Move(bishop, 3, 4, 5, 6),
+                new Move(bishop, 3, 4, 6, 7),
+                // up-left
+                new Move(bishop, 3, 4, 2, 5),
+                new Move(bishop, 3, 4, 1, 6),
+                new Move(bishop, 3, 4, 0, 7),
+                // down-right
+                new Move(bishop, 3, 4, 4, 3),
+                new Move(bishop, 3, 4, 5, 2),
+                new Move(bishop, 3, 4, 6, 1),
+                new Move(bishop, 3, 4, 7, 0),
+                // down-left
+                new Move(bishop, 3, 4, 2, 3),
+                new Move(bishop, 3, 4, 1, 2),
+                new Move(bishop, 3, 4, 0, 1)
+        );
+    }
+
+    @Test
+    public void testComputeDiagonalMovesWithPieces() {
+        Board board = new Board("" +
+                "                \n" +
+                "  ♙             \n" +
+                "        ♟       \n" +
+                "      ♗         \n" +
+                "    ♙           \n" +
+                "          ♟     \n" +
+                "                \n" +
+                "                \n"
+        );
+        Piece bishop = board.getPiece(3, 4).get();
+        List<Move> moves = moveService.computeDiagonalMoves(bishop, 3, 4, board);
+        assertThat(moves).containsExactlyInAnyOrder(
+                // up-right
+                getMoveWithTookPiece(bishop, 3, 4, 4, 5, board.getPiece(4, 5).get()),
+                // up-left
+                new Move(bishop, 3, 4, 2, 5),
+                // down-right
+                new Move(bishop, 3, 4, 4, 3),
+                getMoveWithTookPiece(bishop, 3, 4, 5, 2, board.getPiece(5, 2).get())
+                // down-left
+        );
+    }
+
+    @Test
+    public void testComputeStraightMovesFreeSpace() {
+        Board board = new Board("" +
+                "                \n" +
+                "                \n" +
+                "                \n" +
+                "      ♖         \n" +
+                "                \n" +
+                "                \n" +
+                "                \n" +
+                "                \n"
+        );
+        Piece rook = board.getPiece(3, 4).get();
+        List<Move> moves = moveService.computeStraightMoves(rook, 3, 4, board);
+        assertThat(moves).containsExactlyInAnyOrder(
+                // up
+                new Move(rook, 3, 4, 3, 5),
+                new Move(rook, 3, 4, 3, 6),
+                new Move(rook, 3, 4, 3, 7),
+                //down
+                new Move(rook, 3, 4, 3, 3),
+                new Move(rook, 3, 4, 3, 2),
+                new Move(rook, 3, 4, 3, 1),
+                new Move(rook, 3, 4, 3, 0),
+                // left
+                new Move(rook, 3, 4, 2, 4),
+                new Move(rook, 3, 4, 1, 4),
+                new Move(rook, 3, 4, 0, 4),
+                // right
+                new Move(rook, 3, 4, 4, 4),
+                new Move(rook, 3, 4, 5, 4),
+                new Move(rook, 3, 4, 6, 4),
+                new Move(rook, 3, 4, 7, 4)
+        );
+    }
+
+    @Test
+    public void testComputeStraightMovesWithPieces() {
+        Board board = new Board("" +
+                "                \n" +
+                "      ♙         \n" +
+                "                \n" +
+                "    ♟ ♖ ♙       \n" +
+                "                \n" +
+                "                \n" +
+                "      ♟         \n" +
+                "                \n"
+        );
+        Piece rook = board.getPiece(3, 4).get();
+        List<Move> moves = moveService.computeStraightMoves(rook, 3, 4, board);
+        assertThat(moves).containsExactlyInAnyOrder(
+                // up
+                new Move(rook, 3, 4, 3, 5),
+                //down
+                new Move(rook, 3, 4, 3, 3),
+                new Move(rook, 3, 4, 3, 2),
+                getMoveWithTookPiece(rook, 3, 4, 3, 1, board.getPiece(3, 1).get()),
+                // left
+                getMoveWithTookPiece(rook, 3, 4, 2, 4, board.getPiece(2, 4).get())
+                // right
+        );
+    }
 
     @Test
     public void testComputeCastlingMovesBothSides() {
@@ -628,4 +753,9 @@ public class MoveServiceTest {
         assertThat(heatmap).isEqualTo(expected);
     }
 
+    private Move getMoveWithTookPiece(Piece piece, int fromX, int fromY, int toX, int toY, Piece tookPiece) {
+        Move move = new Move(piece, fromX, fromY, toX, toY);
+        move.setTookPiece(tookPiece);
+        return move;
+    }
 }

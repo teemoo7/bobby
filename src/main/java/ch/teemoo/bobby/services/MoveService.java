@@ -334,11 +334,11 @@ public class MoveService {
 		return moves;
 	}
 
-	private List<Move> computeDiagonalMoves(Piece piece, int posX, int posY, Board board) {
+	List<Move> computeDiagonalMoves(Piece piece, int posX, int posY, Board board) {
 		return computeDiagonalMoves(piece, posX, posY, board, SIZE);
 	}
 
-	private List<Move> computeDiagonalMoves(Piece piece, int posX, int posY, Board board, int maxDistance) {
+	List<Move> computeDiagonalMoves(Piece piece, int posX, int posY, Board board, int maxDistance) {
 		List<Move> moves = new ArrayList<>();
 		// right up /
 		for (int i = 0; i < Math.min(Math.min(MAX_MOVE-posX, MAX_MOVE-posY), maxDistance); i++) {
@@ -375,11 +375,11 @@ public class MoveService {
 		return moves;
 	}
 
-	private List<Move> computeStraightMoves(Piece piece, int posX, int posY, Board board) {
+	List<Move> computeStraightMoves(Piece piece, int posX, int posY, Board board) {
 		return computeStraightMoves(piece, posX, posY, board, SIZE);
 	}
 
-	private List<Move> computeStraightMoves(Piece piece, int posX, int posY, Board board, int maxDistance) {
+	List<Move> computeStraightMoves(Piece piece, int posX, int posY, Board board, int maxDistance) {
 		List<Move> moves = new ArrayList<>();
 		// up
 		for (int i = 0; i < Math.min(MAX_MOVE-posY, maxDistance); i++) {
