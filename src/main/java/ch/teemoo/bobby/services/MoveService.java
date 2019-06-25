@@ -321,7 +321,7 @@ public class MoveService {
 		}).collect(Collectors.toList());
 	}
 
-	private List<Move> computeLShapeMoves(Piece piece, int posX, int posY, Board board) {
+	List<Move> computeLShapeMoves(Piece piece, int posX, int posY, Board board) {
 		List<Move> moves = new ArrayList<>();
 		getAllowedMove(piece, posX, posY, 1, 2, board).ifPresent(moves::add);
 		getAllowedMove(piece, posX, posY, 1, -2, board).ifPresent(moves::add);

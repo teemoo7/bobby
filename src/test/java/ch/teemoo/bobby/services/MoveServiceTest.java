@@ -37,6 +37,56 @@ public class MoveServiceTest {
     }
 
 
+
+    @Test
+    public void testComputeLShapeMovesFreeSpace() {
+        Board board = new Board("" +
+                "                \n" +
+                "                \n" +
+                "                \n" +
+                "      ♘         \n" +
+                "                \n" +
+                "                \n" +
+                "                \n" +
+                "                \n"
+        );
+        Piece knight = board.getPiece(3, 4).get();
+        List<Move> moves = moveService.computeLShapeMoves(knight, 3, 4, board);
+        assertThat(moves).containsExactlyInAnyOrder(
+                new Move(knight, 3, 4, 4, 6),
+                new Move(knight, 3, 4, 5, 5),
+                new Move(knight, 3, 4, 4, 2),
+                new Move(knight, 3, 4, 1, 5),
+                new Move(knight, 3, 4, 2, 6),
+                new Move(knight, 3, 4, 5, 3),
+                new Move(knight, 3, 4, 2, 2),
+                new Move(knight, 3, 4, 1, 3)
+        );
+    }
+
+    @Test
+    public void testComputeLShapeMovesWithPieces() {
+        Board board = new Board("" +
+                "                \n" +
+                "    ♟   ♟       \n" +
+                "  ♙       ♟     \n" +
+                "      ♘         \n" +
+                "  ♙       ♟     \n" +
+                "    ♙   ♟       \n" +
+                "                \n" +
+                "                \n"
+        );
+        Piece knight = board.getPiece(3, 4).get();
+        List<Move> moves = moveService.computeLShapeMoves(knight, 3, 4, board);
+        assertThat(moves).containsExactlyInAnyOrder(
+                getMoveWithTookPiece(knight, 3, 4, 4, 6, board.getPiece(4, 6).get()),
+                getMoveWithTookPiece(knight, 3, 4, 5, 5, board.getPiece(5, 5).get()),
+                getMoveWithTookPiece(knight, 3, 4, 4, 2, board.getPiece(4, 2).get()),
+                getMoveWithTookPiece(knight, 3, 4, 2, 6, board.getPiece(2, 6).get()),
+                getMoveWithTookPiece(knight, 3, 4, 5, 3, board.getPiece(5, 3).get())
+        );
+    }
+
     @Test
     public void testComputeDiagonalMovesFreeSpace() {
         Board board = new Board("" +
