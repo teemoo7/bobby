@@ -1,10 +1,14 @@
 package ch.teemoo.bobby.services;
 
 import ch.teemoo.bobby.models.*;
+import ch.teemoo.bobby.models.pieces.Bishop;
+import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.players.RandomBot;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,6 +32,118 @@ public class MoveServiceTest {
         Board emptyBoard = new Board(new Piece[8][8]);
         assertThat(moveService.findKingPosition(emptyBoard, Color.WHITE)).isEmpty();
         assertThat(moveService.findKingPosition(emptyBoard, Color.BLACK)).isEmpty();
+    }
+
+    @Test
+    public void testGetAllowedMoveOutOfBounds() {
+        assertThat(moveService.getAllowedMove(null, 0, 7, 0, 1, null)).isEmpty();
+    }
+
+    @Test
+    public void testGetAllowedBishopCapturingQueen() {
+        Board board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙   ♕   \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖ ♘ ♗   ♔ ♗ ♘ ♖ \n"
+        );
+        assertThat(moveService.getAllowedMove(new Bishop(Color.BLACK), 2, 7, 4, -4, board)).isPresent()
+                .get().hasFieldOrPropertyWithValue("tookPiece", board.getPiece(6, 3).get());
+    }
+
+    @Test
+    public void testGetAllowedMovePawnMovingWithoutCapture() {
+        Board board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "                \n" +
+                "      ♟ ♟       \n" +
+                "        ♙   ♕   \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖ ♘ ♗   ♔ ♗ ♘ ♖ \n"
+        );
+        assertThat(moveService.getAllowedMove(new Pawn(Color.BLACK), 3, 4, 0, -1, board)).isPresent();
+    }
+
+    @Test
+    public void testGetAllowedMovePawnMovingWithoutCaptureBlockedByOwnPawn() {
+        Board board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "                \n" +
+                "      ♟         \n" +
+                "      ♟ ♙   ♕   \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖ ♘ ♗   ♔ ♗ ♘ ♖ \n"
+        );
+        assertThat(moveService.getAllowedMove(new Pawn(Color.BLACK), 3, 4, 0, -1, board)).isEmpty();
+    }
+
+    @Test
+    public void testGetAllowedMovePawnMovingAndCapturing() {
+        Board board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "                \n" +
+                "      ♟ ♟       \n" +
+                "        ♙   ♕   \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖ ♘ ♗   ♔ ♗ ♘ ♖ \n"
+        );
+        assertThat(moveService.getAllowedMove(new Pawn(Color.BLACK), 3, 4, 1, -1, board)).isPresent()
+                .get().hasFieldOrPropertyWithValue("tookPiece", board.getPiece(4, 3).get());
+    }
+
+    @Test
+    public void testGetAllowedMovePawnMovingCapturingBlockedByOwnPawn() {
+        Board board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "                \n" +
+                "      ♟         \n" +
+                "        ♟   ♕   \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖ ♘ ♗   ♔ ♗ ♘ ♖ \n"
+        );
+        assertThat(moveService.getAllowedMove(new Pawn(Color.BLACK), 3, 4, 1, -1, board)).isEmpty();
+    }
+
+    @Test
+    public void testGetAllowedMovePawnMovingCapturingNothingToCapture() {
+        Board board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ \n" +
+                "♟ ♟ ♟     ♟ ♟ ♟ \n" +
+                "                \n" +
+                "      ♟         \n" +
+                "            ♕   \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖ ♘ ♗   ♔ ♗ ♘ ♖ \n"
+        );
+        assertThat(moveService.getAllowedMove(new Pawn(Color.BLACK), 3, 4, 1, -1, board)).isEmpty();
+    }
+
+    @Test
+    public void testGetAllowedBishopCannotCaptureOwnPiece() {
+        Board board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ \n" +
+                "♟ ♟ ♟       ♟ ♟ \n" +
+                "      ♟         \n" +
+                "        ♟       \n" +
+                "        ♙   ♟   \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖ ♘ ♗   ♔ ♗ ♘ ♖ \n"
+        );
+        assertThat(moveService.getAllowedMove(new Bishop(Color.BLACK), 2, 7, 4, -4, board)).isEmpty();
     }
 
     @Test

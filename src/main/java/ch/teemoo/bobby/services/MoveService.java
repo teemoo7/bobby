@@ -487,7 +487,7 @@ public class MoveService {
 		return !isInCheck(board, color);
 	}
 
-	private Optional<Move> getAllowedMove(Piece piece, int posX, int posY, int deltaX, int deltaY, Board board) {
+	Optional<Move> getAllowedMove(Piece piece, int posX, int posY, int deltaX, int deltaY, Board board) {
 		Move move = new Move(piece, posX, posY, posX + deltaX, posY + deltaY);
 		if (isOutOfBounds(move)) {
 			return Optional.empty();
