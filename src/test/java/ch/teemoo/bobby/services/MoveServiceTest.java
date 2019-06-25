@@ -36,7 +36,88 @@ public class MoveServiceTest {
         assertThat(moveService.findKingPosition(emptyBoard, Color.BLACK)).isEmpty();
     }
 
+    @Test
+    public void testIsInCheckNoKing() {
+        // Empty board
+        Board emptyBoard = new Board(new Piece[8][8]);
+        assertThatExceptionOfType(RuntimeException.class)
+                .isThrownBy(() -> moveService.isInCheck(emptyBoard, Color.WHITE)).withMessage("King not found");
+    }
 
+    @Test
+    public void testIsInCheck() {
+        Board board = new Board("" +
+                "♜ ♞ ♝   ♚ ♝     \n" +
+                "♟ ♟ ♟   ♛ ♟   ♟ \n" +
+                "      ♟         \n" +
+                "  ♕     ♗  ♟   \n" +
+                "      ♙ ♙   ♞   \n" +
+                "♙   ♙           \n" +
+                "  ♙       ♙ ♙ ♙ \n" +
+                "♖ ♘ ♗   ♔   ♘ ♖ "
+        );
+        assertThat(moveService.isInCheck(board, Color.BLACK)).isTrue();
+        assertThat(moveService.isInCheck(board, Color.WHITE)).isFalse();
+    }
+
+    @Test
+    public void testComputePawnMovesFreeSpace() {
+        Board board = new Board("" +
+                "                \n" +
+                "                \n" +
+                "    ♟   ♟       \n" +
+                "      ♙         \n" +
+                "                \n" +
+                "  ♟             \n" +
+                "♙               \n" +
+                "                \n"
+        );
+        Piece pawn = board.getPiece(3, 4).get();
+        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board);
+        assertThat(moves).containsExactlyInAnyOrder(
+                new Move(pawn, 3, 4, 3, 5),
+                getMoveWithTookPiece(pawn, 3, 4, 2, 5, board.getPiece(2, 5).get()),
+                getMoveWithTookPiece(pawn, 3, 4, 4, 5, board.getPiece(4, 5).get())
+        );
+
+        Piece pawnAtStart = board.getPiece(0, 1).get();
+        moves = moveService.computePawnMoves(pawnAtStart, 0, 1, board);
+        assertThat(moves).containsExactlyInAnyOrder(
+                new Move(pawnAtStart, 0, 1, 0, 2),
+                new Move(pawnAtStart, 0, 1, 0, 3),
+                getMoveWithTookPiece(pawnAtStart, 0, 1, 1, 2, board.getPiece(1, 2).get())
+        );
+    }
+
+    @Test
+    public void testComputePawnMovesWithPieces() {
+        Board board = new Board("" +
+                "                \n" +
+                "                \n" +
+                "    ♙ ♟ ♟       \n" +
+                "      ♙         \n" +
+                "                \n" +
+                "♙               \n" +
+                "♙               \n" +
+                "                \n"
+        );
+        Piece pawn = board.getPiece(3, 4).get();
+        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board);
+        assertThat(moves).containsExactlyInAnyOrder(
+                getMoveWithTookPiece(pawn, 3, 4, 4, 5, board.getPiece(4, 5).get())
+        );
+
+        Piece pawnAtStart = board.getPiece(0, 1).get();
+        moves = moveService.computePawnMoves(pawnAtStart, 0, 1, board);
+        assertThat(moves).isEmpty();
+
+        Piece blackPawn = board.getPiece(4, 5).get();
+        moves = moveService.computePawnMoves(blackPawn, 4, 5, board);
+        assertThat(moves).containsExactlyInAnyOrder(
+                new Move(blackPawn, 4, 5, 4, 4),
+                getMoveWithTookPiece(blackPawn, 4, 5, 3, 4, board.getPiece(3, 4).get())
+        );
+    }
 
     @Test
     public void testComputeLShapeMovesFreeSpace() {

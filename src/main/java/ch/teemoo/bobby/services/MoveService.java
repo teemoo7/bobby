@@ -271,7 +271,7 @@ public class MoveService {
 		return moves;
 	}
 
-	private boolean isInCheck(Board board, Color color) {
+	boolean isInCheck(Board board, Color color) {
 		final Position kingPosition = findKingPosition(board, color).orElseThrow(() -> new RuntimeException("King not found"));
 
 		return isInStraightCheck(board, kingPosition, color)
@@ -280,7 +280,7 @@ public class MoveService {
 			|| isInPawnCheck(board, kingPosition, color);
 	}
 
-	private List<Move> computePawnMoves(Piece piece, int posX, int posY, Board board) {
+	List<Move> computePawnMoves(Piece piece, int posX, int posY, Board board) {
 		List<Move> moves = new ArrayList<>();
 		final Color color = piece.getColor();
 		// color matters for pawns since they cannot go back
