@@ -211,7 +211,7 @@ public class MoveService {
 		return gameStateScore + 10 * piecesScore + heatScore;
 	}
 
-	private int getPiecesValueSum(Board board, Color color) {
+	int getPiecesValueSum(Board board, Color color) {
 		int sum = 0;
 		for (int i = 0; i < Board.SIZE; i++) {
 			for (int j = 0; j < Board.SIZE; j++) {
@@ -224,12 +224,12 @@ public class MoveService {
 		return sum;
 	}
 
-	private Move getBestMove(Map<Move, Integer> moveScores) {
+	Move getBestMove(Map<Move, Integer> moveScores) {
 		return getMaxScoreWithRandomChoice(moveScores)
 				.orElseThrow(() -> new RuntimeException("At least one move must be done"));
 	}
 
-	private Optional<Move> getMaxScoreWithRandomChoice(Map<Move, Integer> moveScores) {
+	Optional<Move> getMaxScoreWithRandomChoice(Map<Move, Integer> moveScores) {
 		// Instead of just search for the max score, we search for all moves that have the max score, and if there are
 		// more than one move, then we randomly choose one. It shall give a bit of variation in games.
 		if (moveScores.isEmpty()) {
@@ -249,12 +249,12 @@ public class MoveService {
 		return Optional.of(bestMoves.get(new Random().nextInt(bestMoves.size())));
 	}
 
-	private boolean canMove(Board board, Color color) {
+	boolean canMove(Board board, Color color) {
 		List<Move> moves = computeBoardMoves(board, color, true, true);
 		return !moves.isEmpty();
 	}
 
-	private List<Move> computeBoardMoves(Board board, Color color, boolean withAdditionalInfo, boolean returnFirstPieceMoves) {
+	List<Move> computeBoardMoves(Board board, Color color, boolean withAdditionalInfo, boolean returnFirstPieceMoves) {
 		List<Move> moves = new ArrayList<>();
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
