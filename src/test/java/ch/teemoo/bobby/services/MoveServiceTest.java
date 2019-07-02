@@ -53,11 +53,17 @@ public class MoveServiceTest {
 
     @Test
     public void testSelectMoveAvoidCheckMate() {
-        // Scenario: with a depth of 1+, if the opponent can checkmate at next turn, then the selected move must avoid this
+        // Scenario: with a depth of 1+, if the opponent can checkmate at next turn, then the selected move must avoid this, although the best move at first depth would be this one
         List<String> movesNotation = Arrays.asList(
                 "e2-e3",
                 "f7-f6",
-                "f2-f4"
+                "f2-f4",
+                "g7-g6",
+                "d1-f3",
+                "b8-c6",
+                "f1-e2",
+                "b7-b6",
+                "f3-h5"
         );
         Game game = new Game(new RandomBot(), new RandomBot());
         Color colorToPlay = Color.WHITE;
@@ -71,13 +77,15 @@ public class MoveServiceTest {
             game.addMoveToHistory(move);
             game.setToPlay(colorToPlay);
         }
+        // At this stage, the best move with the minimal depth (0) is to take the queen, but doing this will lead to
+        // being checkmated at next turn, so the best move is not to take the queen
+        Move naiveBestMove = moveService.selectMove(game, 0);
+        assertThat(naiveBestMove.getBasicNotation()).isEqualTo("g6xh5");
+
         Move bestMove = moveService.selectMove(game, 1);
+        assertThat(bestMove.getBasicNotation()).isNotEqualTo("g6xh5");
         game.getBoard().doMove(bestMove);
         game.addMoveToHistory(bestMove);
-
-        Move moveThatCouldHaveCheckmated = new Move(game.getBoard().getPiece(3, 0).get(), 3, 0, 7, 4);
-        game.getBoard().doMove(moveThatCouldHaveCheckmated);
-        game.addMoveToHistory(moveThatCouldHaveCheckmated);
         assertThat(moveService.getGameState(game.getBoard(), swap(colorToPlay), game.getHistory())).isNotEqualTo(GameState.LOSS);
     }
 
