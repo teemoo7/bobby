@@ -21,10 +21,11 @@ import org.slf4j.LoggerFactory;
 public class MoveService {
 	private final static Logger logger = LoggerFactory.getLogger(MoveService.class);
 
+	public final static int WORST = -1000;
+	public final static int BEST = 1000;
+	public final static int NEUTRAL = 0;
+
 	private final static int MAX_MOVE = SIZE - 1;
-	private final static int WORST = -1000;
-	private final static int BEST = 1000;
-	private final static int NEUTRAL = 0;
 	private final static int[][] heatmapCenter = generateCenteredHeatmap();
 
 	public List<Move> computeAllMoves(Board board, Color color, boolean withAdditionalInfo) {
@@ -178,7 +179,7 @@ public class MoveService {
 		return getBestMove(moveScores);
 	}
 
-	private int evaluateBoard(Board board, Color colorToEvaluate, Color lastPlayer, GameState gameState, Position opponentKingPosition) {
+	int evaluateBoard(Board board, Color colorToEvaluate, Color lastPlayer, GameState gameState, Position opponentKingPosition) {
 		int gameStateScore = NEUTRAL;
 		if (!gameState.isInProgress()) {
 			// Game is over

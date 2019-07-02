@@ -23,6 +23,65 @@ public class MoveServiceTest {
     }
 
     @Test
+    public void testSelectMoveCanCheckMate() {
+        // Scenario: with a minimal depth, if a checkmate is possible, then it must be the selected move
+        List<String> movesNotation = Arrays.asList(
+                "e2-e3",
+                "f7-f6",
+                "f2-f4",
+                "g7-g5"
+        );
+        Game game = new Game(new RandomBot(), new RandomBot());
+        Color colorToPlay = Color.WHITE;
+        for (String notation: movesNotation) {
+            Move move = Move.fromBasicNotation(notation, colorToPlay);
+            Piece piece = game.getBoard().getPiece(move.getFromX(), move.getFromY())
+                    .orElseThrow(() -> new RuntimeException("Unexpected move, no piece at this location"));
+            move = new Move(piece, move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+            colorToPlay = swap(colorToPlay);
+            game.getBoard().doMove(move);
+            game.setToPlay(colorToPlay);
+            game.addMoveToHistory(move);
+        }
+        Move bestMove = moveService.selectMove(game, 0);
+        assertThat(bestMove.getBasicNotation()).isEqualTo("d1-h5+");
+
+        game.getBoard().doMove(bestMove);
+        game.addMoveToHistory(bestMove);
+        assertThat(moveService.getGameState(game.getBoard(), swap(colorToPlay), game.getHistory())).isEqualTo(GameState.LOSS);
+    }
+
+    @Test
+    public void testSelectMoveAvoidCheckMate() {
+        // Scenario: with a depth of 1+, if the opponent can checkmate at next turn, then the selected move must avoid this
+        List<String> movesNotation = Arrays.asList(
+                "e2-e3",
+                "f7-f6",
+                "f2-f4"
+        );
+        Game game = new Game(new RandomBot(), new RandomBot());
+        Color colorToPlay = Color.WHITE;
+        for (String notation: movesNotation) {
+            Move move = Move.fromBasicNotation(notation, colorToPlay);
+            Piece piece = game.getBoard().getPiece(move.getFromX(), move.getFromY())
+                    .orElseThrow(() -> new RuntimeException("Unexpected move, no piece at this location"));
+            move = new Move(piece, move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+            colorToPlay = swap(colorToPlay);
+            game.getBoard().doMove(move);
+            game.addMoveToHistory(move);
+            game.setToPlay(colorToPlay);
+        }
+        Move bestMove = moveService.selectMove(game, 1);
+        game.getBoard().doMove(bestMove);
+        game.addMoveToHistory(bestMove);
+
+        Move moveThatCouldHaveCheckmated = new Move(game.getBoard().getPiece(3, 0).get(), 3, 0, 7, 4);
+        game.getBoard().doMove(moveThatCouldHaveCheckmated);
+        game.addMoveToHistory(moveThatCouldHaveCheckmated);
+        assertThat(moveService.getGameState(game.getBoard(), swap(colorToPlay), game.getHistory())).isNotEqualTo(GameState.LOSS);
+    }
+
+    @Test
     public void testComputeAllMoves() {
         Game game = new Game(new RandomBot(), new RandomBot());
         Board initialBoard = game.getBoard();
@@ -155,6 +214,27 @@ public class MoveServiceTest {
         Board emptyBoard = new Board(new Piece[8][8]);
         assertThat(moveService.findKingPosition(emptyBoard, Color.WHITE)).isEmpty();
         assertThat(moveService.findKingPosition(emptyBoard, Color.BLACK)).isEmpty();
+    }
+
+    @Test
+    public void testEvaluateBoardLoss() {
+        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.WHITE, GameState.LOSS, null)).isEqualTo(MoveService.WORST);
+    }
+
+    @Test
+    public void testEvaluateBoardWin() {
+        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.BLACK, GameState.LOSS, null)).isEqualTo(MoveService.BEST);
+    }
+
+    @Test
+    public void testEvaluateBoardDraw() {
+        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.BLACK, GameState.DRAW_STALEMATE, null)).isEqualTo(-20);
+    }
+
+    @Test
+    public void testEvaluateBoardInitialPosition() {
+        Game game = new Game(new RandomBot(), new RandomBot());
+        assertThat(moveService.evaluateBoard(game.getBoard(), Color.WHITE, Color.BLACK, GameState.IN_PROGRESS, new Position(4, 7))).isGreaterThan(0);
     }
 
     @Test
