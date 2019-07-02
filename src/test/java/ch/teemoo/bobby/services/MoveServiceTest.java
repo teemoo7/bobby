@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static ch.teemoo.bobby.helpers.ColorHelper.swap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -22,7 +23,43 @@ public class MoveServiceTest {
     }
 
     @Test
-    public void getGameStateLossCheckmate() {
+    public void testComputeAllMoves() {
+        Game game = new Game(new RandomBot(), new RandomBot());
+        Board initialBoard = game.getBoard();
+        // Each player has 20 possible moves in initial position
+        assertThat(moveService.computeAllMoves(initialBoard, Color.WHITE, false)).hasSize(20);
+        assertThat(moveService.computeAllMoves(initialBoard, Color.BLACK, false)).hasSize(20);
+    }
+
+    @Test
+    public void testComputeMoves() {
+        Game game = new Game(new RandomBot(), new RandomBot());
+        Board initialBoard = game.getBoard();
+        // White rook cannot move in initial position
+        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(0, 0).get(), 0, 0, false)).isEmpty();
+        // White knight has two possible moves
+        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(1, 0).get(), 1, 0, false)).hasSize(2);
+        // Any pawn has two possible moves
+        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(5, 1).get(), 5, 1, false)).hasSize(2);
+    }
+
+    @Test
+    public void testGetGameStateInProgress() {
+        Board board = new Board("" +
+                "♜ ♞ ♝ ♛ ♚ ♝   ♜ \n" +
+                "♟   ♟ ♟     ♕ ♟ \n" +
+                "  ♟         ♟   \n" +
+                "        ♟   ♘   \n" +
+                "                \n" +
+                "        ♙       \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖   ♗   ♔ ♗ ♘ ♖ \n"
+        );
+        assertThat(moveService.getGameState(board, Color.BLACK, Lists.emptyList())).isEqualTo(GameState.IN_PROGRESS);
+    }
+
+    @Test
+    public void testGetGameStateLossCheckmate() {
         Board board = new Board("" +
                 "♜ ♞ ♝ ♛ ♚ ♝   ♜ \n" +
                 "♟   ♟ ♟   ♕   ♟ \n" +
@@ -37,7 +74,7 @@ public class MoveServiceTest {
     }
 
     @Test
-    public void getGameStateDrawStalemate() {
+    public void testGetGameStateDrawStalemate() {
         Board board = new Board("" +
                 "        ♚       \n" +
                 "            ♕   \n" +
@@ -51,21 +88,61 @@ public class MoveServiceTest {
         assertThat(moveService.getGameState(board, Color.BLACK, Lists.emptyList())).isEqualTo(GameState.DRAW_STALEMATE);
     }
 
-//    @Test
-//    public void getGameStateDrawThreefold() {
-//        Board board = new Board("" +
-//                "      ♚     ♕   \n" +
-//                "                \n" +
-//                "                \n" +
-//                "            ♟   \n" +
-//                "        ♘   ♙ ♟ \n" +
-//                "        ♙     ♘ \n" +
-//                "♙ ♙ ♙ ♗       ♙ \n" +
-//                "♖       ♔ ♗   ♖ \n"
-//        );
-//        List<Move> history = new ArrayList<>();
-//        assertThat(moveService.getGameState(board, Color.BLACK, Lists.emptyList())).isEqualTo(GameState.DRAW_THREEFOLD);
-//    }
+    @Test
+    public void testGetGameStateDraw50MovesNoCaptureNoPawn() {
+        Game game = new Game(new RandomBot(), new RandomBot());
+        Board board = game.getBoard();
+        List<Move> history = new ArrayList<>();
+        for (int i = 0; i < 25; i++) {
+            Move moveWhite;
+            Move moveBlack;
+            if (i % 4 == 0) {
+                moveWhite = new Move(board.getPiece(1, 0).get(), 1, 0, 2, 2);
+                moveBlack = new Move(board.getPiece(1, 7).get(), 1, 7, 2, 5);
+            } else if (i % 4 == 1) {
+                moveWhite = new Move(board.getPiece(2, 2).get(), 2, 2, 1, 0);
+                moveBlack = new Move(board.getPiece(2, 5).get(), 2, 5, 1, 7);
+            } else if (i % 4 == 2) {
+                moveWhite = new Move(board.getPiece(1, 0).get(), 1, 0, 0, 2);
+                moveBlack = new Move(board.getPiece(1, 7).get(), 1, 7, 0, 5);
+            } else {
+                moveWhite = new Move(board.getPiece(0, 2).get(), 0, 2, 1, 0);
+                moveBlack = new Move(board.getPiece(0, 5).get(), 0, 5, 1, 7);
+            }
+            history.add(moveWhite);
+            board.doMove(moveWhite);
+            history.add(moveBlack);
+            board.doMove(moveBlack);
+        }
+        assertThat(moveService.getGameState(board, Color.WHITE, history)).isEqualTo(GameState.DRAW_50_MOVES);
+    }
+
+    @Test
+    public void testGetGameStateDrawThreefold() {
+        Board board = new Board("" +
+                "      ♚     ♕   \n" +
+                "                \n" +
+                "                \n" +
+                "            ♟   \n" +
+                "        ♘   ♙ ♟ \n" +
+                "        ♙     ♘ \n" +
+                "♙ ♙ ♙ ♗       ♙ \n" +
+                "♖       ♔ ♗   ♖ \n"
+        );
+        List<String> movesBasicNotation = Arrays.asList(
+                "e2-e3", "f7-f6", "f2-f4", "e7-e5", "f4xe5", "f6xe5", "d1-f3", "g8-f6", "b1-c3", "f6-e4", "c3xe4",
+                "g7-g6", "e4-g5", "d7-d5", "f3xd5", "c7-c6", "d5xc6+", "c8-d7", "c6xb7", "f8-b4", "b7xa8", "e5-e4",
+                "g5xe4", "b8-c6", "a8xc6", "b4-c5", "c6xc5", "d7-e6", "c5xa7", "d8xd2+", "c1xd2", "e6-h3", "g1xh3",
+                "h7-h5", "a7-h7", "g6-g5", "h7xh8+", "e8-d7", "g2-g4", "h5-h4", "h8-g7+", "d7-d8", "g7-g8+", "d8-d7",
+                "g8-g7+", "d7-d8", "g7-g8+", "d8-d7", "g8-g7+", "d7-d8", "g7-g8+");
+        List<Move> history = new ArrayList<>(movesBasicNotation.size());
+        Color color = Color.WHITE;
+        for (String notation: movesBasicNotation) {
+            history.add(Move.fromBasicNotation(notation, color));
+            color = swap(color);
+        }
+        assertThat(moveService.getGameState(board, Color.BLACK, history)).isEqualTo(GameState.DRAW_THREEFOLD);
+    }
 
     @Test
     public void testFindKingPosition() {
