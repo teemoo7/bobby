@@ -78,7 +78,7 @@ public class MoveServiceTest {
             game.setToPlay(colorToPlay);
         }
         // At this stage, the best move with the minimal depth (0) is to take the queen, but doing this will lead to
-        // being checkmated at next turn, so the best move is not to take the queen
+        // being checkmated at next turn, so the best move for a larger depth (at least 1) is not to take the queen
         Move naiveBestMove = moveService.selectMove(game, 0);
         assertThat(naiveBestMove.getBasicNotation()).isEqualTo("g6xh5");
 
