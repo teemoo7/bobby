@@ -13,7 +13,9 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -146,83 +148,78 @@ public class MoveService {
 		// Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
 
 		List<Move> moves = computeAllMoves(board, color, true);
-		Map<MoveAnalysis, Integer> moveScores = new ConcurrentHashMap<>(moves.size());
+		//Map<MoveAnalysis, Integer> moveScores = new ConcurrentHashMap<>(moves.size());
 
 		final Color opponentColor = swap(color);
-		final Position opponentKingOriginalPosition = findKingPosition(board, opponentColor)
+		final Position opponentKingPosition = findKingPosition(board, opponentColor)
 				.orElseThrow(() -> new RuntimeException("King expected here"));
 		final Position myKingOriginalPosition = findKingPosition(board, color)
 				.orElseThrow(() -> new RuntimeException("King expected here"));
-/*
-		if (depth == 2) {
-			Stream<Move> stream = moves.parallelStream().map(this::veryLongProcessing);
+		Map<MoveAnalysis, Integer> moveScores;
 
-			Callable<List<Move>> task = () -> stream.collect(toList());
+		Stream<Move> movesStream = moves.stream();
 
-			ForkJoinPool forkJoinPool = new ForkJoinPool(4);
+		if (depth >= 2) {
+			Stream<MoveAnalysis> stream = moves.parallelStream().map(
+				move -> computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
+					myKingOriginalPosition, move));
 
-			List<Move> newList = forkJoinPool.submit(task).get()
+			Callable<Map<MoveAnalysis, Integer>> task = () -> stream.collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
+
+			ForkJoinPool forkJoinPool = new ForkJoinPool(1);
+
+			try {
+				moveScores = forkJoinPool.submit(task).get();
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException("Move computation failed in parallel threads", e);
+			}
+		} else {
+			moveScores = movesStream.map(
+				move -> computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
+					myKingOriginalPosition, move)).collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
 		}
-*/
-		for(Move move: moves) {
-
-			MoveAnalysis moveAnalysis = new MoveAnalysis(move);
-
-			Position opponentKingPosition = opponentKingOriginalPosition;
-			Position myKingPosition = myKingOriginalPosition;
-			if (move.getPiece() instanceof King) {
-				myKingPosition = new Position(move.getToX(), move.getToY());
-			}
-			Board boardAfter = board.copy();
-			boardAfter.doMove(move);
-			List<Move> historyCopy = new ArrayList<>(history);
-			historyCopy.add(move);
-			final GameState gameState = getGameState(boardAfter, opponentColor, historyCopy);
-
-			int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition, myKingPosition);
-			moveAnalysis.setScore(score);
-			if (score >= BEST) {
-				return moveAnalysis;
-			}
-
-			// Compute the probable next move for the opponent and see if our current move is a real benefit in the end
-			if (depth >= 1 && gameState.isInProgress()) {
-				MoveAnalysis opponentMoveAnalysis = selectMove(boardAfter, opponentColor, historyCopy, depth-1);
-				Move opponentMove = opponentMoveAnalysis.getMove();
-				boardAfter.doMove(opponentMove);
-				historyCopy.add(opponentMove);
-				if (opponentMove.getPiece() instanceof King) {
-					// We must consider the current king position
-					opponentKingPosition = new Position(opponentMove.getToX(), opponentMove.getToY());
-				}
-				final GameState gameStateAfterOpponent = getGameState(boardAfter, color, historyCopy);
-				//score = evaluateBoard(boardAfter, color, opponentColor, gameStateAfterOpponent, opponentKingPosition, myKingPosition);
-				moveAnalysis.setNextProbableMove(opponentMoveAnalysis);
-				moveAnalysis.setScore(-opponentMoveAnalysis.getScore());
-/*
-				if (depth >= 2 && gameStateAfterOpponent.isInProgress()) {
-					//todo: determine which pieces move must be evaluated to reduce computation time
-					MoveAnalysis nextMove = selectMove(boardAfter, color, historyCopy, depth - 2);
-					boardAfter.doMove(nextMove.getMove());
-					historyCopy.add(nextMove.getMove());
-					final GameState gameStateAfterOpponentAfterMove = getGameState(boardAfter, opponentColor, historyCopy);
-					if (nextMove.getMove().getPiece() instanceof King) {
-						myKingPosition = new Position(nextMove.getMove().getToX(), nextMove.getMove().getToY());
-					}
-					//score = evaluateBoard(boardAfter, color, color, gameStateAfterOpponentAfterMove, opponentKingPosition, myKingPosition);
-					moveAnalysis.setScore(score);
-				}
-				*/
-			}
-			moveScores.put(moveAnalysis, moveAnalysis.getScore());
-		}
-		if (depth == 2) {
+		if (depth >= 2) {
 			//todo: for debugging
 			logger.debug(moveScores.entrySet().stream()
 					.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(e -> e.getKey().getMove().toString() + "=" + e.getValue().toString()).collect(
 							Collectors.joining(", ")));
 		}
 		return getBestMove(moveScores);
+	}
+
+	private MoveAnalysis computeMoveAnalysis(Board board, Color color, List<Move> history, int depth,
+		Color opponentColor, Position opponentKingPosition, Position myKingOriginalPosition, Move move) {
+		if (depth >= 2) {
+			logger.debug("Move {}", move);
+		}
+		MoveAnalysis moveAnalysis = new MoveAnalysis(move);
+
+		Position myKingPosition = myKingOriginalPosition;
+		if (move.getPiece() instanceof King) {
+			myKingPosition = new Position(move.getToX(), move.getToY());
+		}
+		Board boardAfter = board.copy();
+		boardAfter.doMove(move);
+		List<Move> historyCopy = new ArrayList<>(history);
+		historyCopy.add(move);
+		final GameState gameState = getGameState(boardAfter, opponentColor, historyCopy);
+
+		int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition, myKingPosition);
+		moveAnalysis.setScore(score);
+		if (score >= BEST) {
+			return moveAnalysis;
+		}
+
+		// Compute the probable next move for the opponent and see if our current move is a real benefit in the end
+		if (depth >= 1 && gameState.isInProgress()) {
+			MoveAnalysis opponentMoveAnalysis = selectMove(boardAfter, opponentColor, historyCopy, depth-1);
+			Move opponentMove = opponentMoveAnalysis.getMove();
+			boardAfter.doMove(opponentMove);
+			historyCopy.add(opponentMove);
+			moveAnalysis.setNextProbableMove(opponentMoveAnalysis);
+			moveAnalysis.setScore(-opponentMoveAnalysis.getScore());
+		}
+		return moveAnalysis;
 	}
 
 	private int evaluateBoard(Board board, Color colorToEvaluate, Color lastPlayer, GameState gameState, Position opponentKingPosition, Position myKingPosition) {
