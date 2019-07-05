@@ -5,8 +5,14 @@ import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.TraditionalBot;
 
-public class Bobby {
+import javax.swing.*;
+
+public class Bobby implements Runnable {
     public static void main(String args[]) {
+        SwingUtilities.invokeLater(new Bobby());
+    }
+
+    public void run() {
         Game game = new Game(new Human("Player 1"), new Human("Player 2"));
         //Game game = new Game(new Human("Player 1"), new TraditionalBot(2));
         //Game game = new Game(new TraditionalBot(2), new TraditionalBot(1));

@@ -28,8 +28,10 @@
 
     <!-- Testing -->
     <assertj.version>3.12.2</assertj.version>
+    <assertj-swing.version>3.9.2</assertj-swing.version>
     <junit.version>4.12</junit.version>
     <mockito.version>2.10.0</mockito.version>
+    <system-rules.version>1.19.0</system-rules.version>
   </properties>
 
   <dependencies>
@@ -41,6 +43,13 @@
 
     <!-- Testing -->
     <dependency>
+      <groupId>com.github.stefanbirkner</groupId>
+      <artifactId>system-rules</artifactId>
+      <version>${system-rules.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
@@ -51,6 +60,13 @@
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-swing-junit</artifactId>
+      <version>${assertj-swing.version}</version>
       <scope>test</scope>
     </dependency>
 
