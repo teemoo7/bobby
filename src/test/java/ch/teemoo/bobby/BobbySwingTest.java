@@ -13,7 +13,7 @@ import java.awt.*;
 import static org.assertj.swing.launcher.ApplicationLauncher.application;
 import static org.assertj.swing.finder.WindowFinder.findFrame;
 
-public class BobbyTest extends AssertJSwingJUnitTestCase {
+public class BobbySwingTest extends AssertJSwingJUnitTestCase {
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 

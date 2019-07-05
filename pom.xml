@@ -22,6 +22,7 @@
     <maven.plugin.jacoco.version>0.8.4</maven.plugin.jacoco.version>
     <maven.plugin.project-info-reports.version>3.0.0</maven.plugin.project-info-reports.version>
     <maven.plugin.site.version>3.7.1</maven.plugin.site.version>
+    <maven.plugin.surefire.version>3.0.0-M3</maven.plugin.surefire.version>
 
     <!-- Dependencies -->
     <logback.version>1.2.3</logback.version>
@@ -96,6 +97,17 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven.plugin.surefire.version}</version>
+        <configuration>
+          <excludes>
+            <exclude>**/*SwingTest.java</exclude>
+          </excludes>
+        </configuration>
       </plugin>
 
       <plugin>
