@@ -1,4 +1,6 @@
 language: java
+jdk:
+  - openjdk11
 addons:
   sonarcloud:
     organization: "teemoo7-github"
