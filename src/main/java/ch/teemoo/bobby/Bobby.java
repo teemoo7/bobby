@@ -4,6 +4,7 @@ import ch.teemoo.bobby.gui.BoardView;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.TraditionalBot;
+import ch.teemoo.bobby.services.MoveService;
 
 import javax.swing.*;
 
@@ -18,7 +19,7 @@ public class Bobby implements Runnable {
         //Game game = new Game(new TraditionalBot(2), new TraditionalBot(1));
         //Game game = new Game(new TraditionalBot(1), new RandomBot());
         BoardView boardView = new BoardView("Bobby chess game");
-        GameController gameController = new GameController(boardView, game);
+        GameController gameController = new GameController(boardView, game, new MoveService());
         gameController.play();
     }
 }

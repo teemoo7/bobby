@@ -52,16 +52,17 @@ public class GameController {
 	private final BoardView view;
 	private Board board;
 	private Game game;
-	private final MoveService moveService = new MoveService();
+	private final MoveService moveService;
 	private final Bot botToSuggestMove = new TraditionalBot(2);
 	private final boolean showTiming = true;
 
 	private Square selectedSquare = null;
 
-	public GameController(BoardView view, Game game) {
+	public GameController(BoardView view, Game game, MoveService moveService) {
 		this.view = view;
 		this.game = game;
 		this.board = game.getBoard();
+		this.moveService = moveService;
 		init();
 	}
 
@@ -97,6 +98,7 @@ public class GameController {
 		//				move = future.get();
 						move = findBestMoveTask.get();
 					} catch (InterruptedException | ExecutionException e) {
+						Thread.currentThread().interrupt();
 						throw new RuntimeException("Move computation failed", e);
 					}
 					Instant end = Instant.now();
@@ -115,7 +117,7 @@ public class GameController {
 		});
 	}
 
-	private void doMove(Move move) {
+	void doMove(Move move) {
 		Player player = game.getPlayerByColor(move.getPiece().getColor());
 		cleanSquaresBorder();
 		if (!player.isBot()) {
@@ -194,6 +196,7 @@ public class GameController {
 	}
 
 	private void resetAllClickables() {
+		//fixme: this should be delegated to the view
 		Square[][] squares = view.getSquares();
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
@@ -300,6 +303,7 @@ public class GameController {
 	}
 
 	private void cleanSquaresBorder() {
+		//fixme: this should be delegated to the view
 		Square[][] squares = view.getSquares();
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
