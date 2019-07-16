@@ -14,10 +14,10 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <java.release.version>11</java.release.version>
 
     <!-- Plugins -->
+    <maven.plugin.compiler.version>3.8.0</maven.plugin.compiler.version>
     <maven.plugin.checkstyle.version>3.1.0</maven.plugin.checkstyle.version>
     <maven.plugin.jacoco.version>0.8.4</maven.plugin.jacoco.version>
     <maven.plugin.project-info-reports.version>3.0.0</maven.plugin.project-info-reports.version>
@@ -31,7 +31,7 @@
     <assertj.version>3.12.2</assertj.version>
     <assertj-swing.version>3.9.2</assertj-swing.version>
     <junit.version>4.12</junit.version>
-    <mockito.version>2.10.0</mockito.version>
+    <mockito.version>2.28.2</mockito.version>
     <system-rules.version>1.19.0</system-rules.version>
   </properties>
 
@@ -81,6 +81,39 @@
 
   <build>
     <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <appendAssemblyId>false</appendAssemblyId>
+          <archive>
+            <manifest>
+              <mainClass>ch.teemoo.bobby.Bobby</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven.plugin.compiler.version}</version>
+        <configuration>
+          <release>${java.release.version}</release>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>

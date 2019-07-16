@@ -6,14 +6,16 @@ This basic Chess game is a humble tribute to famous Chess player [Robert James "
 
 ## How to launch it
 
+**Note:** requires Java 11
+
 First build it
 
 ```
-mvn package
+mvn clean install
 ```
 
 Then launch the created JAR:
 
 ```
-java -cp target/bobby-1.0-SNAPSHOT.jar ch.teemoo.bobby.Bobby
+java -jar target/bobby-1.0-SNAPSHOT.jar 
 ```
