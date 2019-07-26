@@ -161,17 +161,19 @@ public class MoveService {
 		Stream<Move> movesStream = moves.stream();
 
 		if (isTopDepth) {
-			Stream<MoveAnalysis> stream = moves.parallelStream().map(
-				move -> computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
-					myKingOriginalPosition, move));
-
-			Callable<Map<MoveAnalysis, Integer>> task = () -> stream.collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
+			Callable<Map<MoveAnalysis, Integer>> task = () ->
+					moves.parallelStream().map(
+						move ->
+								computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
+									myKingOriginalPosition, move)
+					).collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
 
 			ForkJoinPool forkJoinPool = new ForkJoinPool();
 
 			try {
 				moveScores = forkJoinPool.submit(task).get();
 			} catch (InterruptedException | ExecutionException e) {
+				Thread.currentThread().interrupt();
 				throw new RuntimeException("Move computation failed in parallel threads", e);
 			}
 

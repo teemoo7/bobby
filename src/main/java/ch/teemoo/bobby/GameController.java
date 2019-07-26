@@ -8,20 +8,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
-import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.Border;
@@ -37,6 +30,7 @@ import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.players.Bot;
 import ch.teemoo.bobby.models.players.Player;
 import ch.teemoo.bobby.models.players.TraditionalBot;
+import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,16 +45,18 @@ public class GameController {
 	private Board board;
 	private Game game;
 	private final MoveService moveService;
+	private final FileService fileService;
 	private final Bot botToSuggestMove = new TraditionalBot(2);
 	private final boolean showTiming = true;
 
 	private Square selectedSquare = null;
 
-	public GameController(BoardView view, Game game, MoveService moveService) {
+	public GameController(BoardView view, Game game, MoveService moveService, FileService fileService) {
 		this.view = view;
 		this.game = game;
 		this.board = game.getBoard();
 		this.moveService = moveService;
+		this.fileService = fileService;
 		init();
 	}
 
@@ -84,16 +80,12 @@ public class GameController {
 					}
 					Bot bot = (Bot) player;
 					Instant start = Instant.now();
-//					Move move = bot.selectMove(game, moveService);
 
 					FindBestMoveTask findBestMoveTask = new FindBestMoveTask(bot, game, moveService);
 					findBestMoveTask.execute();
 					Move move;
 
 					try {
-		//				CompletableFuture<Move> future = CompletableFuture.supplyAsync(() -> bot.selectMove(game, moveService));
-		//				//Move move = bot.selectMove(game, moveService);
-		//				move = future.get();
 						move = findBestMoveTask.get();
 					} catch (InterruptedException | ExecutionException e) {
 						Thread.currentThread().interrupt();
@@ -285,54 +277,45 @@ public class GameController {
 		this.selectedSquare = null;
 	}
 
-	private void saveGame() {
-		final JFileChooser fileChooser = new JFileChooser();
-		int returnVal = fileChooser.showSaveDialog(view);
-
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File file = fileChooser.getSelectedFile();
-			Path path = Paths.get(file.toURI());
+	void saveGame() {
+		Optional<File> file = view.saveGameDialog();
+		if (file.isPresent()) {
 			try {
-				Files.write(path, game.getHistory().stream().map(Move::getBasicNotation).collect(Collectors.toList()));
+				fileService.writeGameToFileBasicNotation(game, file.get());
 			} catch (IOException e) {
 				error(e, true);
 			}
 		}
 	}
 
-	private void loadGame() {
-		final JFileChooser fileChooser = new JFileChooser();
-		int returnVal = fileChooser.showOpenDialog(view);
-
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File file = fileChooser.getSelectedFile();
-			Path path = Paths.get(file.toURI());
-			List<String> lines = new ArrayList<>();
+	void loadGame() {
+		Optional<File> file = view.loadGameDialog();
+		if (file.isPresent()) {
 			try {
-				lines.addAll(Files.readAllLines(path));
+				List<String> lines = fileService.readGameFromFileBasicNotation(file.get());
+				//todo: here we assume that the game to load is played in the same config as currently
+				Game loadedGame = new Game(game.getWhitePlayer(), game.getBlackPlayer());
+				this.game = loadedGame;
+				this.board = loadedGame.getBoard();
+				//todo: reset game (pieces position)
+				for (String line: lines) {
+					Move move = Move.fromBasicNotation(line, game.getToPlay());
+					Piece piece = board.getPiece(move.getFromX(), move.getFromY())
+							.orElseThrow(() -> new RuntimeException("Unexpected move, no piece at this location"));
+					doMove(new Move(piece, move.getFromX(), move.getFromY(), move.getToX(), move.getToY()));
+				}
+				play();
 			} catch (IOException e) {
 				error(e, true);
 			}
-			//todo: here we assume that the game to load is played in the same config as currently
-			Game loadedGame = new Game(game.getWhitePlayer(), game.getBlackPlayer());
-			this.game = loadedGame;
-			this.board = loadedGame.getBoard();
-			//todo: reset game (pieces position)
-			for (String line: lines) {
-				Move move = Move.fromBasicNotation(line, game.getToPlay());
-				Piece piece = board.getPiece(move.getFromX(), move.getFromY())
-						.orElseThrow(() -> new RuntimeException("Unexpected move, no piece at this location"));
-				doMove(new Move(piece, move.getFromX(), move.getFromY(), move.getToX(), move.getToY()));
-			}
-			play();
 		}
 	}
 
-	private void printGameToConsole() {
+	void printGameToConsole() {
 		logger.debug("Current board: \n{}", board.toString());
 	}
 
-	private void suggestMove() {
+	void suggestMove() {
 		Instant start = Instant.now();
 		Move move = botToSuggestMove.selectMove(game, moveService);
 		Instant end = Instant.now();
@@ -342,7 +325,7 @@ public class GameController {
 		info("Suggested move is : " + move.toString(), true);
 	}
 
-	private void undoLastMove() {
+	void undoLastMove() {
 		if (game.getHistory().size() < 2) {
 			return;
 		}

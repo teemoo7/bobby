@@ -4,6 +4,10 @@ import static ch.teemoo.bobby.models.Board.SIZE;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.swing.*;
@@ -66,7 +70,7 @@ public class BoardView extends JFrame {
     public void display(Piece[][] positions) {
         addFilesLabels();
         Background background;
-        for (int i = positions.length - 1; i >= 0 ; i--) {
+        for (int i = positions.length - 1; i >= 0; i--) {
             contentPane.add(getRankLabel(i));
             background = getFirstSquareBackground(i);
             for (int j = 0; j < positions[i].length; j++) {
@@ -84,7 +88,7 @@ public class BoardView extends JFrame {
     }
 
     public void refresh(Piece[][] positions) {
-        for (int i = positions.length - 1; i >= 0 ; i--) {
+        for (int i = positions.length - 1; i >= 0; i--) {
             for (int j = 0; j < positions[i].length; j++) {
                 Piece piece = positions[i][j];
                 // get current square, so that only its label is updated
@@ -119,6 +123,25 @@ public class BoardView extends JFrame {
         to.setBorder(GREEN_BORDER);
     }
 
+    public Optional<File> saveGameDialog() {
+        final JFileChooser fileChooser = new JFileChooser();
+        int returnVal = fileChooser.showSaveDialog(this);
+
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            return Optional.of(fileChooser.getSelectedFile());
+        }
+        return Optional.empty();
+    }
+
+    public Optional<File> loadGameDialog() {
+        final JFileChooser fileChooser = new JFileChooser();
+        int returnVal = fileChooser.showOpenDialog(this);
+
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            return Optional.of(fileChooser.getSelectedFile());
+        }
+        return Optional.empty();
+    }
 
     public void popupInfo(String message) {
         JOptionPane.showMessageDialog(this, message, "Info", JOptionPane.INFORMATION_MESSAGE);
@@ -175,7 +198,7 @@ public class BoardView extends JFrame {
     }
 
     private SideLabel getRankLabel(int i) {
-        return new SideLabel(String.valueOf(i+1));
+        return new SideLabel(String.valueOf(i + 1));
     }
 
     private Background swapBackground(Background background) {
