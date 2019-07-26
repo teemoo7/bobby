@@ -288,7 +288,6 @@ public class GameControllerTest {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 var square = mock(Square.class);
-                when(square.getMouseListeners()).thenReturn(new MouseListener[]{});
                 squares[i][j] = square;
             }
         }
