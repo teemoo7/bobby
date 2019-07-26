@@ -1,12 +1,14 @@
 package ch.teemoo.bobby;
 
 import ch.teemoo.bobby.gui.BoardView;
+import ch.teemoo.bobby.gui.Square;
 import ch.teemoo.bobby.models.*;
 import ch.teemoo.bobby.models.pieces.Knight;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.Player;
+import ch.teemoo.bobby.models.players.RandomBot;
 import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
 import org.junit.Before;
@@ -17,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -266,5 +269,32 @@ public class GameControllerTest {
         when(game.getPlayerByColor(eq(Color.WHITE))).thenReturn(new Human("test"));
         controller.undoLastMove();
         verify(board, times(2)).undoMove(any());
+    }
+
+    @Test
+    public void testPlayNextMoveGameOver() {
+        when(moveService.getGameState(any(), any(), any())).thenReturn(GameState.LOSS);
+        when(game.getPlayerToPlay()).thenReturn(new Human("test"));
+        controller.playNextMove();
+        verify(view, never()).refresh(any());
+        verify(board, never()).doMove(any());
+    }
+
+    @Test
+    public void testPlayNextMoveHumanToPlay() {
+        when(moveService.getGameState(any(), any(), any())).thenReturn(GameState.IN_PROGRESS);
+        when(game.getPlayerToPlay()).thenReturn(new Human("test"));
+        Square[][] squares = new Square[8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                var square = mock(Square.class);
+                when(square.getMouseListeners()).thenReturn(new MouseListener[]{});
+                squares[i][j] = square;
+            }
+        }
+        when(view.getSquares()).thenReturn(squares);
+        controller.playNextMove();
+        verify(view).resetAllClickables();
+        verify(board, never()).doMove(any());
     }
 }

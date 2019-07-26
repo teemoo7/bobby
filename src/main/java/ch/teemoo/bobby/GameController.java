@@ -70,41 +70,39 @@ public class GameController {
 	}
 
 	public void play() {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				while (game.getPlayerToPlay().isBot() && !isGameOver(game)) {
-					Player player = game.getPlayerToPlay();
-					if (!(player instanceof Bot)) {
-						throw new RuntimeException("Player has to be a bot");
-					}
-					Bot bot = (Bot) player;
-					Instant start = Instant.now();
+		SwingUtilities.invokeLater(this::playNextMove);
+	}
 
-					FindBestMoveTask findBestMoveTask = new FindBestMoveTask(bot, game, moveService);
-					findBestMoveTask.execute();
-					Move move;
-
-					try {
-						move = findBestMoveTask.get();
-					} catch (InterruptedException | ExecutionException e) {
-						Thread.currentThread().interrupt();
-						throw new RuntimeException("Move computation failed", e);
-					}
-					Instant end = Instant.now();
-					if (showTiming) {
-						logger.debug("Time to select move: {}", Duration.between(start, end));
-					}
-					doMove(move);
-				}
-
-				if (!game.getPlayerToPlay().isBot() && !isGameOver(game)) {
-					view.resetAllClickables();
-					markSquaresClickableByColor(game.getToPlay());
-				}
-
+	void playNextMove() {
+		while (game.getPlayerToPlay().isBot() && !isGameOver(game)) {
+			Player player = game.getPlayerToPlay();
+			if (!(player instanceof Bot)) {
+				throw new RuntimeException("Player has to be a bot");
 			}
-		});
+			Bot bot = (Bot) player;
+			Instant start = Instant.now();
+
+			FindBestMoveTask findBestMoveTask = new FindBestMoveTask(bot, game, moveService);
+			findBestMoveTask.execute();
+			Move move;
+
+			try {
+				move = findBestMoveTask.get();
+			} catch (InterruptedException | ExecutionException e) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("Move computation failed", e);
+			}
+			Instant end = Instant.now();
+			if (showTiming) {
+				logger.debug("Time to select move: {}", Duration.between(start, end));
+			}
+			doMove(move);
+		}
+
+		if (!game.getPlayerToPlay().isBot() && !isGameOver(game)) {
+			view.resetAllClickables();
+			markSquaresClickableByColor(game.getToPlay());
+		}
 	}
 
 	void doMove(Move move) {
