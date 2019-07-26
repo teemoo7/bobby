@@ -29,7 +29,7 @@ public class BoardView extends JFrame {
         int sizeWithLabels = 10;
         GridLayout gridLayout = new GridLayout(sizeWithLabels, sizeWithLabels);
         contentPane.setLayout(gridLayout);
-        setSize(60, 60);
+        setSize(600, 600);
         setLocationRelativeTo(null);
         setMenu();
     }
