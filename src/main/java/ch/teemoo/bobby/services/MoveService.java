@@ -141,11 +141,11 @@ public class MoveService {
 	}
 
 	public Move selectMove(Game game, int depth) {
-		MoveAnalysis moveAnalysis = selectMove(game.getBoard(), game.getToPlay(), game.getHistory(), depth);
+		MoveAnalysis moveAnalysis = selectMove(game.getBoard(), game.getToPlay(), game.getHistory(), depth, true);
 		return moveAnalysis.getMove();
 	}
 
-	private MoveAnalysis selectMove(Board board, Color color, List<Move> history, int depth) {
+	private MoveAnalysis selectMove(Board board, Color color, List<Move> history, int depth, boolean isTopDepth) {
 		// Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
 
 		List<Move> moves = computeAllMoves(board, color, true);
@@ -160,39 +160,34 @@ public class MoveService {
 
 		Stream<Move> movesStream = moves.stream();
 
-		if (depth >= 2) {
+		if (isTopDepth) {
 			Stream<MoveAnalysis> stream = moves.parallelStream().map(
 				move -> computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
 					myKingOriginalPosition, move));
 
 			Callable<Map<MoveAnalysis, Integer>> task = () -> stream.collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
 
-			ForkJoinPool forkJoinPool = new ForkJoinPool(1);
+			ForkJoinPool forkJoinPool = new ForkJoinPool();
 
 			try {
 				moveScores = forkJoinPool.submit(task).get();
 			} catch (InterruptedException | ExecutionException e) {
 				throw new RuntimeException("Move computation failed in parallel threads", e);
 			}
+
+			logger.debug(moveScores.entrySet().stream()
+					.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(e -> e.getKey().getMove().toString() + "=" + e.getValue().toString()).collect(
+							Collectors.joining(", ")));
 		} else {
 			moveScores = movesStream.map(
 				move -> computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
 					myKingOriginalPosition, move)).collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
-		}
-		if (depth >= 2) {
-			//todo: for debugging
-			logger.debug(moveScores.entrySet().stream()
-					.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(e -> e.getKey().getMove().toString() + "=" + e.getValue().toString()).collect(
-							Collectors.joining(", ")));
 		}
 		return getBestMove(moveScores);
 	}
 
 	private MoveAnalysis computeMoveAnalysis(Board board, Color color, List<Move> history, int depth,
 		Color opponentColor, Position opponentKingPosition, Position myKingOriginalPosition, Move move) {
-		if (depth >= 2) {
-			logger.debug("Move {}", move);
-		}
 		MoveAnalysis moveAnalysis = new MoveAnalysis(move);
 
 		Position myKingPosition = myKingOriginalPosition;
@@ -213,7 +208,7 @@ public class MoveService {
 
 		// Compute the probable next move for the opponent and see if our current move is a real benefit in the end
 		if (depth >= 1 && gameState.isInProgress()) {
-			MoveAnalysis opponentMoveAnalysis = selectMove(boardAfter, opponentColor, historyCopy, depth-1);
+			MoveAnalysis opponentMoveAnalysis = selectMove(boardAfter, opponentColor, historyCopy, depth-1, false);
 			Move opponentMove = opponentMoveAnalysis.getMove();
 			boardAfter.doMove(opponentMove);
 			historyCopy.add(opponentMove);

@@ -2,17 +2,22 @@ package ch.teemoo.bobby.gui;
 
 import static ch.teemoo.bobby.models.Board.SIZE;
 
-import java.awt.Container;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.stream.Stream;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 
+import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.Position;
 import ch.teemoo.bobby.models.pieces.Piece;
 
 
 public class BoardView extends JFrame {
+    private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
+    private static final Border GREEN_BORDER = BorderFactory.createLineBorder(java.awt.Color.green, 3, true);
+
     private final Container contentPane;
     private Square[][] squares = new Square[SIZE][SIZE];
 
@@ -87,6 +92,33 @@ public class BoardView extends JFrame {
             }
         }
     }
+
+    public void resetAllClickables() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                Square square = squares[i][j];
+                Stream.of(square.getMouseListeners()).forEach(square::removeMouseListener);
+                square.setCursor(Cursor.getDefaultCursor());
+            }
+        }
+    }
+
+    public void cleanSquaresBorder() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                Square square = squares[i][j];
+                square.setBorder(NO_BORDER);
+            }
+        }
+    }
+
+    public void addBorderToLastMoveSquares(Move move) {
+        Square from = squares[move.getFromY()][move.getFromX()];
+        Square to = squares[move.getToY()][move.getToX()];
+        from.setBorder(GREEN_BORDER);
+        to.setBorder(GREEN_BORDER);
+    }
+
 
     public void popupInfo(String message) {
         JOptionPane.showMessageDialog(this, message, "Info", JOptionPane.INFORMATION_MESSAGE);

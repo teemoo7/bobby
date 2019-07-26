@@ -46,8 +46,6 @@ public class GameController {
 
 	private static final Border RED_BORDER = BorderFactory.createLineBorder(java.awt.Color.red, 3, true);
 	private static final Border BLUE_BORDER = BorderFactory.createLineBorder(java.awt.Color.blue, 3, true);
-	private static final Border GREEN_BORDER = BorderFactory.createLineBorder(java.awt.Color.green, 3, true);
-	private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
 
 	private final BoardView view;
 	private Board board;
@@ -109,7 +107,7 @@ public class GameController {
 				}
 
 				if (!game.getPlayerToPlay().isBot() && !isGameOver(game)) {
-					resetAllClickables();
+					view.resetAllClickables();
 					markSquaresClickableByColor(game.getToPlay());
 				}
 
@@ -119,10 +117,10 @@ public class GameController {
 
 	void doMove(Move move) {
 		Player player = game.getPlayerByColor(move.getPiece().getColor());
-		cleanSquaresBorder();
+		view.cleanSquaresBorder();
 		if (!player.isBot()) {
 			cleanSelectedSquare();
-			resetAllClickables();
+			view.resetAllClickables();
 		}
 
 		List<Move> allowedMoves = moveService.computeMoves(board, move.getPiece(), move.getFromX(), move.getFromY(), true);
@@ -132,7 +130,7 @@ public class GameController {
 			// We use allowedMove instead of given move since it contains additional info like taking and check
 			board.doMove(allowedMove);
 			view.refresh(board.getBoard());
-			addBorderToLastMoveSquares(move);
+			view.addBorderToLastMoveSquares(move);
 			info(allowedMove.getPrettyNotation(), false);
 			game.addMoveToHistory(allowedMove);
 			game.setToPlay(swap(allowedMove.getPiece().getColor()));
@@ -142,12 +140,12 @@ public class GameController {
 		}
 	}
 
-	private void undoLastMove(Move move) {
+	void undoLastMove(Move move) {
 		Player player = game.getPlayerByColor(move.getPiece().getColor());
 		if (!player.isBot()) {
 			cleanSelectedSquare();
-			cleanSquaresBorder();
-			resetAllClickables();
+			view.cleanSquaresBorder();
+			view.resetAllClickables();
 		}
 
 		board.undoMove(move);
@@ -157,7 +155,7 @@ public class GameController {
 		game.setToPlay(move.getPiece().getColor());
 	}
 
-	private void displayGameInfo(Player player, Move move) {
+	void displayGameInfo(Player player, Move move) {
 		GameState state = moveService.getGameState(game.getBoard(), game.getToPlay(), game.getHistory());
 		switch (state) {
 			case LOSS:
@@ -195,18 +193,6 @@ public class GameController {
 		return " (" + game.getHistory().size() + " moves)";
 	}
 
-	private void resetAllClickables() {
-		//fixme: this should be delegated to the view
-		Square[][] squares = view.getSquares();
-		for (int i = 0; i < SIZE; i++) {
-			for (int j = 0; j < SIZE; j++) {
-				Square square = squares[i][j];
-				Stream.of(square.getMouseListeners()).forEach(square::removeMouseListener);
-				square.setCursor(Cursor.getDefaultCursor());
-			}
-		}
-	}
-
 	private void markSquaresClickableByColor(Color color) {
 		Square[][] squares = view.getSquares();
 		for (int i = 0; i < SIZE; i++) {
@@ -240,20 +226,13 @@ public class GameController {
 		});
 	}
 
-	private void addBorderToLastMoveSquares(Move move) {
-		Square from = view.getSquares()[move.getFromY()][move.getFromX()];
-		Square to = view.getSquares()[move.getToY()][move.getToX()];
-		from.setBorder(GREEN_BORDER);
-		to.setBorder(GREEN_BORDER);
-	}
-
 	private void squareClicked(Square square) {
 		if (selectedSquare != null) {
 			if (selectedSquare == square) {
 				// cancel current selection
-				cleanSquaresBorder();
+				view.cleanSquaresBorder();
 				cleanSelectedSquare();
-				resetAllClickables();
+				view.resetAllClickables();
 				markSquaresClickableByColor(game.getToPlay());
 			} else {
 				doMove(new Move(selectedSquare.getPiece(), selectedSquare.getPosition().getX(), selectedSquare.getPosition().getY(), square.getPosition().getX(), square.getPosition().getY()));
@@ -263,8 +242,8 @@ public class GameController {
 			if (square.getPiece() != null) {
 				if (square.getPiece().getColor() == game.getToPlay()) {
 					selectedSquare = square;
-					cleanSquaresBorder();
-					resetAllClickables();
+					view.cleanSquaresBorder();
+					view.resetAllClickables();
 					// Self piece is clickable so that it selection can be cancelled
 					markSquareClickable(square);
 					square.setBorder(RED_BORDER);
@@ -284,10 +263,6 @@ public class GameController {
 		}
 	}
 
-	private void info(String text) {
-		info(text, true);
-	}
-
 	private void info(String text, boolean withPopup) {
 		logger.info("[INFO] {}", text);
 		if (withPopup) {
@@ -299,17 +274,6 @@ public class GameController {
 		logger.error("An error happened: {}", exception.getMessage(), exception);
 		if (withPopup) {
 			view.popupError(exception.getMessage());
-		}
-	}
-
-	private void cleanSquaresBorder() {
-		//fixme: this should be delegated to the view
-		Square[][] squares = view.getSquares();
-		for (int i = 0; i < SIZE; i++) {
-			for (int j = 0; j < SIZE; j++) {
-				Square square = squares[i][j];
-				square.setBorder(NO_BORDER);
-			}
 		}
 	}
 
