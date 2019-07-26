@@ -226,23 +226,23 @@ public class MoveServiceTest {
 
     @Test
     public void testEvaluateBoardLoss() {
-        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.WHITE, GameState.LOSS, null)).isEqualTo(MoveService.WORST);
+        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.WHITE, GameState.LOSS, null, null)).isEqualTo(MoveService.WORST);
     }
 
     @Test
     public void testEvaluateBoardWin() {
-        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.BLACK, GameState.LOSS, null)).isEqualTo(MoveService.BEST);
+        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.BLACK, GameState.LOSS, null, null)).isEqualTo(MoveService.BEST);
     }
 
     @Test
     public void testEvaluateBoardDraw() {
-        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.BLACK, GameState.DRAW_STALEMATE, null)).isEqualTo(-20);
+        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.BLACK, GameState.DRAW_STALEMATE, null, null)).isEqualTo(-20);
     }
 
     @Test
     public void testEvaluateBoardInitialPosition() {
         Game game = new Game(new RandomBot(), new RandomBot());
-        assertThat(moveService.evaluateBoard(game.getBoard(), Color.WHITE, Color.BLACK, GameState.IN_PROGRESS, new Position(4, 7))).isGreaterThan(0);
+        assertThat(moveService.evaluateBoard(game.getBoard(), Color.WHITE, Color.BLACK, GameState.IN_PROGRESS, new Position(4, 7), new Position(4, 0))).isEqualTo(0);
     }
 
     @Test
@@ -280,14 +280,14 @@ public class MoveServiceTest {
 
     @Test
     public void testGetBestMove() {
-        Map<Move, Integer> map = new HashMap<>();
-        map.put(new Move(new Bishop(Color.BLACK), 4, 5, 5, 6), 60);
-        map.put(new Move(new Bishop(Color.BLACK), 4, 5, 3, 4), 23);
-        map.put(new Move(new Bishop(Color.BLACK), 4, 5, 6, 7), 45);
-        map.put(new Move(new Knight(Color.BLACK), 2, 3, 4, 4), -56);
-        map.put(new Move(new Knight(Color.BLACK), 2, 3, 1, 5), 20);
-        map.put(new Move(new Knight(Color.BLACK), 2, 3, 0, 4), 59);
-        Move bestMove = new Move(new Queen(Color.BLACK), 6, 6, 6, 7);
+        Map<MoveAnalysis, Integer> map = new HashMap<>();
+        map.put(new MoveAnalysis(new Move(new Bishop(Color.BLACK), 4, 5, 5, 6)), 60);
+        map.put(new MoveAnalysis(new Move(new Bishop(Color.BLACK), 4, 5, 3, 4)), 23);
+        map.put(new MoveAnalysis(new Move(new Bishop(Color.BLACK), 4, 5, 6, 7)), 45);
+        map.put(new MoveAnalysis(new Move(new Knight(Color.BLACK), 2, 3, 4, 4)), -56);
+        map.put(new MoveAnalysis(new Move(new Knight(Color.BLACK), 2, 3, 1, 5)), 20);
+        map.put(new MoveAnalysis(new Move(new Knight(Color.BLACK), 2, 3, 0, 4)), 59);
+        MoveAnalysis bestMove = new MoveAnalysis(new Move(new Queen(Color.BLACK), 6, 6, 6, 7));
         map.put(bestMove, 65);
         assertThat(moveService.getBestMove(map)).isEqualTo(bestMove);
     }
@@ -299,14 +299,14 @@ public class MoveServiceTest {
 
     @Test
     public void testGetMaxScoreWithRandomChoice() {
-        Map<Move, Integer> map = new HashMap<>();
-        map.put(new Move(new Bishop(Color.WHITE), 4, 5, 5, 6), -2);
-        map.put(new Move(new Bishop(Color.WHITE), 4, 5, 3, 4), 5);
-        map.put(new Move(new Bishop(Color.WHITE), 4, 5, 6, 7), 8);
-        map.put(new Move(new Knight(Color.WHITE), 2, 3, 4, 4), 8);
-        map.put(new Move(new Knight(Color.WHITE), 2, 3, 1, 5), 7);
-        map.put(new Move(new Knight(Color.WHITE), 2, 3, 0, 4), -2);
-        Optional<Move> bestmove = moveService.getMaxScoreWithRandomChoice(map);
+        Map<MoveAnalysis, Integer> map = new HashMap<>();
+        map.put(new MoveAnalysis(new Move(new Bishop(Color.WHITE), 4, 5, 5, 6)), -2);
+        map.put(new MoveAnalysis(new Move(new Bishop(Color.WHITE), 4, 5, 3, 4)), 5);
+        map.put(new MoveAnalysis(new Move(new Bishop(Color.WHITE), 4, 5, 6, 7)), 8);
+        map.put(new MoveAnalysis(new Move(new Knight(Color.WHITE), 2, 3, 4, 4)), 8);
+        map.put(new MoveAnalysis(new Move(new Knight(Color.WHITE), 2, 3, 1, 5)), 7);
+        map.put(new MoveAnalysis(new Move(new Knight(Color.WHITE), 2, 3, 0, 4)), -2);
+        Optional<MoveAnalysis> bestmove = moveService.getMaxScoreWithRandomChoice(map);
         assertThat(bestmove).isPresent();
         assertThat(map.get(bestmove.get())).isEqualTo(8);
 
@@ -314,10 +314,10 @@ public class MoveServiceTest {
 
     @Test
     public void testGetMaxScoreWithRandomChoiceSingleElement() {
-        Map<Move, Integer> map = new HashMap<>(1);
-        Move move = new Move(new Bishop(Color.WHITE), 4, 5, 5, 6);
-        map.put(move, 0);
-        assertThat(moveService.getMaxScoreWithRandomChoice(map)).isPresent().get().isEqualTo(move);
+        Map<MoveAnalysis, Integer> map = new HashMap<>(1);
+        MoveAnalysis moveAnalysis = new MoveAnalysis(new Move(new Bishop(Color.WHITE), 4, 5, 5, 6));
+        map.put(moveAnalysis, 0);
+        assertThat(moveService.getMaxScoreWithRandomChoice(map)).isPresent().get().isEqualTo(moveAnalysis);
     }
 
     @Test

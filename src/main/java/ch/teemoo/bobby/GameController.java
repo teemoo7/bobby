@@ -369,7 +369,12 @@ public class GameController {
 	}
 
 	private void suggestMove() {
+		Instant start = Instant.now();
 		Move move = botToSuggestMove.selectMove(game, moveService);
+		Instant end = Instant.now();
+		if (showTiming) {
+			logger.debug("Time to suggest move: {}", Duration.between(start, end));
+		}
 		info("Suggested move is : " + move.toString(), true);
 	}
 
