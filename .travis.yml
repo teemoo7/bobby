@@ -4,6 +4,10 @@ jdk:
 addons:
   sonarcloud:
     organization: "teemoo7-github"
+# Specify a display with xvfb for UI testing
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
 script:
-  - xvfb-run make test
   - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar
