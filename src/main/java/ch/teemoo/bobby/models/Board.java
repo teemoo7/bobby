@@ -3,12 +3,15 @@ package ch.teemoo.bobby.models;
 import java.util.Optional;
 
 import ch.teemoo.bobby.models.pieces.*;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class Board {
     public final static int SIZE = 8;
 
     private final Piece[][] board;
 
+    //fixme: do not store pieces array (mutable internal representation)
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Board(Piece[][] board) {
         this.board = board;
     }
@@ -17,6 +20,8 @@ public class Board {
         this.board = fromString(representation);
     }
 
+    //fixme: do not expose pieces array (mutable internal representation)
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Piece[][] getBoard() {
         return board;
     }

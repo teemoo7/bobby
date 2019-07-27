@@ -16,6 +16,7 @@ import javax.swing.border.Border;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.Position;
 import ch.teemoo.bobby.models.pieces.Piece;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 
 public class BoardView extends JFrame {
@@ -49,6 +50,8 @@ public class BoardView extends JFrame {
         setMenu();
     }
 
+    //fixme: do not expose squares array (mutable internal representation)
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Square[][] getSquares() {
         return squares;
     }
@@ -217,7 +220,7 @@ public class BoardView extends JFrame {
 
     private Background getFirstSquareBackground(int i) {
         Background background;
-        if (i % 2 == 1) {
+        if (i % 2 != 0) {
             background = Background.DARK;
         } else {
             background = Background.LIGHT;

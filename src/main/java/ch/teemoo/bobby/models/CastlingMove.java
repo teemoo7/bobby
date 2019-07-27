@@ -53,4 +53,14 @@ public class CastlingMove extends Move {
         }
         return notation;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }
