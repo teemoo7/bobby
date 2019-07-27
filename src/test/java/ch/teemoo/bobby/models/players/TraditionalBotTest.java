@@ -2,7 +2,6 @@ package ch.teemoo.bobby.models.players;
 
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.services.MoveService;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;

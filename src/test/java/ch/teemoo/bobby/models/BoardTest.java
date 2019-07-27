@@ -6,7 +6,6 @@ import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.RandomBot;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Optional;
