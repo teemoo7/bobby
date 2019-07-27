@@ -22,7 +22,7 @@ public class BoardViewTest {
 
     @Before
     public void setUp() {
-        view = new BoardView("Test board");
+        view = new BoardView("Test board", false);
     }
 
     @Test

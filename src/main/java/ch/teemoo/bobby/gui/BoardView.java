@@ -22,6 +22,7 @@ public class BoardView extends JFrame {
     private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
     private static final Border GREEN_BORDER = BorderFactory.createLineBorder(java.awt.Color.green, 3, true);
 
+    private final boolean visible;
     private final Container contentPane;
     private Square[][] squares = new Square[SIZE][SIZE];
 
@@ -32,8 +33,13 @@ public class BoardView extends JFrame {
     private JMenuItem itemUndoMove;
 
     public BoardView(String title) {
+        this(title, true);
+    }
+
+    public BoardView(String title, boolean visible) {
         setTitle(title);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.visible = visible;
         this.contentPane = getContentPane();
         int sizeWithLabels = 10;
         GridLayout gridLayout = new GridLayout(sizeWithLabels, sizeWithLabels);
@@ -84,7 +90,7 @@ public class BoardView extends JFrame {
             contentPane.add(getRankLabel(i));
         }
         addFilesLabels();
-        setVisible(true);
+        setVisible(visible);
     }
 
     public void refresh(Piece[][] positions) {
