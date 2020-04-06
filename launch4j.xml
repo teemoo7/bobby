@@ -2,8 +2,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>/Users/micael.paquier/git/micael-paquier/bobby/target/bobby-1.0-SNAPSHOT.jar</jar>
-  <outfile>/Users/micael.paquier/git/micael-paquier/bobby/target/binary/bobby.exe</outfile>
+  <jar>target/bobby-1.0-SNAPSHOT.jar</jar>
+  <outfile>target/binary/bobby.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
