@@ -124,7 +124,7 @@ public class GameController {
 			info(allowedMove.getPrettyNotation(), false);
 			game.addMoveToHistory(allowedMove);
 			game.setToPlay(swap(allowedMove.getPiece().getColor()));
-			displayGameInfo(player, allowedMove);
+			displayGameInfo(allowedMove);
 		} else {
 			throw new RuntimeException("Unauthorized move");
 		}
@@ -145,7 +145,8 @@ public class GameController {
 		game.setToPlay(move.getPiece().getColor());
 	}
 
-	void displayGameInfo(Player player, Move move) {
+	void displayGameInfo(Move move) {
+		boolean showPopup = !game.getWhitePlayer().isBot() || !game.getBlackPlayer().isBot();
 		GameState state = moveService.getGameState(game.getBoard(), game.getToPlay(), game.getHistory());
 		switch (state) {
 			case LOSS:
@@ -156,24 +157,24 @@ public class GameController {
 				} else {
 					info("0-1" + getNbMovesInfo(game), false);
 				}
-				info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!", !player.isBot());
+				info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!", showPopup);
 				break;
 			case DRAW_STALEMATE:
-				info("½–½" + getNbMovesInfo(game), false);
-				info("Draw (Stalemate). The game is over.", !player.isBot());
+				info("1/2–1/2" + getNbMovesInfo(game), false);
+				info("Draw (Stalemate). The game is over.", showPopup);
 				break;
 			case DRAW_50_MOVES:
-				info("½–½" + getNbMovesInfo(game), false);
-				info("Draw (50 moves). The game is over.", !player.isBot());
+				info("1/2–1/2" + getNbMovesInfo(game), false);
+				info("Draw (50 moves). The game is over.", showPopup);
 				break;
 			case DRAW_THREEFOLD:
-				info("½–½" + getNbMovesInfo(game), false);
-				info("Draw (threefold). The game is over.", !player.isBot());
+				info("1/2–1/2" + getNbMovesInfo(game), false);
+				info("Draw (threefold). The game is over.", showPopup);
 				break;
 			case IN_PROGRESS:
 			default:
 				if (move.isChecking()) {
-					info("Check!", !player.isBot());
+					info("Check!", showPopup);
 				}
 				break;
 		}
