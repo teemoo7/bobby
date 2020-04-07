@@ -32,6 +32,7 @@ public class BoardView extends JFrame {
     private JMenuItem itemPrintToConsole;
     private JMenuItem itemSuggestMove;
     private JMenuItem itemUndoMove;
+    private JMenuItem itemAbout;
 
     public BoardView(String title) {
         this(title, true);
@@ -191,6 +192,13 @@ public class BoardView extends JFrame {
 
         this.itemPrintToConsole = new JMenuItem("Print to console");
         debugMenu.add(itemPrintToConsole);
+
+        JMenu helpMenu = new JMenu("Help");
+        menuBar.add(helpMenu);
+
+        this.itemAbout = new JMenuItem("About");
+        helpMenu.add(itemAbout);
+        itemAbout.addActionListener(actionEvent -> showAboutDialog());
     }
 
     private void addFilesLabels() {
@@ -226,5 +234,15 @@ public class BoardView extends JFrame {
             background = Background.LIGHT;
         }
         return background;
+    }
+
+    private void showAboutDialog() {
+        JOptionPane.showMessageDialog(this,
+            "Bobby chess game\n"
+                + "Written with ♥ by Micaël Paquier\n"
+                + "Humble tribute to Robert James \"Bobby\" Fischer, World Chess Champion",
+            "About Bobby",
+
+            JOptionPane.INFORMATION_MESSAGE);
     }
 }
