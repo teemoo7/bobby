@@ -160,15 +160,15 @@ public class GameController {
 				info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!", showPopup);
 				break;
 			case DRAW_STALEMATE:
-				info("1/2–1/2" + getNbMovesInfo(game), false);
+				info("1/2-1/2" + getNbMovesInfo(game), false);
 				info("Draw (Stalemate). The game is over.", showPopup);
 				break;
 			case DRAW_50_MOVES:
-				info("1/2–1/2" + getNbMovesInfo(game), false);
+				info("1/2-1/2" + getNbMovesInfo(game), false);
 				info("Draw (50 moves). The game is over.", showPopup);
 				break;
 			case DRAW_THREEFOLD:
-				info("1/2–1/2" + getNbMovesInfo(game), false);
+				info("1/2-1/2" + getNbMovesInfo(game), false);
 				info("Draw (threefold). The game is over.", showPopup);
 				break;
 			case IN_PROGRESS:
