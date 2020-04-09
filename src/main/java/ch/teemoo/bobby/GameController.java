@@ -61,6 +61,20 @@ public class GameController {
 		this.fileService = fileService;
 		this.view = view;
 		initView(gameFactory.emptyGame().getBoard());
+		newGame(gameSetup);
+	}
+
+	void initView(Board board) {
+		refreshBoardView(board);
+		view.setItemNewActionListener(actionEvent -> newGame(null));
+		view.setItemLoadActionListener(actionEvent -> loadGame());
+		view.setItemSaveActionListener(actionEvent -> saveGame());
+		view.setItemPrintToConsoleActionListener(actionEvent -> printGameToConsole());
+		view.setItemSuggestMoveActionListener(actionEvent -> suggestMove());
+		view.setItemUndoMoveActionListener(actionEvent -> undoLastMove());
+	}
+
+	void newGame(GameSetup gameSetup) {
 		if (gameSetup == null) {
 			gameSetup = view.gameSetupDialog();
 		}
@@ -70,15 +84,6 @@ public class GameController {
 		if (game.canBePlayed()) {
 			play();
 		}
-	}
-
-	void initView(Board board) {
-		refreshBoardView(board);
-		view.setItemLoadActionListener(actionEvent -> loadGame());
-		view.setItemSaveActionListener(actionEvent -> saveGame());
-		view.setItemPrintToConsoleActionListener(actionEvent -> printGameToConsole());
-		view.setItemSuggestMoveActionListener(actionEvent -> suggestMove());
-		view.setItemUndoMoveActionListener(actionEvent -> undoLastMove());
 	}
 
 	void refreshBoardView(Board board) {

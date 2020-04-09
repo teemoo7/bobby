@@ -32,6 +32,7 @@ public class BoardView extends JFrame {
     private final Container contentPane;
     private Square[][] squares = new Square[SIZE][SIZE];
 
+    private JMenuItem itemNew;
     private JMenuItem itemSave;
     private JMenuItem itemLoad;
     private JMenuItem itemPrintToConsole;
@@ -60,6 +61,10 @@ public class BoardView extends JFrame {
     @SuppressFBWarnings("EI_EXPOSE_REP")
     public Square[][] getSquares() {
         return squares;
+    }
+
+    public void setItemNewActionListener(ActionListener actionListener) {
+        itemNew.addActionListener(actionListener);
     }
 
     public void setItemSaveActionListener(ActionListener actionListener) {
@@ -224,6 +229,9 @@ public class BoardView extends JFrame {
         JMenu gameMenu = new JMenu("Game");
         menuBar.add(gameMenu);
 
+        this.itemNew = new JMenuItem("New");
+        gameMenu.add(itemNew);
+        gameMenu.addSeparator();
         this.itemSave = new JMenuItem("Save");
         gameMenu.add(itemSave);
         this.itemLoad = new JMenuItem("Load");
