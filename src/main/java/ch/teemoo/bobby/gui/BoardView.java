@@ -13,9 +13,14 @@ import java.util.stream.Stream;
 import javax.swing.*;
 import javax.swing.border.Border;
 
+import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.Position;
 import ch.teemoo.bobby.models.pieces.Piece;
+import ch.teemoo.bobby.models.players.Human;
+import ch.teemoo.bobby.models.players.Player;
+import ch.teemoo.bobby.models.players.RandomBot;
+import ch.teemoo.bobby.models.players.TraditionalBot;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 
@@ -78,6 +83,7 @@ public class BoardView extends JFrame {
     }
 
     public void display(Piece[][] positions) {
+        contentPane.removeAll();
         addFilesLabels();
         Background background;
         for (int i = positions.length - 1; i >= 0; i--) {
@@ -151,6 +157,49 @@ public class BoardView extends JFrame {
             return Optional.of(fileChooser.getSelectedFile());
         }
         return Optional.empty();
+    }
+
+    public GameSetup gameSetupDialog() {
+        Player whitePlayer;
+        Player blackPlayer;
+
+        Object[] colors = {"White", "Black"};
+        int colorPos = JOptionPane.showOptionDialog(this,
+            "Select your color",
+            "Game setup",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            colors,
+            colors[0]);
+
+        Object[] level = {"Stupid", "Very easy", "Easy", "Normal"};
+        int levelPos = JOptionPane.showOptionDialog(this,
+            "Select IA level",
+            "Game setup",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            level,
+            level[3]);
+
+        Player human = new Human("Player");
+        Player bot;
+        if (levelPos == 0) {
+            bot = new RandomBot();
+        } else {
+            bot = new TraditionalBot(levelPos - 1);
+        }
+
+        if (colorPos != 1) {
+            whitePlayer = human;
+            blackPlayer = bot;
+        } else {
+            whitePlayer = bot;
+            blackPlayer = human;
+        }
+
+        return new GameSetup(whitePlayer, blackPlayer);
     }
 
     public void popupInfo(String message) {

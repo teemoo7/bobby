@@ -41,7 +41,9 @@ public class Square extends JLabel {
         if (piece != null) {
             if (piece instanceof Pawn && piece.getColor() == Color.BLACK && System.getProperty("os.name").toLowerCase()
                 .contains("mac")) {
-                //fixme: for some unclear reason, the black pawn char is not correctly rendered on Mac
+                //fixme: on MacOSX this unicode is interpreted as an emoji (Apple Color Emoji), resulting into a bug
+                //fixme: to display it. A possible workaround could be to remove this Font but it requires no more SIP.
+                //fixme: https://apple.stackexchange.com/questions/191130/how-to-disable-emojis-system-wide
                 return "P";
             }
             return piece.getUnicode();

@@ -3,6 +3,7 @@ package ch.teemoo.bobby;
 import org.assertj.swing.core.GenericTypeMatcher;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
@@ -30,6 +31,7 @@ public class BobbySwingTest extends AssertJSwingJUnitTestCase {
     }
 
     @Test
+    @Ignore
     public void testFileExitMenu() {
         exit.expectSystemExitWithStatus(0);
         frame.menuItem(new GenericTypeMatcher<JMenuItem>(JMenuItem.class) {

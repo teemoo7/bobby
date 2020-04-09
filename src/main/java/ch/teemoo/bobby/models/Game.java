@@ -85,6 +85,11 @@ public class Game {
         this.history.remove(this.history.size() - 1);
     }
 
+    public boolean canBePlayed() {
+        return whitePlayer != null && blackPlayer != null && state == GameState.IN_PROGRESS && (!whitePlayer.isBot()
+            || !blackPlayer.isBot());
+    }
+
     private Piece[][] getInitialPiecesPositions() {
         Piece[][] pos = new Piece[SIZE][SIZE];
         pos[0][0] = new Rook(Color.WHITE);

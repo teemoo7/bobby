@@ -1,14 +1,40 @@
 package ch.teemoo.bobby;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import ch.teemoo.bobby.gui.BoardView;
 import ch.teemoo.bobby.gui.Square;
-import ch.teemoo.bobby.models.*;
+import ch.teemoo.bobby.helpers.GameFactory;
+import ch.teemoo.bobby.models.Board;
+import ch.teemoo.bobby.models.Color;
+import ch.teemoo.bobby.models.Game;
+import ch.teemoo.bobby.models.GameSetup;
+import ch.teemoo.bobby.models.GameState;
+import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.pieces.Knight;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.Player;
-import ch.teemoo.bobby.models.players.RandomBot;
 import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
 import org.junit.Before;
@@ -19,19 +45,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.awt.event.MouseListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 @RunWith(MockitoJUnitRunner.class)
 public class GameControllerTest {
     @Rule
@@ -41,7 +54,10 @@ public class GameControllerTest {
     BoardView view;
 
     @Mock
-    Game game;
+	Game game;
+
+    @Mock
+	GameFactory gameFactory;
 
     @Mock
     Board board;
@@ -56,13 +72,15 @@ public class GameControllerTest {
 
     @Before
     public void setUp() {
+		when(gameFactory.emptyGame()).thenReturn(new Game(null, null));
+    	when(gameFactory.createGame(any())).thenReturn(game);
         when(game.getBoard()).thenReturn(board);
-        controller = new GameController(view, game, moveService, fileService);
+        controller = new GameController(view, null, gameFactory, moveService, fileService);
     }
 
     @Test
     public void testGameControllerInit() {
-        verify(view).display(any());
+        verify(view, times(2)).display(any());
         verify(view).setItemLoadActionListener(any());
         verify(view).setItemPrintToConsoleActionListener(any());
         verify(view).setItemSaveActionListener(any());
@@ -80,7 +98,7 @@ public class GameControllerTest {
 
         assertThatExceptionOfType(RuntimeException.class)
                 .isThrownBy(() -> controller.doMove(move))
-                .withMessage("Unauthorized move");
+                .withMessageContaining("Unauthorized move");
     }
 
     @Test

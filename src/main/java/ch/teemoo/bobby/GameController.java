@@ -21,9 +21,11 @@ import javax.swing.border.Border;
 
 import ch.teemoo.bobby.gui.BoardView;
 import ch.teemoo.bobby.gui.Square;
+import ch.teemoo.bobby.helpers.GameFactory;
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
+import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.GameState;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.pieces.Piece;
@@ -44,6 +46,7 @@ public class GameController {
 	private final BoardView view;
 	private Board board;
 	private Game game;
+	private final GameFactory gameFactory;
 	private final MoveService moveService;
 	private final FileService fileService;
 	private final Bot botToSuggestMove = new TraditionalBot(2);
@@ -51,17 +54,26 @@ public class GameController {
 
 	private Square selectedSquare = null;
 
-	public GameController(BoardView view, Game game, MoveService moveService, FileService fileService) {
-		this.view = view;
-		this.game = game;
-		this.board = game.getBoard();
+	public GameController(BoardView view, GameSetup gameSetup, GameFactory gameFactory, MoveService moveService,
+		FileService fileService) {
+		this.gameFactory = gameFactory;
 		this.moveService = moveService;
 		this.fileService = fileService;
-		init();
+		this.view = view;
+		initView(gameFactory.emptyGame().getBoard());
+		if (gameSetup == null) {
+			gameSetup = view.gameSetupDialog();
+		}
+		this.game = gameFactory.createGame(gameSetup);
+		this.board = game.getBoard();
+		refreshBoardView(board);
+		if (game.canBePlayed()) {
+			play();
+		}
 	}
 
-	private void init() {
-		view.display(board.getBoard());
+	void initView(Board board) {
+		refreshBoardView(board);
 		view.setItemLoadActionListener(actionEvent -> loadGame());
 		view.setItemSaveActionListener(actionEvent -> saveGame());
 		view.setItemPrintToConsoleActionListener(actionEvent -> printGameToConsole());
@@ -69,7 +81,11 @@ public class GameController {
 		view.setItemUndoMoveActionListener(actionEvent -> undoLastMove());
 	}
 
-	public void play() {
+	void refreshBoardView(Board board) {
+		view.display(board.getBoard());
+	}
+
+	void play() {
 		SwingUtilities.invokeLater(this::playNextMove);
 	}
 
@@ -126,7 +142,7 @@ public class GameController {
 			game.setToPlay(swap(allowedMove.getPiece().getColor()));
 			displayGameInfo(allowedMove);
 		} else {
-			throw new RuntimeException("Unauthorized move");
+			throw new RuntimeException("Unauthorized move: " + move.getBasicNotation());
 		}
 	}
 
@@ -292,11 +308,11 @@ public class GameController {
 		if (file.isPresent()) {
 			try {
 				List<String> lines = fileService.readGameFromFileBasicNotation(file.get());
-				//todo: here we assume that the game to load is played in the same config as currently
+				// we assume that the game to load is played in the same config as currently
 				Game loadedGame = new Game(game.getWhitePlayer(), game.getBlackPlayer());
 				this.game = loadedGame;
 				this.board = loadedGame.getBoard();
-				//todo: reset game (pieces position)
+				refreshBoardView(board);
 				for (String line: lines) {
 					Move move = Move.fromBasicNotation(line, game.getToPlay());
 					Piece piece = board.getPiece(move.getFromX(), move.getFromY())
