@@ -312,7 +312,7 @@ public class GameController {
 		Optional<File> file = view.loadGameDialog();
 		if (file.isPresent()) {
 			try {
-				List<String> lines = fileService.readGameFromFileBasicNotation(file.get());
+				List<String> lines = fileService.readFile(file.get());
 				// we assume that the game to load is played in the same config as currently
 				Game loadedGame = new Game(game.getWhitePlayer(), game.getBlackPlayer());
 				this.game = loadedGame;

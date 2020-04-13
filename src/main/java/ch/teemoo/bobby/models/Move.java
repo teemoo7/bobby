@@ -139,12 +139,12 @@ public class Move {
 		return move;
 	}
 
-	private static String convertXToChar(int x) {
+	public static String convertXToChar(int x) {
 		final int aAscii = (int) 'a';
 		return String.valueOf((char) (aAscii + x));
 	}
 
-	private static int convertCharToX(char character) {
+	public static int convertCharToX(char character) {
 		final int aAscii = (int) 'a';
 		final int charAscii = (int) character;
 		return charAscii - aAscii;

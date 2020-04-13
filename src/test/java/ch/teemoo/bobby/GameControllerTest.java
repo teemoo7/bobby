@@ -27,7 +27,6 @@ import ch.teemoo.bobby.helpers.GameFactory;
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.GameState;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.pieces.Knight;
@@ -240,27 +239,27 @@ public class GameControllerTest {
     public void testLoadGameCancelled() throws Exception {
         when(view.loadGameDialog()).thenReturn(Optional.empty());
         controller.loadGame();
-        verify(fileService, never()).readGameFromFileBasicNotation(any());
+        verify(fileService, never()).readFile(any());
     }
 
     @Test
     public void testLoadGame() throws Exception {
         File file = mock(File.class);
         when(view.loadGameDialog()).thenReturn(Optional.of(file));
-        when(fileService.readGameFromFileBasicNotation(eq(file))).thenReturn(Collections.singletonList("e2-e4"));
+        when(fileService.readFile(eq(file))).thenReturn(Collections.singletonList("e2-e4"));
         when(game.getWhitePlayer()).thenReturn(new Human("test"));
         when(game.getBlackPlayer()).thenReturn(new Human("test2"));
         when(moveService.computeMoves(any(), any(), anyInt(), anyInt(), anyBoolean())).thenReturn(Collections.singletonList(new Move(new Pawn(Color.WHITE), 4, 1, 4, 3)));
         when(moveService.getGameState(any(), any(), any())).thenReturn(GameState.IN_PROGRESS);
         controller.loadGame();
-        verify(fileService).readGameFromFileBasicNotation(eq(file));
+        verify(fileService).readFile(eq(file));
     }
 
     @Test
     public void testLoadGameException() throws Exception {
         File file = mock(File.class);
         when(view.loadGameDialog()).thenReturn(Optional.of(file));
-        doThrow(new IOException("Test exception")).when(fileService).readGameFromFileBasicNotation(any());
+        doThrow(new IOException("Test exception")).when(fileService).readFile(any());
         controller.loadGame();
         assertThat(systemOutRule.getLog()).contains("An error happened: Test exception");
     }

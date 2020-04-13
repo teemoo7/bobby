@@ -12,10 +12,11 @@ import java.util.stream.Collectors;
 
 public class FileService {
     public void writeGameToFileBasicNotation(Game game, File file) throws IOException {
-        Files.write(Paths.get(file.toURI()), game.getHistory().stream().map(Move::getBasicNotation).collect(Collectors.toList()));
+        Files.write(Paths.get(file.toURI()),
+            game.getHistory().stream().map(Move::getBasicNotation).collect(Collectors.toList()));
     }
 
-    public List<String> readGameFromFileBasicNotation(File file) throws IOException {
+    public List<String> readFile(File file) throws IOException {
         return Files.readAllLines(Paths.get(file.toURI()));
     }
 }
