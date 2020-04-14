@@ -70,11 +70,35 @@ public class GameTest {
     }
 
     @Test
+    public void testRemoveLastMoveFromHistory() {
+        Game game = new Game(new Human("Player 1"), new Human("Player 2"));
+        assertThat(game.getHistory()).isEmpty();
+        Move move = new Move(new Pawn(Color.WHITE), 4, 1, 4, 2);
+        game.addMoveToHistory(move);
+        assertThat(game.getHistory()).containsExactly(move);
+        game.removeLastMoveFromHistory();
+        assertThat(game.getHistory()).isEmpty();
+    }
+
+    @Test
     public void testGetPlayerByColor() {
         Player whitePlayer = new Human("Player 1");
         Player blackPlayer = new RandomBot();
         Game game = new Game(whitePlayer, blackPlayer);
         assertThat(game.getPlayerByColor(Color.WHITE)).isEqualTo(whitePlayer);
         assertThat(game.getPlayerByColor(Color.BLACK)).isEqualTo(blackPlayer);
+    }
+
+    @Test
+    public void testCanBePlayed() {
+        Game game = new Game(new RandomBot(), new Human("test"));
+        assertThat(game.canBePlayed()).isTrue();
+        game = new Game(new RandomBot(), new RandomBot());
+        assertThat(game.canBePlayed()).isFalse();
+        game = new Game(new RandomBot(), new Human("test"));
+        game.setState(GameState.LOSS);
+        assertThat(game.canBePlayed()).isFalse();
+        game = new Game(null, null);
+        assertThat(game.canBePlayed()).isFalse();
     }
 }

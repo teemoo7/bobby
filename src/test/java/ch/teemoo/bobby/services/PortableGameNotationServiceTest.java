@@ -160,7 +160,7 @@ public class PortableGameNotationServiceTest {
 	public void testUnexpectedMove() throws IOException {
 		// given
 		String pgn = "[Event \"?\"]\n" + "[Site \"?\"]\n" + "[Date \"????.??.??\"]\n" + "[Round \"?\"]\n"
-			+ "[White \"?\"]\n" + "[Black \"?\"]\n" + "[Result \"*\"]\n\n1. O-O-O *";
+			+ "[White \"?\"]\n" + "[Black \"?\"]\n" + "[Result \"*\"]\n\n1. O-O-O O-O-O 2. e8=R e1=K 3. d8=B *";
 		when(fileService.readFile(any())).thenReturn(Arrays.asList(pgn.split("\\n")));
 
 		// when
