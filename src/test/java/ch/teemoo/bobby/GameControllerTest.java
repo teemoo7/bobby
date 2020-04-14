@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -27,6 +28,7 @@ import ch.teemoo.bobby.helpers.GameFactory;
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
+import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.GameState;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.pieces.Knight;
@@ -85,6 +87,18 @@ public class GameControllerTest {
         verify(view).setItemSaveActionListener(any());
         verify(view).setItemSuggestMoveActionListener(any());
         verify(view).setItemUndoMoveActionListener(any());
+    }
+
+    @Test
+    public void testNewGameWithSetup() {
+        // given
+        GameSetup gameSetup = new GameSetup(new Human("test1"), new Human("test2"));
+
+        // when
+        controller.newGame(gameSetup);
+
+        // then
+        verify(view, atMostOnce()).gameSetupDialog();
     }
 
     @Test

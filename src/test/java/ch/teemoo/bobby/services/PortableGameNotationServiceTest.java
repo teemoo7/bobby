@@ -1,6 +1,7 @@
 package ch.teemoo.bobby.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -15,6 +16,7 @@ import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.pieces.Rook;
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,9 +74,13 @@ public class PortableGameNotationServiceTest {
 
 	@Test
 	public void readPgnOpeningRuyLopezFileTest() throws IOException {
+		// given
 		when(fileService.readFile(any())).thenReturn(Arrays.asList(PGN_OPENING_RUY_LOPEZ_CONTENT.split("\\n")));
+
+		// when
 		Game game = portableGameNotationService.readPgnFile(null);
 
+		// then
 		// headers check
 		assertThat(game.getWhitePlayer()).isNotNull();
 		assertThat(game.getWhitePlayer().getName()).isEqualTo("?");
@@ -87,9 +93,13 @@ public class PortableGameNotationServiceTest {
 
 	@Test
 	public void readPgnGameFileTest() throws IOException {
+		// given
 		when(fileService.readFile(any())).thenReturn(Arrays.asList(PGN_GAME_CONTENT.split("\\n")));
+
+		// when
 		Game game = portableGameNotationService.readPgnFile(null);
 
+		// then
 		// headers check
 		assertThat(game.getWhitePlayer()).isNotNull();
 		assertThat(game.getWhitePlayer().getName()).isEqualTo("Fischer, Robert J.");
@@ -122,9 +132,13 @@ public class PortableGameNotationServiceTest {
 
 	@Test
 	public void readPgnBigGameFileTest() throws IOException {
+		// given
 		when(fileService.readFile(any())).thenReturn(Arrays.asList(PGN_GAME_WORLD_CHAMPIONSHIP_CONTENT.split("\\n")));
+
+		// when
 		Game game = portableGameNotationService.readPgnFile(null);
 
+		// then
 		// headers check
 		assertThat(game.getWhitePlayer()).isNotNull();
 		assertThat(game.getWhitePlayer().getName()).isEqualTo("Spassky, Boris V");
@@ -140,6 +154,20 @@ public class PortableGameNotationServiceTest {
 		assertThat(game.getHistory().get(127).isChecking()).isFalse();
 		assertThat(game.getHistory().get(127)).isInstanceOf(PromotionMove.class);
 		assertThat(((PromotionMove) game.getHistory().get(127)).getPromotedPiece()).isInstanceOf(Queen.class);
+	}
+
+	@Test
+	public void testUnexpectedMove() throws IOException {
+		// given
+		String pgn = "[Event \"?\"]\n" + "[Site \"?\"]\n" + "[Date \"????.??.??\"]\n" + "[Round \"?\"]\n"
+			+ "[White \"?\"]\n" + "[Black \"?\"]\n" + "[Result \"*\"]\n\n1. O-O-O *";
+		when(fileService.readFile(any())).thenReturn(Arrays.asList(pgn.split("\\n")));
+
+		// when
+		ThrowableAssert.ThrowingCallable callable = () -> portableGameNotationService.readPgnFile(null);
+
+		// then
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(callable).withMessageContaining("Unexpected move");
 	}
 
 }
