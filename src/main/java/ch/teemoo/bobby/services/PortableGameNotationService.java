@@ -57,6 +57,7 @@ public class PortableGameNotationService {
 		Player whitePlayer = new Human(headers.getOrDefault("White", "?"));
 		Player blackPlayer = new Human(headers.getOrDefault("Black", "?"));
 		Game game = new Game(whitePlayer, blackPlayer);
+		game.setOpening(headers.get("Opening"));
 
 		movesContent = cleanMovesContent(movesContent);
 

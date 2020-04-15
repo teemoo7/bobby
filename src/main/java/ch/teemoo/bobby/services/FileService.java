@@ -5,6 +5,7 @@ import ch.teemoo.bobby.models.Move;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -19,4 +20,14 @@ public class FileService {
     public List<String> readFile(File file) throws IOException {
         return Files.readAllLines(Paths.get(file.toURI()));
     }
+
+    public File[] getFilesFromResourceFolder(String folder) {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        URL url = loader.getResource(folder);
+        if (url == null) {
+            throw new RuntimeException("Unable to load files from folder " + folder);
+        }
+        return new File(url.getPath()).listFiles();
+    }
+
 }
