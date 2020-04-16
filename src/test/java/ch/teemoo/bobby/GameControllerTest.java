@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import ch.teemoo.bobby.gui.BoardView;
 import ch.teemoo.bobby.gui.Square;
+import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.helpers.GameFactory;
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
@@ -36,6 +37,7 @@ import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.Player;
+import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
 import org.junit.Before;
@@ -61,6 +63,9 @@ public class GameControllerTest {
 	GameFactory gameFactory;
 
     @Mock
+    BotFactory botFactory;
+
+    @Mock
     Board board;
 
     @Mock
@@ -75,8 +80,9 @@ public class GameControllerTest {
     public void setUp() {
 		when(gameFactory.emptyGame()).thenReturn(new Game(null, null));
     	when(gameFactory.createGame(any())).thenReturn(game);
+        when(botFactory.getStrongestBot()).thenReturn(new TraditionalBot(0, moveService));
         when(game.getBoard()).thenReturn(board);
-        controller = new GameController(view, null, gameFactory, moveService, fileService);
+        controller = new GameController(view, null, gameFactory, botFactory, moveService, fileService);
     }
 
     @Test
@@ -98,7 +104,7 @@ public class GameControllerTest {
         controller.newGame(gameSetup);
 
         // then
-        verify(view, atMostOnce()).gameSetupDialog();
+        verify(view, atMostOnce()).gameSetupDialog(any());
     }
 
     @Test

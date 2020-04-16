@@ -21,6 +21,7 @@ import javax.swing.border.Border;
 
 import ch.teemoo.bobby.gui.BoardView;
 import ch.teemoo.bobby.gui.Square;
+import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.helpers.GameFactory;
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
@@ -34,6 +35,7 @@ import ch.teemoo.bobby.models.players.Player;
 import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
+import ch.teemoo.bobby.services.OpeningService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,19 +49,22 @@ public class GameController {
 	private Board board;
 	private Game game;
 	private final GameFactory gameFactory;
+	private final BotFactory botFactory;
 	private final MoveService moveService;
 	private final FileService fileService;
-	private final Bot botToSuggestMove = new TraditionalBot(2);
+	private final Bot botToSuggestMove;
 	private final boolean showTiming = true;
 
 	private Square selectedSquare = null;
 
-	public GameController(BoardView view, GameSetup gameSetup, GameFactory gameFactory, MoveService moveService,
-		FileService fileService) {
-		this.gameFactory = gameFactory;
+	public GameController(BoardView view, GameSetup gameSetup, GameFactory gameFactory, BotFactory botFactory,
+		MoveService moveService, FileService fileService) {
 		this.moveService = moveService;
 		this.fileService = fileService;
 		this.view = view;
+		this.gameFactory = gameFactory;
+		this.botFactory = botFactory;
+		this.botToSuggestMove = botFactory.getStrongestBot();
 		initView(gameFactory.emptyGame().getBoard());
 		newGame(gameSetup);
 	}
@@ -76,7 +81,7 @@ public class GameController {
 
 	void newGame(GameSetup gameSetup) {
 		if (gameSetup == null) {
-			gameSetup = view.gameSetupDialog();
+			gameSetup = view.gameSetupDialog(botFactory);
 		}
 		this.game = gameFactory.createGame(gameSetup);
 		this.board = game.getBoard();
@@ -337,7 +342,7 @@ public class GameController {
 
 	void suggestMove() {
 		Instant start = Instant.now();
-		Move move = botToSuggestMove.selectMove(game, moveService);
+		Move move = botToSuggestMove.selectMove(game);
 		Instant end = Instant.now();
 		if (showTiming) {
 			logger.debug("Time to suggest move: {}", Duration.between(start, end));
@@ -373,7 +378,7 @@ public class GameController {
 
 		@Override
 		protected Move doInBackground() {
-			return bot.selectMove(game, moveService);
+			return bot.selectMove(game);
 		}
 	}
 }

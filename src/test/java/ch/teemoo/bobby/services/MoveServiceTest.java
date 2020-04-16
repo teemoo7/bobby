@@ -31,7 +31,7 @@ public class MoveServiceTest {
                 "f2-f4",
                 "g7-g5"
         );
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Color colorToPlay = Color.WHITE;
         for (String notation: movesNotation) {
             Move move = Move.fromBasicNotation(notation, colorToPlay);
@@ -65,7 +65,7 @@ public class MoveServiceTest {
                 "b7-b6",
                 "f3-h5"
         );
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Color colorToPlay = Color.WHITE;
         for (String notation: movesNotation) {
             Move move = Move.fromBasicNotation(notation, colorToPlay);
@@ -91,7 +91,7 @@ public class MoveServiceTest {
 
     @Test
     public void testComputeAllMoves() {
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board initialBoard = game.getBoard();
         // Each player has 20 possible moves in initial position
         assertThat(moveService.computeAllMoves(initialBoard, Color.WHITE, false)).hasSize(20);
@@ -100,7 +100,7 @@ public class MoveServiceTest {
 
     @Test
     public void testComputeMoves() {
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board initialBoard = game.getBoard();
         // White rook cannot move in initial position
         assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(0, 0).get(), 0, 0, false)).isEmpty();
@@ -157,7 +157,7 @@ public class MoveServiceTest {
 
     @Test
     public void testGetGameStateDraw50MovesNoCaptureNoPawn() {
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board board = game.getBoard();
         List<Move> history = new ArrayList<>();
         for (int i = 0; i < 25; i++) {
@@ -214,7 +214,7 @@ public class MoveServiceTest {
     @Test
     public void testFindKingPosition() {
         // Initial positions board
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         assertThat(moveService.findKingPosition(game.getBoard(), Color.WHITE)).isPresent().get().hasFieldOrPropertyWithValue("x", 4).hasFieldOrPropertyWithValue("y", 0);
         assertThat(moveService.findKingPosition(game.getBoard(), Color.BLACK)).isPresent().get().hasFieldOrPropertyWithValue("x", 4).hasFieldOrPropertyWithValue("y", 7);
 
@@ -241,7 +241,7 @@ public class MoveServiceTest {
 
     @Test
     public void testEvaluateBoardInitialPosition() {
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         assertThat(moveService.evaluateBoard(game.getBoard(), Color.WHITE, Color.BLACK, GameState.IN_PROGRESS, new Position(4, 7), new Position(4, 0))).isEqualTo(0);
     }
 
@@ -264,7 +264,7 @@ public class MoveServiceTest {
     @Test
     public void testGetPiecesValueSumInitialPosition() {
         // Initial positions board
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board board = game.getBoard();
         assertThat(moveService.getPiecesValueSum(board, Color.WHITE)).isEqualTo(
                 8 * (new Pawn(Color.WHITE)).getValue()
@@ -328,7 +328,7 @@ public class MoveServiceTest {
     @Test
     public void testCanMoveInitialPosition() {
         // Initial positions board
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board board = game.getBoard();
         assertThat(moveService.canMove(board, Color.WHITE)).isTrue();
         assertThat(moveService.canMove(board, Color.BLACK)).isTrue();
@@ -352,7 +352,7 @@ public class MoveServiceTest {
     @Test
     public void testComputeMovesBoardInitialPositions() {
         // Initial positions board
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board board = game.getBoard();
         List<Move> whiteMovesStart = moveService.computeBoardMoves(board, Color.WHITE, false, false);
         assertThat(whiteMovesStart).containsExactlyInAnyOrder(
@@ -384,7 +384,7 @@ public class MoveServiceTest {
     @Test
     public void testComputeMovesBoardInitialPositionsReturnAtFirstPieceHavingMoves() {
         // Initial positions board
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board board = game.getBoard();
         List<Move> whiteMovesStart = moveService.computeBoardMoves(board, Color.WHITE, false, true);
         assertThat(whiteMovesStart).containsExactlyInAnyOrder(

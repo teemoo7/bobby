@@ -104,7 +104,7 @@ public class PortableGameNotationService {
 			game.addMoveToHistory(matchingMove);
 		}
 
-		logger.info("PGN game successfully loaded ({} moves) form file {}", game.getHistory().size(), file.getName());
+		logger.info("PGN game successfully loaded ({} moves) form file {}", game.getHistory().size(), file);
 
 		return game;
 	}

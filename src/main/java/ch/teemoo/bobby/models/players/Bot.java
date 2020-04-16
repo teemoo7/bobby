@@ -5,9 +5,12 @@ import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.services.MoveService;
 
 public abstract class Bot extends Player {
-    public Bot(String name) {
-        super(name);
+    protected final MoveService moveService;
+
+    public Bot(String name, MoveService moveService) {
+        super("Bobby (" + name + ")");
+        this.moveService = moveService;
     }
 
-    public abstract Move selectMove(Game game, MoveService moveService);
+    public abstract Move selectMove(Game game);
 }

@@ -1,6 +1,7 @@
 package ch.teemoo.bobby;
 
 import ch.teemoo.bobby.gui.BoardView;
+import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.helpers.GameFactory;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameSetup;
@@ -8,10 +9,20 @@ import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
+import ch.teemoo.bobby.services.OpeningService;
+import ch.teemoo.bobby.services.PortableGameNotationService;
 
 import javax.swing.*;
 
 public class Bobby implements Runnable {
+    private final MoveService moveService = new MoveService();
+    private final FileService fileService = new FileService();
+    private final PortableGameNotationService portableGameNotationService =
+        new PortableGameNotationService(fileService, moveService);
+    private final OpeningService openingService = new OpeningService(portableGameNotationService, fileService);
+    private final GameFactory gameFactory = new GameFactory();
+    private final BotFactory botFactory = new BotFactory(moveService, openingService);
+
     public static void main(String args[]) {
         SwingUtilities.invokeLater(new Bobby());
     }
@@ -20,6 +31,6 @@ public class Bobby implements Runnable {
 //        GameSetup gameSetup = new GameSetup(new Human("Player 1"), new TraditionalBot(2));
         GameSetup gameSetup = null;
         BoardView boardView = new BoardView("Bobby chess game");
-        new GameController(boardView, gameSetup, new GameFactory(), new MoveService(), new FileService());
+        new GameController(boardView, gameSetup, gameFactory, botFactory, moveService, fileService);
     }
 }

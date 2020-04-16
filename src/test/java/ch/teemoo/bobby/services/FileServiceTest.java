@@ -13,6 +13,7 @@ import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.pieces.Pawn;
+import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.RandomBot;
 import org.junit.After;
 import org.junit.Before;
@@ -45,7 +46,7 @@ public class FileServiceTest {
 	@Test
 	public void testWriteGameToFileBasicNotation() throws IOException {
 		// given
-		Game game = new Game(new RandomBot(), new RandomBot());
+		Game game = new Game(new Human("A"), new Human("B"));
 		game.addMoveToHistory(new Move(new Pawn(Color.WHITE), 0, 1, 0, 2));
 
 		// when

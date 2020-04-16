@@ -13,7 +13,7 @@ public class GameSetupTest {
 	public void testGameSetup() {
 		// given
 		Player player1 = new Human("Test");
-		Player player2 = new RandomBot();
+		Player player2 = new Human("Test2");
 
 		// when
 		GameSetup gameSetup = new GameSetup(player1, player2);

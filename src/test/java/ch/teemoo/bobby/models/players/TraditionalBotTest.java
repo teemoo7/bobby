@@ -23,22 +23,16 @@ public class TraditionalBotTest {
 
     @Test
     public void testTraditionalBotProps() {
-        Player bot = new TraditionalBot(0);
-        assertThat(bot.getName()).isEqualTo("Traditional Bot (level 0)");
+        Player bot = new TraditionalBot(0, moveService);
+        assertThat(bot.getName()).isEqualTo("Bobby (Traditional Bot (level 0))");
         assertThat(bot.isBot()).isTrue();
-    }
-
-    @Test
-    public void testTraditionalBotWrongLevel() {
-        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> new TraditionalBot(-1));
-        assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> new TraditionalBot(3));
     }
 
     @Test
     public void testSelectMove() {
         int level = 2;
-        Bot bot = new TraditionalBot(level);
-        bot.selectMove(game, moveService);
+        Bot bot = new TraditionalBot(level, moveService);
+        bot.selectMove(game);
         verify(moveService).selectMove(any(), eq(level));
     }
 

@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import javax.swing.*;
 import javax.swing.border.Border;
 
+import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.Position;
@@ -164,7 +165,7 @@ public class BoardView extends JFrame {
         return Optional.empty();
     }
 
-    public GameSetup gameSetupDialog() {
+    public GameSetup gameSetupDialog(BotFactory botFactory) {
         Player whitePlayer;
         Player blackPlayer;
 
@@ -178,7 +179,7 @@ public class BoardView extends JFrame {
             colors,
             colors[0]);
 
-        Object[] level = {"Stupid", "Very easy", "Easy", "Normal"};
+        Object[] level = {"Stupid", "Very easy", "Easy", "Normal", "Experienced"};
         int levelPos = JOptionPane.showOptionDialog(this,
             "Select IA level",
             "Game setup",
@@ -186,14 +187,16 @@ public class BoardView extends JFrame {
             JOptionPane.QUESTION_MESSAGE,
             null,
             level,
-            level[3]);
+            level[4]);
 
         Player human = new Human("Player");
         Player bot;
         if (levelPos == 0) {
-            bot = new RandomBot();
+            bot = botFactory.getRandomBot();
+        } else if (levelPos == 4) {
+            bot = botFactory.getExperiencedBot(2);
         } else {
-            bot = new TraditionalBot(levelPos - 1);
+            bot = botFactory.getTraditionalBot(levelPos - 1);
         }
 
         if (colorPos != 1) {

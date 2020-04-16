@@ -7,14 +7,12 @@ import ch.teemoo.bobby.services.MoveService;
 public class TraditionalBot extends Bot {
     private final int level;
 
-    public TraditionalBot(int level) {
-        super("Traditional Bot (level " + level + ")");
-        assert level >= 0;
-        assert level <= 2;
+    public TraditionalBot(int level, MoveService moveService) {
+        super("Traditional Bot (level " + level + ")", moveService);
         this.level = level;
     }
 
-    public Move selectMove(Game game, MoveService moveService) {
+    public Move selectMove(Game game) {
         return moveService.selectMove(game, level);
     }
 }

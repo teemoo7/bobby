@@ -20,7 +20,7 @@ public class BoardTest {
     @Before
     public void setUp() {
         // The game board will have the default pieces positions, which will be used in the tests below
-        this.game = new Game(new Human("Human"), new RandomBot());
+        this.game = new Game(new Human("Human"), new Human("Human2"));
         this.initialBoard = game.getBoard();
     }
 

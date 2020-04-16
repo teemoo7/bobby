@@ -27,16 +27,16 @@ public class RandomBotTest {
 
     @Test
     public void testRandomBotProps() {
-        Player bot = new RandomBot();
-        assertThat(bot.getName()).isEqualTo("Random Bot");
+        Player bot = new RandomBot(moveService);
+        assertThat(bot.getName()).isEqualTo("Bobby (Random Bot)");
         assertThat(bot.isBot()).isTrue();
     }
 
     @Test
     public void testSelectMove() {
-        Bot bot = new RandomBot();
+        Bot bot = new RandomBot(moveService);
         Move move = new Move(new Rook(Color.WHITE), 3, 4, 4, 4);
         when(moveService.computeAllMoves(any(), any(), eq(true))).thenReturn(Collections.singletonList(move));
-        assertThat(bot.selectMove(game, moveService)).isEqualTo(move);
+        assertThat(bot.selectMove(game)).isEqualTo(move);
     }
 }

@@ -13,7 +13,7 @@ public class GameTest {
     @Test
     public void testNewGameSettings() {
         Player whitePlayer = new Human("Player 1");
-        Game game = new Game(whitePlayer, new RandomBot());
+        Game game = new Game(whitePlayer, new Human("Player 2"));
         assertThat(game.getToPlay()).isEqualTo(Color.WHITE);
         assertThat(game.getPlayerToPlay()).isEqualTo(whitePlayer);
         assertThat(game.getHistory()).isEmpty();
@@ -22,7 +22,7 @@ public class GameTest {
 
     @Test
     public void testNewGameDefaultBoard() {
-        Game game = new Game(new RandomBot(), new RandomBot());
+        Game game = new Game(new Human("A"), new Human("B"));
         Board board = game.getBoard();
         Piece[][] pieces = board.getBoard();
 
@@ -83,7 +83,7 @@ public class GameTest {
     @Test
     public void testGetPlayerByColor() {
         Player whitePlayer = new Human("Player 1");
-        Player blackPlayer = new RandomBot();
+        Player blackPlayer = new Human("Player 2");
         Game game = new Game(whitePlayer, blackPlayer);
         assertThat(game.getPlayerByColor(Color.WHITE)).isEqualTo(whitePlayer);
         assertThat(game.getPlayerByColor(Color.BLACK)).isEqualTo(blackPlayer);
@@ -91,11 +91,11 @@ public class GameTest {
 
     @Test
     public void testCanBePlayed() {
-        Game game = new Game(new RandomBot(), new Human("test"));
+        Game game = new Game(new RandomBot(null), new Human("test"));
         assertThat(game.canBePlayed()).isTrue();
-        game = new Game(new RandomBot(), new RandomBot());
+        game = new Game(new RandomBot(null), new RandomBot(null));
         assertThat(game.canBePlayed()).isFalse();
-        game = new Game(new RandomBot(), new Human("test"));
+        game = new Game(new RandomBot(null), new Human("test"));
         game.setState(GameState.LOSS);
         assertThat(game.canBePlayed()).isFalse();
         game = new Game(null, null);
