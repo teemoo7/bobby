@@ -43,7 +43,6 @@ public class PortableGameNotationService {
 	}
 
 	public Game readPgnFile(File file) throws IOException {
-		logger.info("Reading PGN file {}...", file);
 		List<String> lines = fileService.readFile(file);
 
 		// Separate headers from moves given an empty line
@@ -68,16 +67,12 @@ public class PortableGameNotationService {
 		Color color = Color.WHITE;
 
 		for (String word: movesWords) {
-			if (word.equals("1-0") || word.equals("0-1") || word.equals("1/2-1/2") || word.equals("*")) {
-				logger.info("Game ending: {}", word);
-			} else {
+			if (!(word.equals("1-0") || word.equals("0-1") || word.equals("1/2-1/2") || word.equals("*"))) {
 				Move move = getMove(color, word);
 				moves.add(move);
 				color = ColorHelper.swap(color);
 			}
 		}
-
-		logger.info("PGN file successfully parsed ({} moves)", moves.size());
 
 		for (Move move: moves) {
 			final List<Move> allowedMoves = moveService.computeAllMoves(game.getBoard(), game.getToPlay(), true);
@@ -109,7 +104,7 @@ public class PortableGameNotationService {
 			game.addMoveToHistory(matchingMove);
 		}
 
-		logger.info("PGN game successfully loaded");
+		logger.info("PGN game successfully loaded ({} moves) form file {}", game.getHistory().size(), file.getName());
 
 		return game;
 	}

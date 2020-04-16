@@ -1,9 +1,8 @@
 package ch.teemoo.bobby.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,26 +35,58 @@ public class OpeningServiceTest {
 
 	@Test
 	public void testPrettyPrintTree() {
+		// given
+
+		// when
 		String tree = openingService.prettyPrintTree();
+
+		// then
 		assertThat(tree).isNotEmpty();
 		System.out.println(tree);
 	}
 
 	@Test
+	public void testBuildTreeIOExceptionCaught() throws IOException {
+		// given
+		FileService fileServiceMock = mock(FileService.class);
+		PortableGameNotationService portableGameNotationServiceMock = mock(PortableGameNotationService.class);
+		File file = File.createTempFile("test", "tmp");
+		file.deleteOnExit();
+		when(fileServiceMock.getFilesFromResourceFolder(anyString())).thenReturn(new File[]{file});
+		when(portableGameNotationServiceMock.readPgnFile(eq(file))).thenThrow(new IOException("test"));
+
+		// when
+		OpeningService openingServiceWithException =
+			new OpeningService(portableGameNotationServiceMock, fileServiceMock);
+
+
+		// then
+		String tree = openingServiceWithException.prettyPrintTree();
+		assertThat(tree).isNotEmpty();
+		assertThat(tree.split("\n")).hasSize(1);
+	}
+
+	@Test
 	public void testFindPossibleMovesForHistory() {
-		List<Move> history = Arrays.asList(
-			new Move(new Pawn(Color.WHITE), 4, 1, 4, 3)
-		);
-		List<Node> nodes = openingService.findPossibleMovesForHistory(history);
-		assertThat(nodes).hasSize(1);
+		// given
+		List<Move> history = Arrays.asList(new Move(new Pawn(Color.WHITE), 4, 1, 4, 3));
+
+		// when
+		List<Move> moves = openingService.findPossibleMovesForHistory(history);
+
+		// then
+		assertThat(moves).hasSizeGreaterThan(0);
 	}
 
 	@Test
 	public void testFindPossibleMovesForHistoryEmpty() {
-		List<Move> history = Arrays.asList(
-			new Move(new Pawn(Color.WHITE), 0, 1, 0, 3)
-		);
-		List<Node> nodes = openingService.findPossibleMovesForHistory(history);
-		assertThat(nodes).isEmpty();
+		// given
+		List<Move> history = Arrays.asList(new Move(new Pawn(Color.WHITE), 0, 1, 0, 3));
+
+		// when
+		List<Move> moves = openingService.findPossibleMovesForHistory(history);
+
+		// then
+		assertThat(moves).isEmpty();
 	}
 }

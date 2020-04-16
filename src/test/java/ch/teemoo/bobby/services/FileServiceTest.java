@@ -27,13 +27,7 @@ public class FileServiceTest {
 	@Before
 	public void setUp() throws IOException {
 		file = File.createTempFile("temp", "tmp");
-	}
-
-	@After
-	public void tearDown() {
-		if (file != null) {
-			file.deleteOnExit();
-		}
+		file.deleteOnExit();
 	}
 
 	@Test

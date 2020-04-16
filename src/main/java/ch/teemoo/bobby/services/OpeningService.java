@@ -27,7 +27,7 @@ public class OpeningService {
 		this.openingsTree = buildTree();
 	}
 
-	public List<Node> findPossibleMovesForHistory(List<Move> history) {
+	public List<Move> findPossibleMovesForHistory(List<Move> history) {
 		Node currentNode = openingsTree;
 		for (Move move: history) {
 			Optional<Node> nodeOpt = currentNode.getNodeForMove(move);
@@ -37,7 +37,7 @@ public class OpeningService {
 				return Collections.emptyList();
 			}
 		}
-		return currentNode.getChildren();
+		return currentNode.getChildren().stream().map(Node::getMove).collect(Collectors.toList());
 	}
 
 	public String prettyPrintTree() {
@@ -63,17 +63,18 @@ public class OpeningService {
 				Optional<Node> nextNodeOpt = currentNode.getNodeForMove(move);
 				if (nextNodeOpt.isEmpty()) {
 					Node node = new Node(move);
-					if (move.equals(moves.get(moves.size() - 1))) {
-						// last move
-						node.setOpeningName(game.getOpening());
-					}
 					currentNode.addNode(node);
 					currentNode = node;
 				} else {
 					currentNode = nextNodeOpt.get();
 				}
+				if (move.equals(moves.get(moves.size() - 1))) {
+					// last move
+					currentNode.setOpeningName(game.getOpening());
+				}
 			}
 		}
+		logger.info("{} openings loaded", games.size());
 
 		return root;
 	}
