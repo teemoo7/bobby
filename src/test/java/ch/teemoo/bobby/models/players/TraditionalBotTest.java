@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -23,17 +24,18 @@ public class TraditionalBotTest {
 
     @Test
     public void testTraditionalBotProps() {
-        Player bot = new TraditionalBot(0, moveService);
-        assertThat(bot.getName()).isEqualTo("Bobby (Traditional Bot (level 0))");
+        Player bot = new TraditionalBot(0, null, moveService);
+        assertThat(bot.getName()).isEqualTo("Bobby");
         assertThat(bot.isBot()).isTrue();
     }
 
     @Test
     public void testSelectMove() {
         int level = 2;
-        Bot bot = new TraditionalBot(level, moveService);
+        Integer timeout = 3;
+        Bot bot = new TraditionalBot(level, timeout, moveService);
         bot.selectMove(game);
-        verify(moveService).selectMove(any(), eq(level));
+        verify(moveService).selectMove(any(), eq(level), notNull());
     }
 
 }

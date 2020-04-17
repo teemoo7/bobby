@@ -1,18 +1,26 @@
 package ch.teemoo.bobby.models.players;
 
+import java.time.LocalDateTime;
+
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.services.MoveService;
 
 public class TraditionalBot extends Bot {
-    private final int level;
+    protected final int level;
+    protected final Integer timeout;
 
-    public TraditionalBot(int level, MoveService moveService) {
-        super("Traditional Bot (level " + level + ")", moveService);
+    public TraditionalBot(int level, Integer timeout, MoveService moveService) {
+        super(moveService);
         this.level = level;
+        this.timeout = timeout;
     }
 
     public Move selectMove(Game game) {
-        return moveService.selectMove(game, level);
+        LocalDateTime computationTimeout = null;
+        if (timeout != null) {
+            computationTimeout = LocalDateTime.now().plusSeconds(timeout);
+        }
+        return moveService.selectMove(game, level, computationTimeout);
     }
 }

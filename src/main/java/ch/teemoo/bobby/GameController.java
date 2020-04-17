@@ -32,10 +32,8 @@ import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.players.Bot;
 import ch.teemoo.bobby.models.players.Player;
-import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
-import ch.teemoo.bobby.services.OpeningService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

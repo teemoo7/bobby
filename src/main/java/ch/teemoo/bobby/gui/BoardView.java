@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Hashtable;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -166,40 +167,61 @@ public class BoardView extends JFrame {
     }
 
     public GameSetup gameSetupDialog(BotFactory botFactory) {
+
+        JSlider levelSlider = getLevelSlider();
+
+        JRadioButton whiteRadioButton = new JRadioButton("White", true);
+        JRadioButton blackRadioButton = new JRadioButton("Black", false);
+        ButtonGroup colorButtonGroup = new ButtonGroup();
+        colorButtonGroup.add(whiteRadioButton);
+        colorButtonGroup.add(blackRadioButton);
+
+        JCheckBox openingsCheckBox = new JCheckBox("Use openings", true);
+
+        JCheckBox timeoutCheckBox = new JCheckBox("Limit computation time to (seconds)", false);
+        JSpinner timeoutSpinner = new JSpinner(new SpinnerNumberModel(5, 1, 30, 1));
+        timeoutSpinner.setEnabled(timeoutCheckBox.isSelected());
+        timeoutCheckBox.addActionListener(e -> timeoutSpinner.setEnabled(timeoutCheckBox.isSelected()));
+
+        final JComponent[] inputs = new JComponent[] {
+            new JLabel("Level:"),
+            levelSlider,
+            new JSeparator(),
+            new JLabel("Color:"),
+            whiteRadioButton,
+            blackRadioButton,
+            new JSeparator(),
+            new JLabel("Options:"),
+            openingsCheckBox,
+            timeoutCheckBox,
+            timeoutSpinner
+        };
+
+        int result = JOptionPane.showConfirmDialog(this, inputs, "Game setup", JOptionPane.DEFAULT_OPTION);
+        if (result != JOptionPane.OK_OPTION) {
+            exit();
+        }
+
         Player whitePlayer;
         Player blackPlayer;
 
-        Object[] colors = {"White", "Black"};
-        int colorPos = JOptionPane.showOptionDialog(this,
-            "Select your color",
-            "Game setup",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE,
-            null,
-            colors,
-            colors[0]);
-
-        Object[] level = {"Stupid", "Very easy", "Easy", "Normal", "Experienced"};
-        int levelPos = JOptionPane.showOptionDialog(this,
-            "Select IA level",
-            "Game setup",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE,
-            null,
-            level,
-            level[4]);
-
         Player human = new Human("Player");
         Player bot;
-        if (levelPos == 0) {
+        Integer timeout = null;
+        if (timeoutCheckBox.isSelected() && timeoutSpinner.getValue() instanceof Integer) {
+            timeout = (Integer) timeoutSpinner.getValue();
+        }
+        if (levelSlider.getValue() == 0) {
             bot = botFactory.getRandomBot();
-        } else if (levelPos == 4) {
-            bot = botFactory.getExperiencedBot(2);
         } else {
-            bot = botFactory.getTraditionalBot(levelPos - 1);
+            if (openingsCheckBox.isSelected()) {
+                bot = botFactory.getExperiencedBot(levelSlider.getValue() - 1, timeout);
+            } else {
+                bot = botFactory.getTraditionalBot(levelSlider.getValue() - 1, timeout);
+            }
         }
 
-        if (colorPos != 1) {
+        if (whiteRadioButton.isSelected()) {
             whitePlayer = human;
             blackPlayer = bot;
         } else {
@@ -218,6 +240,20 @@ public class BoardView extends JFrame {
         JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
+    private JSlider getLevelSlider() {
+        JSlider levelSlider = new JSlider(JSlider.HORIZONTAL, 0, 3, 3);
+        levelSlider.setMajorTickSpacing(1);
+        levelSlider.setPaintTicks(true);
+        levelSlider.setPaintLabels(true);
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+        labelTable.put(0, new JLabel("Stupid"));
+        labelTable.put(1, new JLabel("Easy"));
+        labelTable.put(2, new JLabel("Medium"));
+        labelTable.put(3, new JLabel("Good"));
+        levelSlider.setLabelTable(labelTable);
+        return levelSlider;
+    }
+
     private void setMenu() {
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -227,7 +263,7 @@ public class BoardView extends JFrame {
 
         JMenuItem itemExit = new JMenuItem("Exit");
         fileMenu.add(itemExit);
-        itemExit.addActionListener(actionEvent -> System.exit(0));
+        itemExit.addActionListener(actionEvent -> exit());
 
         JMenu gameMenu = new JMenu("Game");
         menuBar.add(gameMenu);
@@ -304,5 +340,9 @@ public class BoardView extends JFrame {
             "About Bobby",
 
             JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void exit() {
+        System.exit(0);
     }
 }

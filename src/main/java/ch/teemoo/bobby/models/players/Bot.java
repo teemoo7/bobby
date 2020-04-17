@@ -7,8 +7,8 @@ import ch.teemoo.bobby.services.MoveService;
 public abstract class Bot extends Player {
     protected final MoveService moveService;
 
-    public Bot(String name, MoveService moveService) {
-        super("Bobby (" + name + ")");
+    public Bot(MoveService moveService) {
+        super("Bobby");
         this.moveService = moveService;
     }
 

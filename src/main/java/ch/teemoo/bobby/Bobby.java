@@ -5,6 +5,7 @@ import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.helpers.GameFactory;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameSetup;
+import ch.teemoo.bobby.models.players.ExperiencedBot;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.services.FileService;
@@ -22,14 +23,27 @@ public class Bobby implements Runnable {
     private final OpeningService openingService = new OpeningService(portableGameNotationService, fileService);
     private final GameFactory gameFactory = new GameFactory();
     private final BotFactory botFactory = new BotFactory(moveService, openingService);
+    private final boolean useDefaultGameSetup;
+
+    public Bobby(boolean useDefaultGameSetup) {
+        this.useDefaultGameSetup = useDefaultGameSetup;
+    }
 
     public static void main(String args[]) {
-        SwingUtilities.invokeLater(new Bobby());
+        boolean defaultSetup = false;
+        if (args.length > 0) {
+            if (args[0].equalsIgnoreCase("default")) {
+                defaultSetup = true;
+            }
+        }
+        SwingUtilities.invokeLater(new Bobby(defaultSetup));
     }
 
     public void run() {
-//        GameSetup gameSetup = new GameSetup(new Human("Player 1"), new TraditionalBot(2));
         GameSetup gameSetup = null;
+        if (useDefaultGameSetup) {
+            gameSetup = new GameSetup(new Human("Player"), botFactory.getStrongestBot());
+        }
         BoardView boardView = new BoardView("Bobby chess game");
         new GameController(boardView, gameSetup, gameFactory, botFactory, moveService, fileService);
     }

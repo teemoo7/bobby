@@ -28,7 +28,7 @@ public class RandomBotTest {
     @Test
     public void testRandomBotProps() {
         Player bot = new RandomBot(moveService);
-        assertThat(bot.getName()).isEqualTo("Bobby (Random Bot)");
+        assertThat(bot.getName()).isEqualTo("Bobby");
         assertThat(bot.isBot()).isTrue();
     }
 

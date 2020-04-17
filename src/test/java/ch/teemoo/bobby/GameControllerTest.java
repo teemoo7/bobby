@@ -80,7 +80,7 @@ public class GameControllerTest {
     public void setUp() {
 		when(gameFactory.emptyGame()).thenReturn(new Game(null, null));
     	when(gameFactory.createGame(any())).thenReturn(game);
-        when(botFactory.getStrongestBot()).thenReturn(new TraditionalBot(0, moveService));
+        when(botFactory.getStrongestBot()).thenReturn(new TraditionalBot(0, null, moveService));
         when(game.getBoard()).thenReturn(board);
         controller = new GameController(view, null, gameFactory, botFactory, moveService, fileService);
     }
@@ -293,7 +293,7 @@ public class GameControllerTest {
     @Test
     public void testSuggestMove() {
         Move move = new Move(new Knight(Color.BLACK), 3, 7, 4, 5);
-        when(moveService.selectMove(any(), anyInt())).thenReturn(move);
+        when(moveService.selectMove(any(), anyInt(), any())).thenReturn(move);
         controller.suggestMove();
         assertThat(systemOutRule.getLog()).contains("Suggested move is : " + move.toString());
     }

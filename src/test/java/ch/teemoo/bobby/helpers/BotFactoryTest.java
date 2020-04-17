@@ -36,26 +36,36 @@ public class BotFactoryTest {
 
 	@Test
 	public void testGetTraditionalBot() {
-		Bot bot = botFactory.getTraditionalBot(2);
+		Bot bot = botFactory.getTraditionalBot(2, null);
 		assertThat(bot).isInstanceOf(TraditionalBot.class);
 	}
 
 	@Test
 	public void testGetTraditionalBotWrongLevel() {
-		assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> botFactory.getTraditionalBot(-1));
-		assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> botFactory.getTraditionalBot(3));
+		assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> botFactory.getTraditionalBot(-1, null));
+		assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> botFactory.getTraditionalBot(3, null));
+	}
+
+	@Test
+	public void testGetTraditionalBotWrongTimeout() {
+		assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> botFactory.getTraditionalBot(1, 60));
 	}
 
 	@Test
 	public void testGetExperiencedBot() {
-		Bot bot = botFactory.getExperiencedBot(2);
+		Bot bot = botFactory.getExperiencedBot(2, null);
 		assertThat(bot).isInstanceOf(ExperiencedBot.class);
 	}
 
 	@Test
 	public void testGetExperiencedBotWrongLevel() {
-		assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> botFactory.getExperiencedBot(-1));
-		assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> botFactory.getExperiencedBot(3));
+		assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> botFactory.getExperiencedBot(-1, null));
+		assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> botFactory.getExperiencedBot(3, null));
+	}
+
+	@Test
+	public void testGetExperiencedBotWrongTimeout() {
+		assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> botFactory.getExperiencedBot(1, 60));
 	}
 
 	@Test

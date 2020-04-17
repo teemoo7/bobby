@@ -10,7 +10,7 @@ import ch.teemoo.bobby.services.MoveService;
 public class RandomBot extends Bot {
 
     public RandomBot(MoveService moveService) {
-        super("Random Bot", moveService);
+        super(moveService);
     }
 
     public Move selectMove(Game game) {

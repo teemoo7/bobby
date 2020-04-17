@@ -8,20 +8,18 @@ import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.OpeningService;
 
-public class ExperiencedBot extends Bot {
-    private final int level;
+public class ExperiencedBot extends TraditionalBot {
     private final OpeningService openingService;
 
-    public ExperiencedBot(int level, MoveService moveService, OpeningService openingService) {
-        super("Experienced Bot (level " + level + ")", moveService);
-        this.level = level;
+    public ExperiencedBot(int level, Integer timeout, MoveService moveService, OpeningService openingService) {
+        super(level, timeout, moveService);
         this.openingService = openingService;
     }
 
     public Move selectMove(Game game) {
         List<Move> openingMoves = openingService.findPossibleMovesForHistory(game.getHistory());
         if (openingMoves.isEmpty()) {
-            return moveService.selectMove(game, level);
+            return super.selectMove(game);
         } else {
             return openingMoves.get(new Random().nextInt(openingMoves.size()));
         }

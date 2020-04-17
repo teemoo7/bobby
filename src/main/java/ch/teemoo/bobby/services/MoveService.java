@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toList;
 import static ch.teemoo.bobby.helpers.ColorHelper.swap;
 import static ch.teemoo.bobby.models.Board.SIZE;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -140,16 +141,17 @@ public class MoveService {
 		return Optional.empty();
 	}
 
-	public Move selectMove(Game game, int depth) {
-		MoveAnalysis moveAnalysis = selectMove(game.getBoard(), game.getToPlay(), game.getHistory(), depth, true);
+	public Move selectMove(Game game, int depth, LocalDateTime computationTimeout) {
+		MoveAnalysis moveAnalysis =
+			selectMove(game.getBoard(), game.getToPlay(), game.getHistory(), depth, true, computationTimeout);
 		return moveAnalysis.getMove();
 	}
 
-	private MoveAnalysis selectMove(Board board, Color color, List<Move> history, int depth, boolean isTopDepth) {
+	private MoveAnalysis selectMove(Board board, Color color, List<Move> history, int depth, boolean isTopDepth,
+		LocalDateTime computationTimeout) {
 		// Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
 
 		List<Move> moves = computeAllMoves(board, color, true);
-		//Map<MoveAnalysis, Integer> moveScores = new ConcurrentHashMap<>(moves.size());
 
 		final Color opponentColor = swap(color);
 		final Position opponentKingPosition = findKingPosition(board, opponentColor)
@@ -165,7 +167,7 @@ public class MoveService {
 					moves.parallelStream().map(
 						move ->
 								computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
-									myKingOriginalPosition, move)
+									myKingOriginalPosition, move, computationTimeout)
 					).collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
 
 			ForkJoinPool forkJoinPool = new ForkJoinPool();
@@ -183,14 +185,21 @@ public class MoveService {
 		} else {
 			moveScores = movesStream.map(
 				move -> computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
-					myKingOriginalPosition, move)).collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
+					myKingOriginalPosition, move, computationTimeout))
+				.collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
 		}
 		return getBestMove(moveScores);
 	}
 
 	private MoveAnalysis computeMoveAnalysis(Board board, Color color, List<Move> history, int depth,
-		Color opponentColor, Position opponentKingPosition, Position myKingOriginalPosition, Move move) {
+		Color opponentColor, Position opponentKingPosition, Position myKingOriginalPosition, Move move,
+		LocalDateTime computationTimeout) {
 		MoveAnalysis moveAnalysis = new MoveAnalysis(move);
+
+		if (computationTimeout != null && computationTimeout.isBefore(LocalDateTime.now())) {
+			// Timeout reached, returning default values for the move
+			return moveAnalysis;
+		}
 
 		Position myKingPosition = myKingOriginalPosition;
 		if (move.getPiece() instanceof King) {
@@ -210,7 +219,8 @@ public class MoveService {
 
 		// Compute the probable next move for the opponent and see if our current move is a real benefit in the end
 		if (depth >= 1 && gameState.isInProgress()) {
-			MoveAnalysis opponentMoveAnalysis = selectMove(boardAfter, opponentColor, historyCopy, depth-1, false);
+			MoveAnalysis opponentMoveAnalysis =
+				selectMove(boardAfter, opponentColor, historyCopy, depth - 1, false, computationTimeout);
 			Move opponentMove = opponentMoveAnalysis.getMove();
 			boardAfter.doMove(opponentMove);
 			historyCopy.add(opponentMove);
