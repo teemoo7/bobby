@@ -4,6 +4,8 @@
 
 This basic Chess game is a humble tribute to famous Chess player [Robert James "Bobby" Fischer](https://en.wikipedia.org/wiki/Bobby_Fischer), World Chess Champion.
 
+Note that the author does not agree with Fischer's political and religious opinions, but remains a fan of his genius at Chess.
+
 ## How to launch it
 
 **Note:** requires Java 11
