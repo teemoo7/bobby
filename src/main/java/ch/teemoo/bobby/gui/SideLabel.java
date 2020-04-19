@@ -8,7 +8,7 @@ class SideLabel extends JLabel {
 
     SideLabel(String label) {
         super(label);
-        setFont(new Font("DejaVu Sans", Font.PLAIN, 16));
+        setFont(new Font("Sans Serif", Font.PLAIN, 16));
         setOpaque(true);
         setHorizontalAlignment(CENTER);
     }

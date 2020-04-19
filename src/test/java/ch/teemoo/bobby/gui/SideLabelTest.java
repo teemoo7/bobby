@@ -13,7 +13,7 @@ public class SideLabelTest {
     public void testSideLabel() {
         SideLabel sideLabel = new SideLabel("A");
         assertThat(sideLabel.getText()).isEqualTo("A");
-        assertThat(sideLabel.getFont()).isEqualTo(new Font("DejaVu Sans", Font.PLAIN, 16));
+        assertThat(sideLabel.getFont()).isEqualTo(new Font("Sans Serif", Font.PLAIN, 16));
         assertThat(sideLabel.getHorizontalAlignment()).isEqualTo(SwingConstants.CENTER);
         assertThat(sideLabel.isOpaque()).isTrue();
     }
