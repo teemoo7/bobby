@@ -34,6 +34,7 @@ import ch.teemoo.bobby.models.players.Bot;
 import ch.teemoo.bobby.models.players.Player;
 import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
+import ch.teemoo.bobby.services.PortableGameNotationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,15 +51,17 @@ public class GameController {
 	private final BotFactory botFactory;
 	private final MoveService moveService;
 	private final FileService fileService;
+	private final PortableGameNotationService portableGameNotationService;
 	private final Bot botToSuggestMove;
 	private final boolean showTiming = true;
 
 	private Square selectedSquare = null;
 
 	public GameController(BoardView view, GameSetup gameSetup, GameFactory gameFactory, BotFactory botFactory,
-		MoveService moveService, FileService fileService) {
+		MoveService moveService, FileService fileService, PortableGameNotationService portableGameNotationService) {
 		this.moveService = moveService;
 		this.fileService = fileService;
+		this.portableGameNotationService = portableGameNotationService;
 		this.view = view;
 		this.gameFactory = gameFactory;
 		this.botFactory = botFactory;
@@ -312,25 +315,39 @@ public class GameController {
 	}
 
 	void loadGame() {
-		Optional<File> file = view.loadGameDialog();
-		if (file.isPresent()) {
+		Optional<File> fileOpt = view.loadGameDialog();
+		if (fileOpt.isPresent()) {
 			try {
-				List<String> lines = fileService.readFile(file.get());
 				// we assume that the game to load is played in the same config as currently
 				Game loadedGame = new Game(game.getWhitePlayer(), game.getBlackPlayer());
 				this.game = loadedGame;
 				this.board = loadedGame.getBoard();
 				refreshBoardView(board);
-				for (String line: lines) {
-					Move move = Move.fromBasicNotation(line, game.getToPlay());
-					Piece piece = board.getPiece(move.getFromX(), move.getFromY())
-							.orElseThrow(() -> new RuntimeException("Unexpected move, no piece at this location"));
-					doMove(new Move(piece, move.getFromX(), move.getFromY(), move.getToX(), move.getToY()));
+
+				File file = fileOpt.get();
+				if (file.getName().endsWith(".pgn")) {
+					applyMovesFromPortableGameNotationFile(file);
+				} else {
+					applyMovesFromBasicNotationFile(file);
 				}
 				play();
 			} catch (IOException e) {
 				error(e, true);
 			}
+		}
+	}
+	void applyMovesFromPortableGameNotationFile(File file) throws IOException {
+		Game loadedGame = portableGameNotationService.readPgnFile(file);
+		loadedGame.getHistory().forEach(this::doMove);
+	}
+
+	void applyMovesFromBasicNotationFile(File file) throws IOException {
+		List<String> lines = fileService.readFile(file);
+		for (String line: lines) {
+			Move move = Move.fromBasicNotation(line, game.getToPlay());
+			Piece piece = board.getPiece(move.getFromX(), move.getFromY())
+					.orElseThrow(() -> new RuntimeException("Unexpected move, no piece at this location"));
+			doMove(new Move(piece, move.getFromX(), move.getFromY(), move.getToX(), move.getToY()));
 		}
 	}
 

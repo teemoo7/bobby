@@ -40,6 +40,7 @@ import ch.teemoo.bobby.models.players.Player;
 import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
+import ch.teemoo.bobby.services.PortableGameNotationService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,6 +75,9 @@ public class GameControllerTest {
     @Mock
     FileService fileService;
 
+    @Mock
+    PortableGameNotationService portableGameNotationService;
+
     private GameController controller;
 
     @Before
@@ -82,7 +86,8 @@ public class GameControllerTest {
     	when(gameFactory.createGame(any())).thenReturn(game);
         when(botFactory.getStrongestBot()).thenReturn(new TraditionalBot(0, null, moveService));
         when(game.getBoard()).thenReturn(board);
-        controller = new GameController(view, null, gameFactory, botFactory, moveService, fileService);
+        controller = new GameController(view, null, gameFactory, botFactory, moveService, fileService,
+            portableGameNotationService);
     }
 
     @Test
@@ -263,8 +268,9 @@ public class GameControllerTest {
     }
 
     @Test
-    public void testLoadGame() throws Exception {
+    public void testLoadGameBasic() throws Exception {
         File file = mock(File.class);
+        when(file.getName()).thenReturn("test.txt");
         when(view.loadGameDialog()).thenReturn(Optional.of(file));
         when(fileService.readFile(eq(file))).thenReturn(Collections.singletonList("e2-e4"));
         when(game.getWhitePlayer()).thenReturn(new Human("test"));
@@ -276,8 +282,20 @@ public class GameControllerTest {
     }
 
     @Test
+    public void testLoadGamePgn() throws Exception {
+        File file = mock(File.class);
+        when(file.getName()).thenReturn("test.pgn");
+        when(view.loadGameDialog()).thenReturn(Optional.of(file));
+        when(portableGameNotationService.readPgnFile(eq(file))).thenReturn(new Game(null, null));
+        when(game.getWhitePlayer()).thenReturn(new Human("test"));
+        when(game.getBlackPlayer()).thenReturn(new Human("test2"));
+        controller.loadGame();
+    }
+
+    @Test
     public void testLoadGameException() throws Exception {
         File file = mock(File.class);
+        when(file.getName()).thenReturn("test.txt");
         when(view.loadGameDialog()).thenReturn(Optional.of(file));
         doThrow(new IOException("Test exception")).when(fileService).readFile(any());
         controller.loadGame();

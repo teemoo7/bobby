@@ -388,8 +388,8 @@ public class MoveServiceTest {
         Board board = game.getBoard();
         List<Move> whiteMovesStart = moveService.computeBoardMoves(board, Color.WHITE, false, true);
         assertThat(whiteMovesStart).containsExactlyInAnyOrder(
-                new Move(board.getPiece(0, 1).get(), 0, 1, 0, 2),
-                new Move(board.getPiece(0, 1).get(), 0, 1, 0, 3)
+                new Move(board.getPiece(1, 0).get(), 1, 0, 0, 2),
+                new Move(board.getPiece(1, 0).get(), 1, 0, 2, 2)
         );
     }
 

@@ -50,7 +50,8 @@ public class Bobby implements Runnable {
             gameSetup = new GameSetup(new Human("Player"), botFactory.getStrongestBot());
         }
         BoardView boardView = new BoardView("Bobby chess game");
-        new GameController(boardView, gameSetup, gameFactory, botFactory, moveService, fileService);
+        new GameController(boardView, gameSetup, gameFactory, botFactory, moveService, fileService,
+            portableGameNotationService);
     }
 
     private static void setLookAndFeel() {
