@@ -1,6 +1,8 @@
 package ch.teemoo.bobby.gui;
 
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.util.Arrays;
 
 import javax.swing.JLabel;
 
@@ -40,10 +42,14 @@ public class Square extends JLabel {
     private static String getPieceText(Piece piece) {
         if (piece != null) {
             if (piece instanceof Pawn && piece.getColor() == Color.BLACK && System.getProperty("os.name").toLowerCase()
-                .contains("mac")) {
-                //fixme: on MacOSX this unicode is interpreted as an emoji (Apple Color Emoji), resulting into a bug
-                //fixme: to display it. A possible workaround could be to remove this Font but it requires no more SIP.
-                //fixme: https://apple.stackexchange.com/questions/191130/how-to-disable-emojis-system-wide
+                .contains("mac") && Arrays
+                .asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames())
+                .contains("Apple Color Emoji")) {
+
+                // on MacOSX this unicode is interpreted as an emoji (Apple Color Emoji), resulting into a bug
+                // to display it. A possible workaround could be to move this Font to user's fonts so that it can be
+                // disabled oin the Font Book but it requires to disable SIP too.
+
                 return "P";
             }
             return piece.getUnicode();

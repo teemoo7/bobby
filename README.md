@@ -19,3 +19,33 @@ Then launch the created JAR:
 ```
 java -jar target/bobby-1.0-SNAPSHOT.jar 
 ```
+
+## Features
+
+### Game
+
+* AI with multiple strength level, from random-stupid to 3-depths computation
+* All moves implemented (except _en-passant_)
+* Knowledge of 15+ famous openings
+* Ability to limit computation time to _n_ seconds
+
+### Technical
+
+* Uses Java 11
+* Ability to use bundled light JRE ([doc here](RELEASE.md))
+* Uses [launch4j](launch4j.xml) to release it as a Window executable (.exe)
+* Strong code coverage, incl. GUI testing
+* Code style with Checkstyle, code quality with SpotBugs and SonarSource
+* Pipeline with TravisCI
+
+## Limitations
+
+### Black pawn rendering as a P on Mac OS X  
+
+On Mac OS X, because of the system font _Apple Color Emoji_, black pawns are not correctly rendered: the unicode char is replaced by a an emoji, which is unsupported in Swing GUI. In such case, the pawn is represented by a "P".
+
+A workaround is to move the above font to the user's fonts folder so that it can be temporarily disabled in the Font Book, but it requires to be a sudoer (and/or disable SIP) and may impact the whole system.
+
+```shell script
+sudo mv /System/Library/Fonts/Apple\ Color\ Emoji.ttc ~/Library/Fonts/
+```
