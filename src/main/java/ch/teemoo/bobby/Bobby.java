@@ -12,10 +12,14 @@ import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.OpeningService;
 import ch.teemoo.bobby.services.PortableGameNotationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 
 public class Bobby implements Runnable {
+    private final static Logger logger = LoggerFactory.getLogger(Bobby.class);
+
     private final MoveService moveService = new MoveService();
     private final FileService fileService = new FileService();
     private final PortableGameNotationService portableGameNotationService =
@@ -36,6 +40,7 @@ public class Bobby implements Runnable {
                 defaultSetup = true;
             }
         }
+        setLookAndFeel();
         SwingUtilities.invokeLater(new Bobby(defaultSetup));
     }
 
@@ -46,5 +51,14 @@ public class Bobby implements Runnable {
         }
         BoardView boardView = new BoardView("Bobby chess game");
         new GameController(boardView, gameSetup, gameFactory, botFactory, moveService, fileService);
+    }
+
+    private static void setLookAndFeel() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (Exception e) {
+            logger.warn("Unable to set system Look and Feel", e);
+        }
     }
 }
