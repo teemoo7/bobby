@@ -313,17 +313,25 @@ public class MoveService {
 
 	List<Move> computeBoardMoves(Board board, Color color, boolean withAdditionalInfo, boolean returnFirstPieceMoves) {
 		List<Move> moves = new ArrayList<>();
+		List<PiecePosition> piecePositions = new ArrayList<>();
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
 				Optional<Piece> piece = board.getPiece(i, j);
 				if (piece.isPresent() && piece.get().getColor() == color) {
-					List<Move> pieceMoves = computeMoves(board, piece.get(), i, j, withAdditionalInfo);
-					if (!pieceMoves.isEmpty() && returnFirstPieceMoves) {
-						return pieceMoves;
-					}
-					moves.addAll(pieceMoves);
+					piecePositions.add(new PiecePosition(piece.get(), new Position(i, j)));
 				}
 			}
+		}
+
+		Collections.sort(piecePositions);
+
+		for (PiecePosition piecePosition: piecePositions) {
+			List<Move> pieceMoves = computeMoves(board, piecePosition.getPiece(), piecePosition.getPosition().getX(),
+				piecePosition.getPosition().getY(), withAdditionalInfo);
+			if (!pieceMoves.isEmpty() && returnFirstPieceMoves) {
+				return pieceMoves;
+			}
+			moves.addAll(pieceMoves);
 		}
 		return moves;
 	}
@@ -688,5 +696,28 @@ public class MoveService {
 		heatmap[4][2] = 1;
 		heatmap[4][5] = 1;
 		return heatmap;
+	}
+
+	private static class PiecePosition implements Comparable<PiecePosition> {
+		private final Piece piece;
+		private final Position position;
+
+		public PiecePosition(Piece piece, Position position) {
+			this.piece = piece;
+			this.position = position;
+		}
+
+		public Piece getPiece() {
+			return piece;
+		}
+
+		public Position getPosition() {
+			return position;
+		}
+
+		@Override
+		public int compareTo(PiecePosition o) {
+			return o.getPiece().getValue() - this.piece.getValue();
+		}
 	}
 }

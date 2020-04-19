@@ -30,6 +30,8 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 * All moves implemented (except _en-passant_)
 * Knowledge of 15+ famous openings
 * Ability to limit computation time to _n_ seconds
+* Save and load game to text files with basic notation
+* Load PGN file
 
 ### Technical
 
@@ -41,6 +43,8 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 * Pipeline with TravisCI
 
 ## Limitations
+
+The implemented AI works uses a depth-first computation, which means that if the computation time is restricted, it may not evaluate every single possible move: it evaluates as deep as possible a first move, then a second, etc, but has no guarantee to cover every move of the first depth.
 
 ### Black pawn rendering as a P on Mac OS X  
 
