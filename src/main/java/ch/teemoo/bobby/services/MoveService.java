@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -323,7 +324,7 @@ public class MoveService {
 			}
 		}
 
-		Collections.sort(piecePositions);
+		piecePositions.sort((p1, p2) -> p2.getPiece().getValue() - p1.getPiece().getValue());
 
 		for (PiecePosition piecePosition: piecePositions) {
 			List<Move> pieceMoves = computeMoves(board, piecePosition.getPiece(), piecePosition.getPosition().getX(),
@@ -698,7 +699,7 @@ public class MoveService {
 		return heatmap;
 	}
 
-	private static class PiecePosition implements Comparable<PiecePosition> {
+	private static class PiecePosition {
 		private final Piece piece;
 		private final Position position;
 
@@ -713,11 +714,6 @@ public class MoveService {
 
 		public Position getPosition() {
 			return position;
-		}
-
-		@Override
-		public int compareTo(PiecePosition o) {
-			return o.getPiece().getValue() - this.piece.getValue();
 		}
 	}
 }
