@@ -6,6 +6,8 @@ This basic Chess game is a humble tribute to famous Chess player [Robert James "
 
 Note that the author does not agree with Fischer's political and religious opinions, but remains a fan of his genius at Chess.
 
+![Bobby Chess Game](src/main/resources/img/logo.png "Bobby Chess Game")
+
 ## How to launch it
 
 **Note:** requires Java 11
@@ -26,7 +28,7 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 
 ### Game
 
-* AI with multiple strength level, from random-stupid to 3-depths computation
+* AI with multiple strength level, from random-stupid to 3-depths computation, using a minimax algorithm
 * All moves implemented (except _en-passant_)
 * Knowledge of 15+ famous openings
 * Ability to limit computation time to _n_ seconds
