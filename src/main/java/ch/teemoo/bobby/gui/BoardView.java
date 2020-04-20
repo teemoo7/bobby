@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 
 import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.models.GameSetup;
@@ -32,6 +33,7 @@ public class BoardView extends JFrame {
 
     private final boolean visible;
     private final Container contentPane;
+    private final Icon logoIcon;
     private Square[][] squares = new Square[SIZE][SIZE];
 
     private JMenuItem itemNew;
@@ -51,6 +53,8 @@ public class BoardView extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.visible = visible;
         this.contentPane = getContentPane();
+        this.logoIcon =
+            new ImageIcon(Thread.currentThread().getContextClassLoader().getResource("img/logo.png"), "Bobby logo");
         int sizeWithLabels = 10;
         GridLayout gridLayout = new GridLayout(sizeWithLabels, sizeWithLabels);
         contentPane.setLayout(gridLayout);
@@ -168,36 +172,38 @@ public class BoardView extends JFrame {
 
     public GameSetup gameSetupDialog(BotFactory botFactory) {
 
-        JSlider levelSlider = getLevelSlider();
-
+        JLabel colorLabel = new JLabel("Your color");
+        setBold(colorLabel);
         JRadioButton whiteRadioButton = new JRadioButton("White", true);
         JRadioButton blackRadioButton = new JRadioButton("Black", false);
         ButtonGroup colorButtonGroup = new ButtonGroup();
         colorButtonGroup.add(whiteRadioButton);
         colorButtonGroup.add(blackRadioButton);
 
+        JLabel computerLabel = new JLabel("Computer level");
+        setBold(computerLabel);
+        JSlider levelSlider = getLevelSlider();
         JCheckBox openingsCheckBox = new JCheckBox("Use openings", true);
-
         JCheckBox timeoutCheckBox = new JCheckBox("Limit computation time to (seconds)", false);
         JSpinner timeoutSpinner = new JSpinner(new SpinnerNumberModel(5, 1, 30, 1));
         timeoutSpinner.setEnabled(timeoutCheckBox.isSelected());
         timeoutCheckBox.addActionListener(e -> timeoutSpinner.setEnabled(timeoutCheckBox.isSelected()));
 
         final JComponent[] inputs = new JComponent[] {
-            new JLabel("Level:"),
-            levelSlider,
-            new JSeparator(),
-            new JLabel("Color:"),
+            colorLabel,
             whiteRadioButton,
             blackRadioButton,
             new JSeparator(),
-            new JLabel("Options:"),
+            computerLabel,
+            levelSlider,
             openingsCheckBox,
             timeoutCheckBox,
             timeoutSpinner
         };
 
-        int result = JOptionPane.showConfirmDialog(this, inputs, "Game setup", JOptionPane.DEFAULT_OPTION);
+        int result = JOptionPane
+            .showConfirmDialog(this, inputs, "Game setup", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+                logoIcon);
         if (result != JOptionPane.OK_OPTION) {
             exit();
         }
@@ -230,6 +236,10 @@ public class BoardView extends JFrame {
         }
 
         return new GameSetup(whitePlayer, blackPlayer);
+    }
+
+    private void setBold(JLabel colorLabel) {
+        colorLabel.setFont(new Font(colorLabel.getFont().getName(), Font.BOLD, colorLabel.getFont().getSize()));
     }
 
     public void popupInfo(String message) {
@@ -334,12 +344,14 @@ public class BoardView extends JFrame {
 
     private void showAboutDialog() {
         JOptionPane.showMessageDialog(this,
-            "Bobby chess game\n"
-                + "Written with ♥ by Micaël Paquier\n"
-                + "Humble tribute to Robert James \"Bobby\" Fischer, World Chess Champion",
+            "Written with ♥ by Micaël Paquier\n"
+                + " \n"
+                + "Humble tribute to Robert James \"Bobby\" Fischer,\n"
+                + "World Chess Champion\n"
+                + " \n"
+                + "\t\"Chess is life.\" - Bobby Fischer",
             "About Bobby",
-
-            JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.INFORMATION_MESSAGE, logoIcon);
     }
 
     private void exit() {
