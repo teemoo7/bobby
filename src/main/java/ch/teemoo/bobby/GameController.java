@@ -8,6 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -325,10 +326,11 @@ public class GameController {
 				refreshBoardView(board);
 
 				File file = fileOpt.get();
+				List<String> lines = fileService.readFile(Paths.get(file.toURI()));
 				if (file.getName().endsWith(".pgn")) {
-					applyMovesFromPortableGameNotationFile(file);
+					applyMovesFromPortableGameNotationFile(lines);
 				} else {
-					applyMovesFromBasicNotationFile(file);
+					applyMovesFromBasicNotationFile(lines);
 				}
 				play();
 			} catch (IOException e) {
@@ -336,13 +338,12 @@ public class GameController {
 			}
 		}
 	}
-	void applyMovesFromPortableGameNotationFile(File file) throws IOException {
-		Game loadedGame = portableGameNotationService.readPgnFile(file);
+	void applyMovesFromPortableGameNotationFile(List<String> lines) {
+		Game loadedGame = portableGameNotationService.readPgnFile(lines);
 		loadedGame.getHistory().forEach(this::doMove);
 	}
 
-	void applyMovesFromBasicNotationFile(File file) throws IOException {
-		List<String> lines = fileService.readFile(file);
+	void applyMovesFromBasicNotationFile(List<String> lines) {
 		for (String line: lines) {
 			Move move = Move.fromBasicNotation(line, game.getToPlay());
 			Piece piece = board.getPiece(move.getFromX(), move.getFromY())

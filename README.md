@@ -39,12 +39,20 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 
 * Uses Java 11
 * Ability to use bundled light JRE ([doc here](RELEASE.md))
-* Uses [launch4j](launch4j.xml) to release it as a Window executable (.exe)
+* Uses [launch4j](run/launch4j.xml) to release it as a Window executable (.exe)
 * Strong code coverage, incl. GUI testing
 * Code style with Checkstyle, code quality with SpotBugs and SonarSource
 * Pipeline with TravisCI
 
 ## Limitations
+
+### Moves
+
+* Move _en-passant_ (pawn taking another pawn but moving forward) has not been implemented yet
+* Castling move does not take into account if king or rook has already moved
+* Promoted pawn (pawn reaching last line) is automatically changed into a Queen but other pieces should be possible (knight among others)
+
+### Computation time
 
 The implemented AI works uses a depth-first computation, which means that if the computation time is restricted, it may not evaluate every single possible move: it evaluates as deep as possible a first move, then a second, etc, but has no guarantee to cover every move of the first depth.
 

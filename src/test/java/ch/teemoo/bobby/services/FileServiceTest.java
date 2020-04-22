@@ -1,6 +1,7 @@
 package ch.teemoo.bobby.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,14 +9,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.players.Human;
-import ch.teemoo.bobby.models.players.RandomBot;
-import org.junit.After;
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,7 +38,7 @@ public class FileServiceTest {
 		Files.write(Paths.get(file.toURI()), Arrays.asList("Hello", "World"));
 
 		// when
-		List<String> lines = fileService.readFile(file);
+		List<String> lines = fileService.readFile(Paths.get(file.toURI()));
 
 		// then
 		assertThat(lines).hasSize(2);
@@ -54,5 +55,33 @@ public class FileServiceTest {
 
 		// then
 		assertThat(file.length()).isGreaterThan(0);
+	}
+
+	@Test
+	public void testReadFileFromResourceFolder() throws IOException {
+		// given
+		String folder = "openings";
+		String filename = "italiangame.pgn";
+
+		// when
+		List<String> lines = fileService.readFileFromResourceFolder(folder, filename);
+
+		// then
+		assertThat(lines).isNotEmpty();
+	}
+
+	@Test
+	public void testReadFileFromResourceFolderNotFound() {
+		// given
+		String folder = "openings";
+		String filename = UUID.randomUUID().toString() + ".pgn";
+
+		// when
+		ThrowableAssert.ThrowingCallable callable = () -> fileService.readFileFromResourceFolder(folder, filename);
+
+		// then
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(callable)
+			.withMessage("Unable to read file " + filename + " in resource folder " + folder)
+			.withRootCauseInstanceOf(IllegalArgumentException.class);
 	}
 }

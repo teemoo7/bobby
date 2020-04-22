@@ -2,8 +2,6 @@ package ch.teemoo.bobby.services;
 
 import static ch.teemoo.bobby.helpers.ColorHelper.swap;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,17 +32,13 @@ import org.slf4j.LoggerFactory;
 public class PortableGameNotationService {
 	private final static Logger logger = LoggerFactory.getLogger(PortableGameNotationService.class);
 
-	private final FileService fileService;
 	private final MoveService moveService;
 
-	public PortableGameNotationService(FileService fileService, MoveService moveService) {
-		this.fileService = fileService;
+	public PortableGameNotationService(MoveService moveService) {
 		this.moveService = moveService;
 	}
 
-	public Game readPgnFile(File file) throws IOException {
-		List<String> lines = fileService.readFile(file);
-
+	public Game readPgnFile(List<String> lines) {
 		// Separate headers from moves given an empty line
 		String content = String.join("\n", lines);
 		String[] contentSplit = content.split("\\n\\n");
@@ -104,7 +98,7 @@ public class PortableGameNotationService {
 			game.addMoveToHistory(matchingMove);
 		}
 
-		logger.info("PGN game successfully loaded ({} moves) form file {}", game.getHistory().size(), file);
+		logger.info("PGN game successfully loaded ({} moves, opening {})", game.getHistory().size(), game.getOpening());
 
 		return game;
 	}

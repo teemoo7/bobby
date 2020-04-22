@@ -2,11 +2,10 @@ package ch.teemoo.bobby.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import ch.teemoo.bobby.models.CastlingMove;
 import ch.teemoo.bobby.models.Color;
@@ -20,7 +19,6 @@ import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -60,25 +58,22 @@ public class PortableGameNotationServiceTest {
 
 	private PortableGameNotationService portableGameNotationService;
 
-	@Mock
-	private FileService fileService;
-
 	@Spy
 	private MoveService moveService;
 
 	@Before
 	public void setUp() {
 		this.moveService = new MoveService();
-		this.portableGameNotationService = new PortableGameNotationService(fileService, moveService);
+		this.portableGameNotationService = new PortableGameNotationService(moveService);
 	}
 
 	@Test
-	public void readPgnOpeningRuyLopezFileTest() throws IOException {
+	public void readPgnOpeningRuyLopezFileTest() {
 		// given
-		when(fileService.readFile(any())).thenReturn(Arrays.asList(PGN_OPENING_RUY_LOPEZ_CONTENT.split("\\n")));
+		List<String> lines = Arrays.asList(PGN_OPENING_RUY_LOPEZ_CONTENT.split("\\n"));
 
 		// when
-		Game game = portableGameNotationService.readPgnFile(null);
+		Game game = portableGameNotationService.readPgnFile(lines);
 
 		// then
 		// headers check
@@ -94,10 +89,10 @@ public class PortableGameNotationServiceTest {
 	@Test
 	public void readPgnGameFileTest() throws IOException {
 		// given
-		when(fileService.readFile(any())).thenReturn(Arrays.asList(PGN_GAME_CONTENT.split("\\n")));
+		List<String> lines = Arrays.asList(PGN_GAME_CONTENT.split("\\n"));
 
 		// when
-		Game game = portableGameNotationService.readPgnFile(null);
+		Game game = portableGameNotationService.readPgnFile(lines);
 
 		// then
 		// headers check
@@ -133,10 +128,10 @@ public class PortableGameNotationServiceTest {
 	@Test
 	public void readPgnBigGameFileTest() throws IOException {
 		// given
-		when(fileService.readFile(any())).thenReturn(Arrays.asList(PGN_GAME_WORLD_CHAMPIONSHIP_CONTENT.split("\\n")));
+		List<String> lines = Arrays.asList(PGN_GAME_WORLD_CHAMPIONSHIP_CONTENT.split("\\n"));
 
 		// when
-		Game game = portableGameNotationService.readPgnFile(null);
+		Game game = portableGameNotationService.readPgnFile(lines);
 
 		// then
 		// headers check
@@ -161,10 +156,10 @@ public class PortableGameNotationServiceTest {
 		// given
 		String pgn = "[Event \"?\"]\n" + "[Site \"?\"]\n" + "[Date \"????.??.??\"]\n" + "[Round \"?\"]\n"
 			+ "[White \"?\"]\n" + "[Black \"?\"]\n" + "[Result \"*\"]\n\n1. O-O-O O-O-O 2. e8=R e1=K 3. d8=B *";
-		when(fileService.readFile(any())).thenReturn(Arrays.asList(pgn.split("\\n")));
+		List<String> lines = Arrays.asList(pgn.split("\\n"));
 
 		// when
-		ThrowableAssert.ThrowingCallable callable = () -> portableGameNotationService.readPgnFile(null);
+		ThrowableAssert.ThrowingCallable callable = () -> portableGameNotationService.readPgnFile(lines);
 
 		// then
 		assertThatExceptionOfType(RuntimeException.class).isThrownBy(callable).withMessageContaining("Unexpected move");

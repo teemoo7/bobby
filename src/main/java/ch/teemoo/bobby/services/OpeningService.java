@@ -1,8 +1,8 @@
 package ch.teemoo.bobby.services;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +16,24 @@ import org.slf4j.LoggerFactory;
 
 public class OpeningService {
 	private final static Logger logger = LoggerFactory.getLogger(OpeningService.class);
+	private final static List<String> OPENINGS_PGN_FILES = Arrays.asList(
+		"bogoindiandefense.pgn",
+		"englishopening.pgn",
+		"friedliverattack.pgn",
+		"grunfelddefense.pgn",
+		"italiangame.pgn",
+		"kingsgambit.pgn",
+		"londonsystem.pgn",
+		"nimzoindiandefense.pgn",
+		"queensgambit.pgn",
+		"retiopening.pgn",
+		"ruylopezopening.pgn",
+		"scandinaviandefense.pgn",
+		"scotchgame.pgn",
+		"siciliandefense.pgn",
+		"slavdefense.pgn",
+		"trompowskyattack.pgn"
+	);
 
 	private final PortableGameNotationService portableGameNotationService;
 	private final FileService fileService;
@@ -46,11 +64,12 @@ public class OpeningService {
 
 	private Node buildTree() {
 		List<Game> games = new ArrayList<>();
-		for (File file : fileService.getFilesFromResourceFolder("openings")) {
+		for (String fileName: OPENINGS_PGN_FILES) {
 			try {
-				games.add(portableGameNotationService.readPgnFile(file));
+				games.add(portableGameNotationService
+					.readPgnFile(fileService.readFileFromResourceFolder("openings", fileName)));
 			} catch (IOException e) {
-				logger.error("Opening could not be read from file {}", file.getName(), e);
+				logger.error("Opening could not be read from file {}", fileName, e);
 			}
 		}
 

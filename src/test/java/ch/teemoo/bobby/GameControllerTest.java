@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -269,24 +270,24 @@ public class GameControllerTest {
 
     @Test
     public void testLoadGameBasic() throws Exception {
-        File file = mock(File.class);
-        when(file.getName()).thenReturn("test.txt");
+        File file = File.createTempFile("test", ".txt");
+        file.deleteOnExit();
         when(view.loadGameDialog()).thenReturn(Optional.of(file));
-        when(fileService.readFile(eq(file))).thenReturn(Collections.singletonList("e2-e4"));
+        when(fileService.readFile(any())).thenReturn(Collections.singletonList("e2-e4"));
         when(game.getWhitePlayer()).thenReturn(new Human("test"));
         when(game.getBlackPlayer()).thenReturn(new Human("test2"));
-        when(moveService.computeMoves(any(), any(), anyInt(), anyInt(), anyBoolean())).thenReturn(Collections.singletonList(new Move(new Pawn(Color.WHITE), 4, 1, 4, 3)));
+        when(moveService.computeMoves(any(), any(), anyInt(), anyInt(), anyBoolean()))
+            .thenReturn(Collections.singletonList(new Move(new Pawn(Color.WHITE), 4, 1, 4, 3)));
         when(moveService.getGameState(any(), any(), any())).thenReturn(GameState.IN_PROGRESS);
         controller.loadGame();
-        verify(fileService).readFile(eq(file));
     }
 
     @Test
     public void testLoadGamePgn() throws Exception {
-        File file = mock(File.class);
-        when(file.getName()).thenReturn("test.pgn");
+        File file = File.createTempFile("test", ".pgn");
+        file.deleteOnExit();
         when(view.loadGameDialog()).thenReturn(Optional.of(file));
-        when(portableGameNotationService.readPgnFile(eq(file))).thenReturn(new Game(null, null));
+        when(portableGameNotationService.readPgnFile(any())).thenReturn(new Game(null, null));
         when(game.getWhitePlayer()).thenReturn(new Human("test"));
         when(game.getBlackPlayer()).thenReturn(new Human("test2"));
         controller.loadGame();
@@ -294,8 +295,8 @@ public class GameControllerTest {
 
     @Test
     public void testLoadGameException() throws Exception {
-        File file = mock(File.class);
-        when(file.getName()).thenReturn("test.txt");
+        File file = File.createTempFile("test", ".txt");
+        file.deleteOnExit();
         when(view.loadGameDialog()).thenReturn(Optional.of(file));
         doThrow(new IOException("Test exception")).when(fileService).readFile(any());
         controller.loadGame();

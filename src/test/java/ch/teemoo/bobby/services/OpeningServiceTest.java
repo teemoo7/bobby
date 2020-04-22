@@ -1,19 +1,16 @@
 package ch.teemoo.bobby.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Move;
-import ch.teemoo.bobby.models.openings.Node;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +26,7 @@ public class OpeningServiceTest {
 	public void setUp() {
 		this.fileService = new FileService();
 		this.moveService = new MoveService();
-		this.portableGameNotationService = new PortableGameNotationService(fileService, moveService);
+		this.portableGameNotationService = new PortableGameNotationService(moveService);
 		this.openingService = new OpeningService(portableGameNotationService, fileService);
 	}
 
@@ -50,10 +47,7 @@ public class OpeningServiceTest {
 		// given
 		FileService fileServiceMock = mock(FileService.class);
 		PortableGameNotationService portableGameNotationServiceMock = mock(PortableGameNotationService.class);
-		File file = File.createTempFile("test", "tmp");
-		file.deleteOnExit();
-		when(fileServiceMock.getFilesFromResourceFolder(anyString())).thenReturn(new File[]{file});
-		when(portableGameNotationServiceMock.readPgnFile(eq(file))).thenThrow(new IOException("test"));
+		when(fileServiceMock.readFileFromResourceFolder(any(), any())).thenThrow(new IOException("test"));
 
 		// when
 		OpeningService openingServiceWithException =

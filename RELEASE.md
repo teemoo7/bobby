@@ -20,13 +20,14 @@ target/jre/bin/java -jar target/bobby-1.0-SNAPSHOT.jar
 ## Create Windows executable (.exe) to launch it
 
 1. Download `launch4j`.
-2. Use file `launch4j.xml` as a config file. It will create an executable `target/bin/bobby.exe`
+2. Use file `dist/launch4j.xml` as a config file. It will create an executable `target/bobby.exe`
 
 ## ZIP it all (experimental)
 
 Create a ZIP file containing:
 ```
 |- jre
-|- jar
+bobby-1.0-SNAPSHOT.jar
 bobby.exe
+bobby.sh
 ```

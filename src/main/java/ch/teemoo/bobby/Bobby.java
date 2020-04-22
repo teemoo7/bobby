@@ -1,13 +1,13 @@
 package ch.teemoo.bobby;
 
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
 import ch.teemoo.bobby.gui.BoardView;
 import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.helpers.GameFactory;
-import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameSetup;
-import ch.teemoo.bobby.models.players.ExperiencedBot;
 import ch.teemoo.bobby.models.players.Human;
-import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.OpeningService;
@@ -15,15 +15,13 @@ import ch.teemoo.bobby.services.PortableGameNotationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-
 public class Bobby implements Runnable {
     private final static Logger logger = LoggerFactory.getLogger(Bobby.class);
 
     private final MoveService moveService = new MoveService();
     private final FileService fileService = new FileService();
     private final PortableGameNotationService portableGameNotationService =
-        new PortableGameNotationService(fileService, moveService);
+        new PortableGameNotationService(moveService);
     private final OpeningService openingService = new OpeningService(portableGameNotationService, fileService);
     private final GameFactory gameFactory = new GameFactory();
     private final BotFactory botFactory = new BotFactory(moveService, openingService);
