@@ -94,8 +94,8 @@ public class MoveServiceTest {
         Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board initialBoard = game.getBoard();
         // Each player has 20 possible moves in initial position
-        assertThat(moveService.computeAllMoves(initialBoard, Color.WHITE, false)).hasSize(20);
-        assertThat(moveService.computeAllMoves(initialBoard, Color.BLACK, false)).hasSize(20);
+        assertThat(moveService.computeAllMoves(initialBoard, Color.WHITE, game.getHistory(), false)).hasSize(20);
+        assertThat(moveService.computeAllMoves(initialBoard, Color.BLACK, game.getHistory(),false)).hasSize(20);
     }
 
     @Test
@@ -103,11 +103,11 @@ public class MoveServiceTest {
         Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board initialBoard = game.getBoard();
         // White rook cannot move in initial position
-        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(0, 0).get(), 0, 0, false)).isEmpty();
+        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(0, 0).get(), 0, 0, game.getHistory(),false)).isEmpty();
         // White knight has two possible moves
-        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(1, 0).get(), 1, 0, false)).hasSize(2);
+        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(1, 0).get(), 1, 0, game.getHistory(),false)).hasSize(2);
         // Any pawn has two possible moves
-        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(5, 1).get(), 5, 1, false)).hasSize(2);
+        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(5, 1).get(), 5, 1, game.getHistory(),false)).hasSize(2);
     }
 
     @Test
@@ -226,23 +226,23 @@ public class MoveServiceTest {
 
     @Test
     public void testEvaluateBoardLoss() {
-        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.WHITE, GameState.LOSS, null, null)).isEqualTo(MoveService.WORST);
+        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.WHITE, GameState.LOSS, null, null, Collections.emptyList())).isEqualTo(MoveService.WORST);
     }
 
     @Test
     public void testEvaluateBoardWin() {
-        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.BLACK, GameState.LOSS, null, null)).isEqualTo(MoveService.BEST);
+        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.BLACK, GameState.LOSS, null, null, Collections.emptyList())).isEqualTo(MoveService.BEST);
     }
 
     @Test
     public void testEvaluateBoardDraw() {
-        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.BLACK, GameState.DRAW_STALEMATE, null, null)).isEqualTo(-20);
+        assertThat(moveService.evaluateBoard(null, Color.BLACK, Color.BLACK, GameState.DRAW_STALEMATE, null, null, Collections.emptyList())).isEqualTo(-20);
     }
 
     @Test
     public void testEvaluateBoardInitialPosition() {
         Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
-        assertThat(moveService.evaluateBoard(game.getBoard(), Color.WHITE, Color.BLACK, GameState.IN_PROGRESS, new Position(4, 7), new Position(4, 0))).isEqualTo(0);
+        assertThat(moveService.evaluateBoard(game.getBoard(), Color.WHITE, Color.BLACK, GameState.IN_PROGRESS, new Position(4, 7), new Position(4, 0), game.getHistory())).isEqualTo(0);
     }
 
     @Test
@@ -330,8 +330,8 @@ public class MoveServiceTest {
         // Initial positions board
         Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board board = game.getBoard();
-        assertThat(moveService.canMove(board, Color.WHITE)).isTrue();
-        assertThat(moveService.canMove(board, Color.BLACK)).isTrue();
+        assertThat(moveService.canMove(board, Color.WHITE, game.getHistory())).isTrue();
+        assertThat(moveService.canMove(board, Color.BLACK, game.getHistory())).isTrue();
     }
 
     @Test
@@ -346,7 +346,7 @@ public class MoveServiceTest {
                 "♙ ♙ ♙ ♙     ♙ ♙ \n" +
                 "♖ ♘ ♗   ♔ ♗ ♘ ♖ \n"
         );
-        assertThat(moveService.canMove(board, Color.BLACK)).isFalse();
+        assertThat(moveService.canMove(board, Color.BLACK, Collections.emptyList())).isFalse();
     }
 
     @Test
@@ -354,7 +354,7 @@ public class MoveServiceTest {
         // Initial positions board
         Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board board = game.getBoard();
-        List<Move> whiteMovesStart = moveService.computeBoardMoves(board, Color.WHITE, false, false);
+        List<Move> whiteMovesStart = moveService.computeBoardMoves(board, Color.WHITE, game.getHistory(),false, false);
         assertThat(whiteMovesStart).containsExactlyInAnyOrder(
                 // Pawns
                 new Move(board.getPiece(0, 1).get(), 0, 1, 0, 2),
@@ -386,7 +386,7 @@ public class MoveServiceTest {
         // Initial positions board
         Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board board = game.getBoard();
-        List<Move> whiteMovesStart = moveService.computeBoardMoves(board, Color.WHITE, false, true);
+        List<Move> whiteMovesStart = moveService.computeBoardMoves(board, Color.WHITE, game.getHistory(),false, true);
         assertThat(whiteMovesStart).containsExactlyInAnyOrder(
                 new Move(board.getPiece(1, 0).get(), 1, 0, 0, 2),
                 new Move(board.getPiece(1, 0).get(), 1, 0, 2, 2)
@@ -662,9 +662,26 @@ public class MoveServiceTest {
                 "♖     ♔   ♗ ♘ ♖ \n"
         );
         Piece blackKing = board.getPiece(4, 7).get();
-        assertThat(moveService.computeCastlingMoves(blackKing, 4, 7, board)).hasSize(2);
+        assertThat(moveService.computeCastlingMoves(blackKing, 4, 7, board, Collections.emptyList())).hasSize(2);
         Piece whiteKing = board.getPiece(3, 0).get();
-        assertThat(moveService.computeCastlingMoves(whiteKing, 4, 0, board)).hasSize(0);
+        assertThat(moveService.computeCastlingMoves(whiteKing, 4, 0, board, Collections.emptyList())).hasSize(0);
+    }
+
+    @Test
+    public void testComputeCastlingMovesDeniedByHistory() {
+        Board board = new Board("" +
+                "♜       ♚     ♜ \n" +
+                "♟ ♟ ♟ ♛   ♟ ♟ ♟ \n" +
+                "    ♞ ♟         \n" +
+                "        ♟       \n" +
+                "        ♙       \n" +
+                "          ♙     \n" +
+                "♙ ♙ ♙ ♙     ♙ ♙ \n" +
+                "♖       ♔ ♗ ♘ ♖ \n"
+        );
+        Piece whiteKing = board.getPiece(4, 0).get();
+        List<Move> history = Collections.singletonList(new Move(whiteKing, 4, 0, 3, 0));
+        assertThat(moveService.computeCastlingMoves(whiteKing, 4, 0, board, history)).hasSize(0);
     }
 
     @Test
@@ -680,9 +697,9 @@ public class MoveServiceTest {
                 "♖       ♔ ♗ ♘ ♖ \n"
         );
         Piece whiteKing = board.getPiece(4, 0).get();
-        assertThat(moveService.getCastlingMove(board, whiteKing, 4, 0, 2, 0, 3)).isPresent().get().isInstanceOf(CastlingMove.class);
+        assertThat(moveService.getCastlingMove(board, whiteKing, 4, 0, 2, 0, 3, Collections.emptyList())).isPresent().get().isInstanceOf(CastlingMove.class);
         Piece blackKing = board.getPiece(4, 7).get();
-        assertThat(moveService.getCastlingMove(board, blackKing, 4, 7, 6, 7, 5)).isPresent().get().isInstanceOf(CastlingMove.class);
+        assertThat(moveService.getCastlingMove(board, blackKing, 4, 7, 6, 7, 5, Collections.emptyList())).isPresent().get().isInstanceOf(CastlingMove.class);
     }
 
     @Test
@@ -698,7 +715,7 @@ public class MoveServiceTest {
                 "        ♔ ♗ ♘ ♖ \n"
         );
         Piece king = board.getPiece(4, 0).get();
-        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3)).isEmpty();
+        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3, Collections.emptyList())).isEmpty();
 
         board = new Board("" +
                 "♜ ♞   ♛ ♚     ♜ \n" +
@@ -710,7 +727,7 @@ public class MoveServiceTest {
                 "♙ ♙ ♙ ♙     ♙ ♙ \n" +
                 "♗       ♔   ♘ ♖ \n"
         );
-        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3)).isEmpty();
+        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3, Collections.emptyList())).isEmpty();
 
         board = new Board("" +
                 "  ♞   ♛ ♚     ♜ \n" +
@@ -722,7 +739,7 @@ public class MoveServiceTest {
                 "♙ ♙ ♙ ♙     ♙ ♙ \n" +
                 "♜       ♔ ♗ ♘ ♖ \n"
         );
-        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3)).isEmpty();
+        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3, Collections.emptyList())).isEmpty();
     }
 
     @Test
@@ -738,7 +755,7 @@ public class MoveServiceTest {
                 "♖     ♗ ♔   ♘ ♖ \n"
         );
         Piece king = board.getPiece(4, 0).get();
-        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3)).isEmpty();
+        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3, Collections.emptyList())).isEmpty();
     }
 
     @Test
@@ -754,7 +771,7 @@ public class MoveServiceTest {
                 "♖       ♔ ♗ ♘ ♖ \n"
         );
         Piece king = board.getPiece(4, 0).get();
-        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3)).isEmpty();
+        assertThat(moveService.getCastlingMove(board, king, 4, 0, 2, 0, 3, Collections.emptyList())).isEmpty();
     }
 
     @Test

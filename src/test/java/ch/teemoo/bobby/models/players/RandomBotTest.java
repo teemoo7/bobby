@@ -14,6 +14,7 @@ import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +37,7 @@ public class RandomBotTest {
     public void testSelectMove() {
         Bot bot = new RandomBot(moveService);
         Move move = new Move(new Rook(Color.WHITE), 3, 4, 4, 4);
-        when(moveService.computeAllMoves(any(), any(), eq(true))).thenReturn(Collections.singletonList(move));
+        when(moveService.computeAllMoves(any(), any(), anyList(), eq(true))).thenReturn(Collections.singletonList(move));
         assertThat(bot.selectMove(game)).isEqualTo(move);
     }
 }

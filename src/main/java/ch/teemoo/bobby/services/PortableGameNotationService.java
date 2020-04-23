@@ -69,7 +69,7 @@ public class PortableGameNotationService {
 		}
 
 		for (Move move: moves) {
-			final List<Move> allowedMoves = moveService.computeAllMoves(game.getBoard(), game.getToPlay(), true);
+			final List<Move> allowedMoves = moveService.computeAllMoves(game.getBoard(), game.getToPlay(), game.getHistory(),true);
 
 			final Predicate<Move> fromXCond = m -> move.getFromX() < 0 || m.getFromX() == move.getFromX();
 			final Predicate<Move> fromYCond = m -> move.getFromY() < 0 || m.getFromY() == move.getFromY();

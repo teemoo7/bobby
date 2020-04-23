@@ -118,7 +118,7 @@ public class GameControllerTest {
         var move = new Move(new Queen(Color.WHITE), 3, 0, 3, 1);
 
         when(game.getPlayerByColor(eq(Color.WHITE))).thenReturn(new Human("test"));
-        when(moveService.computeMoves(any(), any(), anyInt(), anyInt(), anyBoolean()))
+        when(moveService.computeMoves(any(), any(), anyInt(), anyInt(), anyList(), anyBoolean()))
                 .thenReturn(Collections.emptyList());
 
         assertThatExceptionOfType(RuntimeException.class)
@@ -134,7 +134,7 @@ public class GameControllerTest {
         when(game.getWhitePlayer()).thenReturn(player);
         when(game.getPlayerByColor(eq(Color.WHITE))).thenReturn(player);
         when(moveService.getGameState(any(), any(), anyList())).thenReturn(GameState.IN_PROGRESS);
-        when(moveService.computeMoves(any(), any(), anyInt(), anyInt(), anyBoolean()))
+        when(moveService.computeMoves(any(), any(), anyInt(), anyInt(), anyList(), anyBoolean()))
                 .thenReturn(Collections.singletonList(computedMove));
         controller.doMove(move);
         verify(view).cleanSquaresBorder();
@@ -276,7 +276,7 @@ public class GameControllerTest {
         when(fileService.readFile(any())).thenReturn(Collections.singletonList("e2-e4"));
         when(game.getWhitePlayer()).thenReturn(new Human("test"));
         when(game.getBlackPlayer()).thenReturn(new Human("test2"));
-        when(moveService.computeMoves(any(), any(), anyInt(), anyInt(), anyBoolean()))
+        when(moveService.computeMoves(any(), any(), anyInt(), anyInt(), anyList(), anyBoolean()))
             .thenReturn(Collections.singletonList(new Move(new Pawn(Color.WHITE), 4, 1, 4, 3)));
         when(moveService.getGameState(any(), any(), any())).thenReturn(GameState.IN_PROGRESS);
         controller.loadGame();

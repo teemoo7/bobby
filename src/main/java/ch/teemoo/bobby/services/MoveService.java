@@ -50,11 +50,11 @@ public class MoveService {
 	private final static int MAX_MOVE = SIZE - 1;
 	private final static int[][] heatmapCenter = generateCenteredHeatmap();
 
-	public List<Move> computeAllMoves(Board board, Color color, boolean withAdditionalInfo) {
-		return computeBoardMoves(board, color, withAdditionalInfo, false);
+	public List<Move> computeAllMoves(Board board, Color color, List<Move> history, boolean withAdditionalInfo) {
+		return computeBoardMoves(board, color, history, withAdditionalInfo, false);
 	}
 
-	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY, boolean withAdditionalInfo) {
+	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY, List<Move> history, boolean withAdditionalInfo) {
 		List<Move> moves = new ArrayList<>();
 		final Color color = piece.getColor();
 
@@ -72,7 +72,7 @@ public class MoveService {
 		} else if (piece instanceof King) {
 			moves.addAll(computeStraightMoves(piece, posX, posY, board, 1));
 			moves.addAll(computeDiagonalMoves(piece, posX, posY, board, 1));
-			moves.addAll(computeCastlingMoves(piece, posX, posY, board));
+			moves.addAll(computeCastlingMoves(piece, posX, posY, board, history));
 		} else {
 			throw new RuntimeException("Unexpected piece type");
 		}
@@ -93,7 +93,7 @@ public class MoveService {
 	}
 
 	public GameState getGameState(Board board, Color colorToPlay, List<Move> history) {
-		if (!canMove(board, colorToPlay)) {
+		if (!canMove(board, colorToPlay, history)) {
 			if (isInCheck(board, colorToPlay)) {
 				// Checkmate
 				return GameState.LOSS;
@@ -152,7 +152,7 @@ public class MoveService {
 		LocalDateTime computationTimeout) {
 		// Evaluate each move given the points of the pieces and the checkmate possibility, then select highest
 
-		List<Move> moves = computeAllMoves(board, color, true);
+		List<Move> moves = computeAllMoves(board, color, history,true);
 
 		final Color opponentColor = swap(color);
 		final Position opponentKingPosition = findKingPosition(board, opponentColor)
@@ -212,7 +212,7 @@ public class MoveService {
 		historyCopy.add(move);
 		final GameState gameState = getGameState(boardAfter, opponentColor, historyCopy);
 
-		int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition, myKingPosition);
+		int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition, myKingPosition, historyCopy);
 		moveAnalysis.setScore(score);
 		if (score >= BEST) {
 			return moveAnalysis;
@@ -231,7 +231,7 @@ public class MoveService {
 		return moveAnalysis;
 	}
 
-	int evaluateBoard(Board board, Color colorToEvaluate, Color lastPlayer, GameState gameState, Position opponentKingPosition, Position myKingPosition) {
+	int evaluateBoard(Board board, Color colorToEvaluate, Color lastPlayer, GameState gameState, Position opponentKingPosition, Position myKingPosition, List<Move> history) {
 		if (!gameState.isInProgress()) {
 			int gameStateScore = NEUTRAL;
 			// Game is over
@@ -256,11 +256,11 @@ public class MoveService {
 		int piecesScore = piecesValue-opponentPiecesValue;
 
 		//fixme: we should compute moves for pawns in case of taking, not straight moves
-		List<Move> allMoves = computeAllMoves(board, colorToEvaluate, false);
+		List<Move> allMoves = computeAllMoves(board, colorToEvaluate, history,false);
 		int[][] heatmapOpponentKing = getHeatmapAroundLocation(opponentKingPosition.getX(), opponentKingPosition.getY());
 		int myHeatScore = allMoves.stream().mapToInt(
 				m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapOpponentKing[m.getToX()][m.getToY()]).sum();
-		List<Move> allOpponentMoves = computeAllMoves(board, swap(colorToEvaluate), false);
+		List<Move> allOpponentMoves = computeAllMoves(board, swap(colorToEvaluate), history,false);
 		int[][] heatmapMyKing = getHeatmapAroundLocation(myKingPosition.getX(), myKingPosition.getY());
 		int opponentHeatScore = allOpponentMoves.stream().mapToInt(
 				m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapMyKing[m.getToX()][m.getToY()]).sum();
@@ -307,12 +307,12 @@ public class MoveService {
 		return Optional.of(bestMoves.get(new Random().nextInt(bestMoves.size())));
 	}
 
-	boolean canMove(Board board, Color color) {
-		List<Move> moves = computeBoardMoves(board, color, true, true);
+	boolean canMove(Board board, Color color, List<Move> history) {
+		List<Move> moves = computeBoardMoves(board, color, history,true, true);
 		return !moves.isEmpty();
 	}
 
-	List<Move> computeBoardMoves(Board board, Color color, boolean withAdditionalInfo, boolean returnFirstPieceMoves) {
+	List<Move> computeBoardMoves(Board board, Color color, List<Move> history, boolean withAdditionalInfo, boolean returnFirstPieceMoves) {
 		List<Move> moves = new ArrayList<>();
 		List<PiecePosition> piecePositions = new ArrayList<>();
 		for (int i = 0; i < SIZE; i++) {
@@ -328,7 +328,7 @@ public class MoveService {
 
 		for (PiecePosition piecePosition: piecePositions) {
 			List<Move> pieceMoves = computeMoves(board, piecePosition.getPiece(), piecePosition.getPosition().getX(),
-				piecePosition.getPosition().getY(), withAdditionalInfo);
+				piecePosition.getPosition().getY(), history, withAdditionalInfo);
 			if (!pieceMoves.isEmpty() && returnFirstPieceMoves) {
 				return pieceMoves;
 			}
@@ -482,9 +482,7 @@ public class MoveService {
 		return moves;
 	}
 
-	List<Move> computeCastlingMoves(Piece piece, int posX, int posY, Board board) {
-		//todo: take game history into account, both king and rook must not have moved yet
-
+	List<Move> computeCastlingMoves(Piece piece, int posX, int posY, Board board, List<Move> history) {
 		if (!isValidKingPositionForCastling(piece, posX, posY, board)) {
 			return Collections.emptyList();
 		}
@@ -492,15 +490,22 @@ public class MoveService {
 		List<Move> moves = new ArrayList<>();
 
 		// Queenside castling theoretical positions
-		getCastlingMove(board, piece, posX, posY, 2, 0, 3).ifPresent(moves::add);
+		getCastlingMove(board, piece, posX, posY, 2, 0, 3, history).ifPresent(moves::add);
 		// Kingside castling theoretical positions
-		getCastlingMove(board, piece, posX, posY, 6, 7, 5).ifPresent(moves::add);
+		getCastlingMove(board, piece, posX, posY, 6, 7, 5, history).ifPresent(moves::add);
 
 		return moves;
 	}
 
 	Optional<Move> getCastlingMove(Board board, Piece piece, int kingFromX, int kingFromY, int kingToX,
-		int rookFromX, int rookToX) {
+		int rookFromX, int rookToX, List<Move> history) {
+
+		if (history.stream().anyMatch(m ->
+			(m.getFromX() == kingFromX && m.getFromY() == kingFromY)
+				|| (m.getFromX() == rookFromX && m.getFromY() == kingFromY))) {
+			return Optional.empty();
+		}
+
 		final Color color = piece.getColor();
 
 		// Check rook position
