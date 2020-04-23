@@ -49,7 +49,6 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 ### Moves
 
 * Move _en-passant_ (pawn taking another pawn but moving forward) has not been implemented yet
-* Castling move does not take into account if king or rook has already moved
 * Promoted pawn (pawn reaching last line) is automatically changed into a Queen but other pieces should be possible (knight among others)
 
 ### Computation time
