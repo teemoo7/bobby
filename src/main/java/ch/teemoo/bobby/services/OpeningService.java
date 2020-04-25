@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.openings.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -17,7 +17,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,8 +31,8 @@ import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.GameState;
-import ch.teemoo.bobby.models.Move;
-import ch.teemoo.bobby.models.PromotionMove;
+import ch.teemoo.bobby.models.moves.Move;
+import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.Knight;
 import ch.teemoo.bobby.models.pieces.Pawn;
@@ -479,5 +478,49 @@ public class GameControllerTest {
         controller.playNextMove();
         verify(view).resetAllClickables();
         verify(board, never()).doMove(any());
+    }
+
+    @Test
+    public void testEvaluateDrawProposalAccepted() {
+        // given
+        Player whitePlayer = new TraditionalBot(1, null, moveService);
+        when(game.getPlayerWaiting()).thenReturn(whitePlayer);
+        when(game.getWhitePlayer()).thenReturn(whitePlayer);
+        when(game.getBlackPlayer()).thenReturn(new TraditionalBot(1, null, moveService));
+        when(game.getState()).thenReturn(GameState.DRAW_AGREEMENT);
+        when(moveService.isDrawAcceptable(any())).thenReturn(true);
+
+        // when
+        controller.evaluateDrawProposal();
+
+        // then
+        verify(game).setState(eq(GameState.DRAW_AGREEMENT));
+    }
+
+    @Test
+    public void testEvaluateDrawProposalDeclined() {
+        // given
+        Player whitePlayer = new TraditionalBot(1, null, moveService);
+        when(game.getPlayerWaiting()).thenReturn(whitePlayer);
+        when(moveService.isDrawAcceptable(any())).thenReturn(false);
+
+        // when
+        controller.evaluateDrawProposal();
+
+        // then
+        verify(game, never()).setState(eq(GameState.DRAW_AGREEMENT));
+    }
+
+
+    @Test
+    public void testEvaluateDrawProposalNotYourTurn() {
+        // given
+        when(game.getPlayerWaiting()).thenReturn(new Human("test"));
+
+        // when
+        controller.evaluateDrawProposal();
+
+        // then
+        verify(game, never()).setState(eq(GameState.DRAW_AGREEMENT));
     }
 }

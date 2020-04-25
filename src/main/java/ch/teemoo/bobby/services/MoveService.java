@@ -10,11 +10,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
@@ -22,15 +20,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ch.teemoo.bobby.models.Board;
-import ch.teemoo.bobby.models.CastlingMove;
+import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.EnPassantMove;
+import ch.teemoo.bobby.models.moves.EnPassantMove;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameState;
-import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.MoveAnalysis;
 import ch.teemoo.bobby.models.Position;
-import ch.teemoo.bobby.models.PromotionMove;
+import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Knight;
@@ -47,6 +45,7 @@ public class MoveService {
 	public final static int WORST = -1000;
 	public final static int BEST = 1000;
 	public final static int NEUTRAL = 0;
+	public final static int DRAW_PENALTY = -20;
 
 	private final static int MAX_MOVE = SIZE - 1;
 	private final static int[][] heatmapCenter = generateCenteredHeatmap();
@@ -128,19 +127,19 @@ public class MoveService {
 		return GameState.IN_PROGRESS;
 	}
 
-	Optional<Position> findKingPosition(Board board, Color color) {
-		for (int x = 0; x < SIZE; x++) {
-			for (int y = 0; y < SIZE; y++) {
-				Optional<Piece> pieceOpt = board.getPiece(x, y);
-				if (pieceOpt.isPresent()) {
-					Piece piece = pieceOpt.get();
-					if (piece instanceof King && piece.getColor() == color) {
-						return Optional.of(new Position(x, y));
-					}
-				}
-			}
-		}
-		return Optional.empty();
+	public boolean isDrawAcceptable(Game game) {
+		Board board = game.getBoard();
+		Color opponentColor = game.getToPlay();
+		Color color = swap(opponentColor);
+		List<Move> history = game.getHistory();
+		GameState gameState = getGameState(board, opponentColor, history);
+		Position kingPosition =
+			findKingPosition(board, color).orElseThrow(() -> new RuntimeException("King expected here"));
+		Position opponentKingPosition =
+			findKingPosition(board, opponentColor).orElseThrow(() -> new RuntimeException("King expected here"));
+		int score = evaluateBoard(board, color, color, gameState, opponentKingPosition, kingPosition, history);
+		int opponentScore = evaluateBoard(board, opponentColor, color, gameState, kingPosition, opponentKingPosition, history);
+		return opponentScore + DRAW_PENALTY > score;
 	}
 
 	public Move selectMove(Game game, int depth, LocalDateTime computationTimeout) {
@@ -232,6 +231,21 @@ public class MoveService {
 		return moveAnalysis;
 	}
 
+	Optional<Position> findKingPosition(Board board, Color color) {
+		for (int x = 0; x < SIZE; x++) {
+			for (int y = 0; y < SIZE; y++) {
+				Optional<Piece> pieceOpt = board.getPiece(x, y);
+				if (pieceOpt.isPresent()) {
+					Piece piece = pieceOpt.get();
+					if (piece instanceof King && piece.getColor() == color) {
+						return Optional.of(new Position(x, y));
+					}
+				}
+			}
+		}
+		return Optional.empty();
+	}
+
 	int evaluateBoard(Board board, Color colorToEvaluate, Color lastPlayer, GameState gameState, Position opponentKingPosition, Position myKingPosition, List<Move> history) {
 		if (!gameState.isInProgress()) {
 			int gameStateScore = NEUTRAL;
@@ -246,7 +260,7 @@ public class MoveService {
 				}
 			} else if (gameState.isDraw()) {
 				// Let us be aggressive, a draw is not a good move, we want to win
-				gameStateScore -= 20;
+				gameStateScore += DRAW_PENALTY;
 			}
 			return gameStateScore;
 		}

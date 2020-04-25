@@ -1,7 +1,7 @@
 package ch.teemoo.bobby.gui;
 
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.pieces.Rook;

@@ -13,7 +13,7 @@ import java.util.UUID;
 
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.players.Human;
 import org.assertj.core.api.ThrowableAssert;

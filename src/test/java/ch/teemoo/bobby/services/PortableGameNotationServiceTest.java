@@ -7,10 +7,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import ch.teemoo.bobby.models.CastlingMove;
+import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.PromotionMove;
+import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Queen;

@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -31,8 +30,8 @@ import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.GameState;
-import ch.teemoo.bobby.models.Move;
-import ch.teemoo.bobby.models.PromotionMove;
+import ch.teemoo.bobby.models.moves.Move;
+import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.players.Bot;
@@ -83,6 +82,7 @@ public class GameController {
 		view.setItemPrintToConsoleActionListener(actionEvent -> printGameToConsole());
 		view.setItemSuggestMoveActionListener(actionEvent -> suggestMove());
 		view.setItemUndoMoveActionListener(actionEvent -> undoLastMove());
+		view.setItemProposeDrawActionListener(actionEvent -> evaluateDrawProposal());
 	}
 
 	void newGame(GameSetup gameSetup) {
@@ -206,7 +206,12 @@ public class GameController {
 
 	void displayGameInfo(Move move) {
 		boolean showPopup = !game.getWhitePlayer().isBot() || !game.getBlackPlayer().isBot();
-		GameState state = moveService.getGameState(game.getBoard(), game.getToPlay(), game.getHistory());
+		GameState state;
+		if (game.getState() != null) {
+			state = game.getState();
+		} else {
+			state = moveService.getGameState(game.getBoard(), game.getToPlay(), game.getHistory());
+		}
 		switch (state) {
 			case LOSS:
 				Color winningColor = move.getPiece().getColor();
@@ -229,6 +234,10 @@ public class GameController {
 			case DRAW_THREEFOLD:
 				info("1/2-1/2" + getNbMovesInfo(game), false);
 				info("Draw (threefold). The game is over.", showPopup);
+				break;
+			case DRAW_AGREEMENT:
+				info("1/2-1/2" + getNbMovesInfo(game), false);
+				info("Draw (agreement). The game is over.", showPopup);
 				break;
 			case IN_PROGRESS:
 			default:
@@ -408,6 +417,25 @@ public class GameController {
 		Move secondLastMove = getLastMove();
 		undoLastMove(secondLastMove);
 		play();
+	}
+
+	void evaluateDrawProposal() {
+		Player playerWaiting = game.getPlayerWaiting();
+		if (playerWaiting.isBot()) {
+			boolean drawAccepted = ((Bot) playerWaiting).isDrawAcceptable(game);
+			if (drawAccepted) {
+				info("Draw proposal accepted!", true);
+				game.setState(GameState.DRAW_AGREEMENT);
+				cleanSelectedSquare();
+				view.cleanSquaresBorder();
+				view.resetAllClickables();
+				displayGameInfo(null);
+			} else {
+				info("Your draw proposal was declined", true);
+			}
+		} else {
+			info("Sorry, it is not your turn", true);
+		}
 	}
 
 	private Move getLastMove() {

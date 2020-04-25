@@ -5,21 +5,17 @@ import static ch.teemoo.bobby.models.Board.SIZE;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Hashtable;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 
 import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.models.GameSetup;
-import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.Position;
-import ch.teemoo.bobby.models.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.Knight;
 import ch.teemoo.bobby.models.pieces.Piece;
@@ -27,8 +23,6 @@ import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.pieces.Rook;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.Player;
-import ch.teemoo.bobby.models.players.RandomBot;
-import ch.teemoo.bobby.models.players.TraditionalBot;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 
@@ -47,6 +41,7 @@ public class BoardView extends JFrame {
     private JMenuItem itemPrintToConsole;
     private JMenuItem itemSuggestMove;
     private JMenuItem itemUndoMove;
+    private JMenuItem itemProposeDraw;
     private JMenuItem itemAbout;
 
     public BoardView(String title) {
@@ -96,6 +91,10 @@ public class BoardView extends JFrame {
 
     public void setItemUndoMoveActionListener(ActionListener actionListener) {
         itemUndoMove.addActionListener(actionListener);
+    }
+
+    public void setItemProposeDrawActionListener(ActionListener actionListener) {
+        itemProposeDraw.addActionListener(actionListener);
     }
 
     public void display(Piece[][] positions) {
@@ -335,6 +334,10 @@ public class BoardView extends JFrame {
         gameMenu.addSeparator();
         this.itemUndoMove = new JMenuItem("Undo move");
         gameMenu.add(itemUndoMove);
+
+        gameMenu.addSeparator();
+        this.itemProposeDraw = new JMenuItem("Propose draw");
+        gameMenu.add(itemProposeDraw);
 
         JMenu debugMenu = new JMenu("Debug");
         menuBar.add(debugMenu);

@@ -3,7 +3,7 @@ package ch.teemoo.bobby.models.players;
 import java.time.LocalDateTime;
 
 import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.services.MoveService;
 
 public class TraditionalBot extends Bot {
@@ -22,5 +22,9 @@ public class TraditionalBot extends Bot {
             computationTimeout = LocalDateTime.now().plusSeconds(timeout);
         }
         return moveService.selectMove(game, level, computationTimeout);
+    }
+
+    public boolean isDrawAcceptable(Game game) {
+        return moveService.isDrawAcceptable(game);
     }
 }

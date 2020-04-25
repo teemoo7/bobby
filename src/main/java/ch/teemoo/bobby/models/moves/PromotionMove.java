@@ -1,4 +1,4 @@
-package ch.teemoo.bobby.models;
+package ch.teemoo.bobby.models.moves;
 
 import ch.teemoo.bobby.models.pieces.Piece;
 

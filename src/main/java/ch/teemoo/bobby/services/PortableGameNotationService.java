@@ -12,11 +12,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import ch.teemoo.bobby.helpers.ColorHelper;
-import ch.teemoo.bobby.models.CastlingMove;
+import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.Move;
-import ch.teemoo.bobby.models.PromotionMove;
+import ch.teemoo.bobby.models.moves.Move;
+import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Knight;

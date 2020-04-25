@@ -1,4 +1,4 @@
-package ch.teemoo.bobby.models;
+package ch.teemoo.bobby.models.moves;
 
 public class EnPassantMove extends Move {
 	private final int tookPiecePosX;

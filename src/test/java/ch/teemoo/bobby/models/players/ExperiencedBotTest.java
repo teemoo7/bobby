@@ -9,16 +9,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.Collections;
 
-import ch.teemoo.bobby.models.CastlingMove;
+import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.Move;
-import ch.teemoo.bobby.models.PromotionMove;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.King;
-import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Rook;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.OpeningService;

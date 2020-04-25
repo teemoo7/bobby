@@ -1,7 +1,7 @@
 package ch.teemoo.bobby.models.players;
 
 import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.services.MoveService;
 
 public abstract class Bot extends Player {
@@ -13,4 +13,6 @@ public abstract class Bot extends Player {
     }
 
     public abstract Move selectMove(Game game);
+
+    public abstract boolean isDrawAcceptable(Game game);
 }

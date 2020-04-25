@@ -1,18 +1,17 @@
 package ch.teemoo.bobby.models.players;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.verify;
+
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.services.MoveService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.notNull;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TraditionalBotTest {
@@ -38,4 +37,10 @@ public class TraditionalBotTest {
         verify(moveService).selectMove(any(), eq(level), notNull());
     }
 
+    @Test
+    public void testIsDrawAcceptable() {
+        Bot bot = new TraditionalBot(1, null, moveService);
+        bot.isDrawAcceptable(null);
+        verify(moveService).isDrawAcceptable(any());
+    }
 }

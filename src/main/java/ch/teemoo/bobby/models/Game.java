@@ -5,6 +5,7 @@ import static ch.teemoo.bobby.models.Board.SIZE;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Knight;
@@ -88,6 +89,16 @@ public class Game {
 
     public Player getPlayerToPlay() {
         return getPlayerByColor(toPlay);
+    }
+
+    public Player getPlayerWaiting() {
+        switch (toPlay) {
+        case WHITE:
+            return blackPlayer;
+        case BLACK:
+            return whitePlayer;
+        }
+        throw new RuntimeException("Unexpected color");
     }
 
     public void removeLastMoveFromHistory() {

@@ -1,5 +1,7 @@
 package ch.teemoo.bobby.models;
 
+import ch.teemoo.bobby.models.moves.Move;
+
 public class MoveAnalysis {
 	private final Move move;
 	private int score;

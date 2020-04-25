@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.OpeningService;
 

@@ -1,7 +1,11 @@
 package ch.teemoo.bobby.services;
 
 import ch.teemoo.bobby.models.*;
+import ch.teemoo.bobby.models.moves.CastlingMove;
+import ch.teemoo.bobby.models.moves.EnPassantMove;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.*;
+import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.RandomBot;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
@@ -714,7 +718,8 @@ public class MoveServiceTest {
                 "♖       ♔ ♗ ♘ ♖ \n"
         );
         Piece whiteKing = board.getPiece(4, 0).get();
-        assertThat(moveService.getCastlingMove(board, whiteKing, 4, 0, 2, 0, 3, Collections.emptyList())).isPresent().get().isInstanceOf(CastlingMove.class);
+        assertThat(moveService.getCastlingMove(board, whiteKing, 4, 0, 2, 0, 3, Collections.emptyList())).isPresent().get().isInstanceOf(
+            CastlingMove.class);
         Piece blackKing = board.getPiece(4, 7).get();
         assertThat(moveService.getCastlingMove(board, blackKing, 4, 7, 6, 7, 5, Collections.emptyList())).isPresent().get().isInstanceOf(CastlingMove.class);
     }
@@ -1258,7 +1263,7 @@ public class MoveServiceTest {
     }
 
     @Test
-    public void testgetHeatmapAroundLocation() {
+    public void testGetHeatmapAroundLocation() {
         int[][] heatmap = moveService.getHeatmapAroundLocation(7, 0);
         assertThat(heatmap).hasSize(8);
         assertThat(heatmap[0]).hasSize(8);
@@ -1273,6 +1278,18 @@ public class MoveServiceTest {
                 {3, 2, 1, 0, 0, 0, 0, 0},
         };
         assertThat(heatmap).isEqualTo(expected);
+    }
+
+    @Test
+    public void testIsDrawAcceptableWithInitialPositionsDeclinedForPenalty() {
+        // given
+        Game game = new Game(new Human("test"), new RandomBot(moveService));
+
+        // when
+        boolean isAcceptable = moveService.isDrawAcceptable(game);
+
+        // then
+        assertThat(isAcceptable).isFalse();
     }
 
     private Move getMoveWithTookPiece(Piece piece, int fromX, int fromY, int toX, int toY, Piece tookPiece) {

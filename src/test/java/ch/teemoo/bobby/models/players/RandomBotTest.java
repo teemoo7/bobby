@@ -2,7 +2,7 @@ package ch.teemoo.bobby.models.players;
 
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.Rook;
 import ch.teemoo.bobby.services.MoveService;
 import org.junit.Test;
@@ -39,5 +39,11 @@ public class RandomBotTest {
         Move move = new Move(new Rook(Color.WHITE), 3, 4, 4, 4);
         when(moveService.computeAllMoves(any(), any(), anyList(), eq(true))).thenReturn(Collections.singletonList(move));
         assertThat(bot.selectMove(game)).isEqualTo(move);
+    }
+
+    @Test
+    public void testIsDrawAcceptable() {
+        Bot bot = new RandomBot(null);
+        assertThat(bot.isDrawAcceptable(null)).isInstanceOf(Boolean.class);
     }
 }

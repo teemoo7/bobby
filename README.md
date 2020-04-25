@@ -30,9 +30,12 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 
 * AI with multiple strength level, from random-stupid to 3-depths computation, using a minimax algorithm
 * All moves implemented
-* Knowledge of 15+ famous openings
-* Ability to limit computation time to _n_ seconds
-* Save and load game to text files with basic notation
+* Draw proposals
+* Undo last move
+* Suggest move
+* Usage of 15+ famous openings
+* Limit computation time to _n_ seconds
+* Save game to and load from text files with basic notation
 * Load PGN file
 
 ### Technical

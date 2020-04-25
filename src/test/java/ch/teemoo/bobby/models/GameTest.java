@@ -1,5 +1,6 @@
 package ch.teemoo.bobby.models;
 
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.*;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.Player;
@@ -100,5 +101,24 @@ public class GameTest {
         assertThat(game.canBePlayed()).isFalse();
         game = new Game(null, null);
         assertThat(game.canBePlayed()).isFalse();
+    }
+
+    @Test
+    public void testGetPlayerToPlayWaiting() {
+        Player whitePlayer = new Human("Player 1");
+        Player blackPlayer = new Human("Player 2");
+        Game game = new Game(whitePlayer, blackPlayer);
+        assertThat(game.getPlayerToPlay()).isEqualTo(whitePlayer);
+        assertThat(game.getPlayerWaiting()).isEqualTo(blackPlayer);
+    }
+
+    @Test
+    public void testGetPlayerToPlayWaitingReversed() {
+        Player whitePlayer = new Human("Player 1");
+        Player blackPlayer = new Human("Player 2");
+        Game game = new Game(whitePlayer, blackPlayer);
+        game.setToPlay(Color.BLACK);
+        assertThat(game.getPlayerToPlay()).isEqualTo(blackPlayer);
+        assertThat(game.getPlayerWaiting()).isEqualTo(whitePlayer);
     }
 }

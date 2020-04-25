@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import org.junit.Before;
 import org.junit.Test;

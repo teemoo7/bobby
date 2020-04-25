@@ -1,10 +1,13 @@
 package ch.teemoo.bobby.models;
 
+import ch.teemoo.bobby.models.moves.CastlingMove;
+import ch.teemoo.bobby.models.moves.EnPassantMove;
+import ch.teemoo.bobby.models.moves.Move;
+import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.players.Human;
-import ch.teemoo.bobby.models.players.RandomBot;
 import org.junit.Before;
 import org.junit.Test;
 

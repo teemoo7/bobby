@@ -1,5 +1,7 @@
 package ch.teemoo.bobby.models;
 
+import ch.teemoo.bobby.models.moves.CastlingMove;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
