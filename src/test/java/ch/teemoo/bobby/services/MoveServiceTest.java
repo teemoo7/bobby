@@ -430,7 +430,7 @@ public class MoveServiceTest {
                 "                \n"
         );
         Piece pawn = board.getPiece(3, 4).get();
-        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board);
+        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board, Collections.emptyList());
         assertThat(moves).containsExactlyInAnyOrder(
                 new Move(pawn, 3, 4, 3, 5),
                 getMoveWithTookPiece(pawn, 3, 4, 2, 5, board.getPiece(2, 5).get()),
@@ -438,7 +438,7 @@ public class MoveServiceTest {
         );
 
         Piece pawnAtStart = board.getPiece(0, 1).get();
-        moves = moveService.computePawnMoves(pawnAtStart, 0, 1, board);
+        moves = moveService.computePawnMoves(pawnAtStart, 0, 1, board, Collections.emptyList());
         assertThat(moves).containsExactlyInAnyOrder(
                 new Move(pawnAtStart, 0, 1, 0, 2),
                 new Move(pawnAtStart, 0, 1, 0, 3),
@@ -459,21 +459,38 @@ public class MoveServiceTest {
                 "                \n"
         );
         Piece pawn = board.getPiece(3, 4).get();
-        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board);
-        assertThat(moves).containsExactlyInAnyOrder(
-                getMoveWithTookPiece(pawn, 3, 4, 4, 5, board.getPiece(4, 5).get())
-        );
+        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board, Collections.emptyList());
+        assertThat(moves).containsExactlyInAnyOrder(getMoveWithTookPiece(pawn, 3, 4, 4, 5, board.getPiece(4, 5).get()));
 
         Piece pawnAtStart = board.getPiece(0, 1).get();
-        moves = moveService.computePawnMoves(pawnAtStart, 0, 1, board);
+        moves = moveService.computePawnMoves(pawnAtStart, 0, 1, board, Collections.emptyList());
         assertThat(moves).isEmpty();
 
         Piece blackPawn = board.getPiece(4, 5).get();
-        moves = moveService.computePawnMoves(blackPawn, 4, 5, board);
-        assertThat(moves).containsExactlyInAnyOrder(
-                new Move(blackPawn, 4, 5, 4, 4),
-                getMoveWithTookPiece(blackPawn, 4, 5, 3, 4, board.getPiece(3, 4).get())
+        moves = moveService.computePawnMoves(blackPawn, 4, 5, board, Collections.emptyList());
+        assertThat(moves).containsExactlyInAnyOrder(new Move(blackPawn, 4, 5, 4, 4), getMoveWithTookPiece(blackPawn, 4, 5, 3, 4, board.getPiece(3, 4).get()));
+    }
+
+    @Test
+    public void testComputePawnMovesEnPassant() {
+        Board board = new Board("" +
+            "                \n" +
+            "                \n" +
+            "                \n" +
+            "      ♙ ♟       \n" +
+            "                \n" +
+            "                \n" +
+            "                \n" +
+            "                \n"
         );
+        Piece blackPawn = board.getPiece(4, 4).get();
+        Move lastMove = new Move(blackPawn, 4, 6, 4, 4);
+        List<Move> history = Collections.singletonList(lastMove);
+        Piece pawn = board.getPiece(3, 4).get();
+        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board, history);
+        EnPassantMove enPassantMove = new EnPassantMove(new Move(pawn, 3, 4, 4, 5), 4, 4);
+        enPassantMove.setTookPiece(blackPawn);
+        assertThat(moves).containsExactlyInAnyOrder(new Move(pawn, 3, 4, 3, 5), enPassantMove);
     }
 
     @Test

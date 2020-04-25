@@ -29,7 +29,7 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 ### Game
 
 * AI with multiple strength level, from random-stupid to 3-depths computation, using a minimax algorithm
-* All moves implemented (except _en-passant_)
+* All moves implemented
 * Knowledge of 15+ famous openings
 * Ability to limit computation time to _n_ seconds
 * Save and load game to text files with basic notation
@@ -45,11 +45,6 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 * Pipeline with TravisCI
 
 ## Limitations
-
-### Moves
-
-* Move _en-passant_ (pawn taking another pawn but moving forward) has not been implemented yet
-* Promoted pawn (pawn reaching last line) is automatically changed into a Queen but other pieces should be possible (knight among others)
 
 ### Computation time
 

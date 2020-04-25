@@ -121,6 +121,28 @@ public class BoardTest {
     }
 
     @Test
+    public void testUndoMoveCastling() {
+        Board board = new Board("" +
+                "♜ ♞ ♝   ♚ ♝   ♜ \n" +
+                "♟ ♟   ♟ ♞ ♟ ♟ ♟ \n" +
+                "    ♟           \n" +
+                "                \n" +
+                "      ♛         \n" +
+                "  ♕ ♘           \n" +
+                "♙ ♙   ♗ ♙ ♙ ♙ ♙ \n" +
+                "    ♔ ♖   ♗ ♘ ♖ \n" +
+                "");
+        Piece king = board.getPiece(2, 0).orElseThrow(() -> new RuntimeException("Piece expected here"));
+        Piece rook = board.getPiece(3, 0).orElseThrow(() -> new RuntimeException("Piece expected here"));
+        Move castlingMove = new CastlingMove(king, 4, 0, 2, 0, rook, 0, 0, 3, 0);
+        board.undoMove(castlingMove);
+        assertThat(board.getPiece(2, 0)).isEmpty();
+        assertThat(board.getPiece(3, 0)).isEmpty();
+        assertThat(board.getPiece(4, 0)).isPresent().get().isEqualTo(king);
+        assertThat(board.getPiece(0, 0)).isPresent().get().isEqualTo(rook);
+    }
+
+    @Test
     public void testDoMoveWithPromotion() {
         final int fromX = 3;
         final int fromY = 6;
@@ -140,5 +162,57 @@ public class BoardTest {
         board.doMove(promotionMove);
         assertThat(board.getPiece(fromX, fromY)).isEmpty();
         assertThat(board.getPiece(toX, toY)).isPresent().get().isEqualTo(queen);
+    }
+
+    @Test
+    public void testDoMoveEnPassant() {
+        final int fromX = 0;
+        final int fromY = 4;
+        final int toX = 1;
+        final int toY = 5;
+        Piece[][] positions = new Piece[8][8];
+        Piece whitePawn = new Pawn(Color.WHITE);
+        Piece blackPawn = new Pawn(Color.BLACK);
+
+        positions[fromY][fromX] = whitePawn;
+        positions[fromY][toX] = blackPawn;
+        Board board = new Board(positions);
+        assertThat(board.getPiece(fromX, fromY)).isPresent().get().isEqualTo(whitePawn);
+        assertThat(board.getPiece(toX, toY)).isEmpty();
+        assertThat(board.getPiece(toX, fromY)).isPresent().get().isEqualTo(blackPawn);
+
+        Move move = new Move(whitePawn, fromX, fromY, toX, toY);
+        EnPassantMove enPassantMove = new EnPassantMove(move, toX, fromY);
+        enPassantMove.setTookPiece(blackPawn);
+        board.doMove(enPassantMove);
+        assertThat(board.getPiece(fromX, fromY)).isEmpty();
+        assertThat(board.getPiece(toX, fromY)).isEmpty();
+        assertThat(board.getPiece(toX, toY)).isPresent().get().isEqualTo(whitePawn);
+    }
+
+    @Test
+    public void testUndoMoveEnPassant() {
+        final int fromX = 0;
+        final int fromY = 4;
+        final int toX = 1;
+        final int toY = 5;
+        Piece[][] positions = new Piece[8][8];
+        Piece whitePawn = new Pawn(Color.WHITE);
+        Piece blackPawn = new Pawn(Color.BLACK);
+
+        positions[toY][toX] = whitePawn;
+        Board board = new Board(positions);
+        assertThat(board.getPiece(fromX, fromY)).isEmpty();
+        assertThat(board.getPiece(toX, fromY)).isEmpty();
+        assertThat(board.getPiece(toX, toY)).isPresent().get().isEqualTo(whitePawn);
+
+        Move move = new Move(whitePawn, fromX, fromY, toX, toY);
+        EnPassantMove enPassantMove = new EnPassantMove(move, toX, fromY);
+        enPassantMove.setTookPiece(blackPawn);
+        board.undoMove(enPassantMove);
+
+        assertThat(board.getPiece(fromX, fromY)).isPresent().get().isEqualTo(whitePawn);
+        assertThat(board.getPiece(toX, toY)).isEmpty();
+        assertThat(board.getPiece(toX, fromY)).isPresent().get().isEqualTo(blackPawn);
     }
 }

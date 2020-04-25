@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.CastlingMove;
 import ch.teemoo.bobby.models.Color;
+import ch.teemoo.bobby.models.EnPassantMove;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameState;
 import ch.teemoo.bobby.models.Move;
@@ -59,7 +60,7 @@ public class MoveService {
 		final Color color = piece.getColor();
 
 		if (piece instanceof Pawn) {
-			moves.addAll(computePawnMoves(piece, posX, posY, board));
+			moves.addAll(computePawnMoves(piece, posX, posY, board, history));
 		} else if (piece instanceof Knight) {
 			moves.addAll(computeLShapeMoves(piece, posX, posY, board));
 		} else if (piece instanceof Bishop) {
@@ -346,7 +347,7 @@ public class MoveService {
 			|| isInPawnCheck(board, kingPosition, color);
 	}
 
-	List<Move> computePawnMoves(Piece piece, int posX, int posY, Board board) {
+	List<Move> computePawnMoves(Piece piece, int posX, int posY, Board board, List<Move> history) {
 		List<Move> moves = new ArrayList<>();
 		final Color color = piece.getColor();
 		// color matters for pawns since they cannot go back
@@ -377,6 +378,21 @@ public class MoveService {
 		Optional<Move> move4 = getAllowedMove(piece, posX, posY, 1, factor, board);
 		move4.ifPresent(moves::add);
 
+		// en-passant moves
+		if (!history.isEmpty()) {
+			Move lastMove = history.get(history.size() - 1);
+			if (lastMove.getPiece() instanceof Pawn && lastMove.getFromY() - lastMove.getToY() == (2 * factor)
+				&& lastMove.getToY() == posY && (lastMove.getToX() == posX - 1 || lastMove.getToX() == posX + 1)) {
+				EnPassantMove move =
+					new EnPassantMove(new Move(piece, posX, posY, lastMove.getToX(), posY + factor), lastMove.getToX(),
+						lastMove.getToY());
+				move.setTookPiece(board.getPiece(lastMove.getToX(), lastMove.getToY())
+					.orElseThrow(() -> new RuntimeException("En-passant move expects a piece here")));
+				moves.add(move);
+			}
+		}
+
+		// promotion special moves
 		List<Move> movesWithPromotion = new ArrayList<>();
 		moves.forEach(move -> {
 			if (move.getToY() == initialY + factor * 6) {
