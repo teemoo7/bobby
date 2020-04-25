@@ -11,9 +11,11 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.SwingUtilities;
@@ -30,7 +32,9 @@ import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.GameState;
 import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Piece;
+import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.players.Bot;
 import ch.teemoo.bobby.models.players.Player;
 import ch.teemoo.bobby.services.FileService;
@@ -141,21 +145,48 @@ public class GameController {
 			view.resetAllClickables();
 		}
 
-		List<Move> allowedMoves = moveService.computeMoves(board, move.getPiece(), move.getFromX(), move.getFromY(), game.getHistory(), true);
-		Optional<Move> allowedMoveOpt = allowedMoves.stream().filter(m -> m.equalsForPositions(move)).findAny();
-		if (allowedMoveOpt.isPresent()) {
-			final Move allowedMove = allowedMoveOpt.get();
-			// We use allowedMove instead of given move since it contains additional info like taking and check
-			board.doMove(allowedMove);
-			view.refresh(board.getBoard());
-			view.addBorderToLastMoveSquares(move);
-			info(allowedMove.getPrettyNotation(), false);
-			game.addMoveToHistory(allowedMove);
-			game.setToPlay(swap(allowedMove.getPiece().getColor()));
-			displayGameInfo(allowedMove);
+		List<Move> matchingMoves =
+			moveService.computeMoves(board, move.getPiece(), move.getFromX(), move.getFromY(), game.getHistory(), true)
+				.stream().filter(m -> m.equalsForPositions(move)).collect(Collectors.toList());
+		Move allowedMove = getAllowedMove(move, player, matchingMoves);
+		// We use allowedMove instead of given move since it contains additional info like taking and check
+		board.doMove(allowedMove);
+		view.refresh(board.getBoard());
+		view.addBorderToLastMoveSquares(allowedMove);
+		info(allowedMove.getPrettyNotation(), false);
+		game.addMoveToHistory(allowedMove);
+		game.setToPlay(swap(allowedMove.getPiece().getColor()));
+		displayGameInfo(allowedMove);
+	}
+
+	Move getAllowedMove(Move move, Player player, List<Move> matchingMoves) {
+		List<Move> allowedMoves;
+		if (!matchingMoves.isEmpty() && matchingMoves.stream().allMatch(m -> m instanceof PromotionMove)) {
+			Piece promotedPiece;
+			if (move instanceof PromotionMove) {
+				promotedPiece = ((PromotionMove) move).getPromotedPiece();
+			} else {
+				if (player.isBot()) {
+					promotedPiece = new Queen(move.getPiece().getColor());
+				} else {
+					promotedPiece = view.promotionDialog(move.getPiece().getColor());
+				}
+			}
+			allowedMoves = matchingMoves.stream()
+				.filter(m -> ((PromotionMove) m).getPromotedPiece().getClass().equals(promotedPiece.getClass()))
+				.collect(Collectors.toList());
 		} else {
+			allowedMoves = matchingMoves;
+		}
+		if (allowedMoves.isEmpty()) {
 			throw new RuntimeException("Unauthorized move: " + move.getBasicNotation());
 		}
+		if (allowedMoves.size() > 1) {
+			throw new RuntimeException(
+				"Ambiguous move: " + move.getBasicNotation() + ". Multiple moves possible here: " + allowedMoves
+					.toString());
+		}
+		return allowedMoves.get(0);
 	}
 
 	void undoLastMove(Move move) {
@@ -226,23 +257,25 @@ public class GameController {
 	}
 
 	private void markSquareClickable(Square square) {
-		square.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				try {
-					squareClicked(square);
-				} catch (Exception exception) {
-					error(exception, true);
+		if (square.getMouseListeners().length == 0) {
+			square.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					try {
+						squareClicked(square);
+					} catch (Exception exception) {
+						error(exception, true);
+					}
 				}
-			}
 
-			public void mouseEntered(MouseEvent e) {
-				square.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-			}
+				public void mouseEntered(MouseEvent e) {
+					square.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				}
 
-			public void mouseExited(MouseEvent e) {
-				square.setCursor(Cursor.getDefaultCursor());
-			}
-		});
+				public void mouseExited(MouseEvent e) {
+					square.setCursor(Cursor.getDefaultCursor());
+				}
+			});
+		}
 	}
 
 	private void squareClicked(Square square) {

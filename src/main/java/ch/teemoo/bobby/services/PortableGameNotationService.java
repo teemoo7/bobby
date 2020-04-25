@@ -79,11 +79,14 @@ public class PortableGameNotationService {
 			final Predicate<Move> isTakingCond = m -> move.isTaking() == m.isTaking();
 			final Predicate<Move> isCheckingCond = m -> move.isChecking() == m.isChecking();
 			final Predicate<Move> moveTypeCond = m -> move.getClass().equals(m.getClass());
+			final Predicate<Move> promotionCond =
+				m -> !(move instanceof PromotionMove) || ((m instanceof PromotionMove) && ((PromotionMove) move)
+					.getPromotedPiece().getClass().equals(((PromotionMove) m).getPromotedPiece().getClass()));
 
 			List<Move> matchingMoves =
 				allowedMoves.stream().filter(fromXCond).filter(fromYCond).filter(toXCond).filter(toYCond)
 					.filter(pieceCond).filter(isTakingCond).filter(isCheckingCond).filter(moveTypeCond)
-					.collect(Collectors.toList());
+					.filter(promotionCond).collect(Collectors.toList());
 			if (matchingMoves.size() < 1) {
 				logger.error("Move {} is not allowed here. Allowed moves are {}", move, allowedMoves);
 				throw new RuntimeException("Unexpected move: " + move);

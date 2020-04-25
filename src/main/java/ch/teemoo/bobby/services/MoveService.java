@@ -377,14 +377,18 @@ public class MoveService {
 		Optional<Move> move4 = getAllowedMove(piece, posX, posY, 1, factor, board);
 		move4.ifPresent(moves::add);
 
-		return moves.stream().map(move -> {
+		List<Move> movesWithPromotion = new ArrayList<>();
+		moves.forEach(move -> {
 			if (move.getToY() == initialY + factor * 6) {
-				// Pawn promotion - simplified, always a queen
-				return new PromotionMove(move, new Queen(move.getPiece().getColor()));
+				movesWithPromotion.add(new PromotionMove(move, new Queen(move.getPiece().getColor())));
+				movesWithPromotion.add(new PromotionMove(move, new Knight(move.getPiece().getColor())));
+				movesWithPromotion.add(new PromotionMove(move, new Bishop(move.getPiece().getColor())));
+				movesWithPromotion.add(new PromotionMove(move, new Rook(move.getPiece().getColor())));
 			} else {
-				return move;
+				movesWithPromotion.add(move);
 			}
-		}).collect(toList());
+		});
+		return movesWithPromotion;
 	}
 
 	List<Move> computeLShapeMoves(Piece piece, int posX, int posY, Board board) {

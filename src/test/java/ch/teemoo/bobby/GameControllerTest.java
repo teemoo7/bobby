@@ -33,15 +33,20 @@ import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.GameState;
 import ch.teemoo.bobby.models.Move;
+import ch.teemoo.bobby.models.PromotionMove;
+import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.Knight;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Queen;
+import ch.teemoo.bobby.models.pieces.Rook;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.Player;
+import ch.teemoo.bobby.models.players.RandomBot;
 import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.PortableGameNotationService;
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -141,9 +146,123 @@ public class GameControllerTest {
         verify(view).resetAllClickables();
         verify(board).doMove(eq(computedMove));
         verify(view).refresh(any());
-        verify(view).addBorderToLastMoveSquares(eq(move));
+        verify(view).addBorderToLastMoveSquares(eq(computedMove));
         verify(game).addMoveToHistory(eq(computedMove));
         verify(game).setToPlay(eq(Color.BLACK));
+    }
+
+    @Test
+    public void testGetAllowedMove() {
+        // given
+        var move = new Move(new Queen(Color.WHITE), 3, 0, 3, 1);
+        var computedMove =
+            new Move(new Queen(Color.WHITE), move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+
+        // when
+        var allowedMove = controller.getAllowedMove(move, null, Collections.singletonList(computedMove));
+
+        // then
+        assertThat(allowedMove).isEqualTo(computedMove);
+    }
+
+    @Test
+    public void testGetAllowedMoveUnauthorized() {
+        // given
+        var move = new Move(new Queen(Color.WHITE), 3, 0, 3, 1);
+
+        // when
+        ThrowableAssert.ThrowingCallable callable =
+            () -> controller.getAllowedMove(move, null, Collections.emptyList());
+
+        // then
+        assertThatExceptionOfType(RuntimeException.class).isThrownBy(callable)
+            .withMessageContaining("Unauthorized move");
+    }
+
+    @Test
+    public void testGetAllowedMoveAmbiguous() {
+        // given
+        var move = new Move(new Queen(Color.WHITE), 3, 0, 3, 1);
+        var computedMove1 =
+            new Move(new Queen(Color.WHITE), move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+        var computedMove2 =
+            new Move(new Queen(Color.WHITE), move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+
+        // when
+        ThrowableAssert.ThrowingCallable callable =
+            () -> controller.getAllowedMove(move, null, Arrays.asList(computedMove1, computedMove2));
+
+        // then
+        assertThatExceptionOfType(RuntimeException.class).isThrownBy(callable).withMessageContaining("Ambiguous move");
+    }
+
+    @Test
+    public void testGetAllowedMovePromotionHuman() {
+        // given
+        var move = new Move(new Pawn(Color.WHITE), 3, 6, 3, 7);
+        var computedMove =
+            new Move(new Pawn(Color.WHITE), move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+        var computedMovePromotionQ = new PromotionMove(computedMove, new Queen(Color.WHITE));
+        var computedMovePromotionR = new PromotionMove(computedMove, new Rook(Color.WHITE));
+        var computedMovePromotionK = new PromotionMove(computedMove, new Knight(Color.WHITE));
+        var computedMovePromotionB = new PromotionMove(computedMove, new Bishop(Color.WHITE));
+        Player player = new Human("Player 1");
+        when(view.promotionDialog(any())).thenReturn(new Knight(Color.WHITE));
+
+        // when
+        Move allowedMove = controller.getAllowedMove(move, player, Arrays
+            .asList(computedMovePromotionB, computedMovePromotionK, computedMovePromotionQ, computedMovePromotionR));
+
+        // then
+        assertThat(allowedMove).isInstanceOf(PromotionMove.class);
+        assertThat(((PromotionMove) allowedMove).getPromotedPiece()).isInstanceOf(Knight.class);
+        assertThat(allowedMove).isEqualTo(computedMovePromotionK);
+    }
+
+    @Test
+    public void testGetAllowedMovePromotionBot() {
+        // given
+        var move = new Move(new Pawn(Color.WHITE), 3, 6, 3, 7);
+        var computedMove =
+            new Move(new Pawn(Color.WHITE), move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+        var computedMovePromotionQ = new PromotionMove(computedMove, new Queen(Color.WHITE));
+        var computedMovePromotionR = new PromotionMove(computedMove, new Rook(Color.WHITE));
+        var computedMovePromotionK = new PromotionMove(computedMove, new Knight(Color.WHITE));
+        var computedMovePromotionB = new PromotionMove(computedMove, new Bishop(Color.WHITE));
+        Player player = new RandomBot(moveService);
+
+        // when
+        Move allowedMove = controller.getAllowedMove(move, player, Arrays
+            .asList(computedMovePromotionB, computedMovePromotionK, computedMovePromotionQ, computedMovePromotionR));
+
+        // then
+        assertThat(allowedMove).isInstanceOf(PromotionMove.class);
+        assertThat(((PromotionMove) allowedMove).getPromotedPiece()).isInstanceOf(Queen.class);
+        assertThat(allowedMove).isEqualTo(computedMovePromotionQ);
+        verify(view, never()).promotionDialog(any());
+    }
+
+    @Test
+    public void testGetAllowedMovePromotionAlreadySet() {
+        // given
+        var move = new PromotionMove(new Move(new Pawn(Color.WHITE), 3, 6, 3, 7), new Knight(Color.WHITE));
+        var computedMove =
+            new Move(new Pawn(Color.WHITE), move.getFromX(), move.getFromY(), move.getToX(), move.getToY());
+        var computedMovePromotionQ = new PromotionMove(computedMove, new Queen(Color.WHITE));
+        var computedMovePromotionR = new PromotionMove(computedMove, new Rook(Color.WHITE));
+        var computedMovePromotionK = new PromotionMove(computedMove, new Knight(Color.WHITE));
+        var computedMovePromotionB = new PromotionMove(computedMove, new Bishop(Color.WHITE));
+        Player player = new Human("Player 1");
+
+        // when
+        Move allowedMove = controller.getAllowedMove(move, player, Arrays
+            .asList(computedMovePromotionB, computedMovePromotionK, computedMovePromotionQ, computedMovePromotionR));
+
+        // then
+        assertThat(allowedMove).isInstanceOf(PromotionMove.class);
+        assertThat(((PromotionMove) allowedMove).getPromotedPiece()).isInstanceOf(Knight.class);
+        assertThat(allowedMove).isEqualTo(computedMovePromotionK);
+        verify(view, never()).promotionDialog(any());
     }
 
     @Test

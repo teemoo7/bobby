@@ -19,7 +19,12 @@ import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.Move;
 import ch.teemoo.bobby.models.Position;
+import ch.teemoo.bobby.models.PromotionMove;
+import ch.teemoo.bobby.models.pieces.Bishop;
+import ch.teemoo.bobby.models.pieces.Knight;
 import ch.teemoo.bobby.models.pieces.Piece;
+import ch.teemoo.bobby.models.pieces.Queen;
+import ch.teemoo.bobby.models.pieces.Rook;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.Player;
 import ch.teemoo.bobby.models.players.RandomBot;
@@ -236,6 +241,44 @@ public class BoardView extends JFrame {
         }
 
         return new GameSetup(whitePlayer, blackPlayer);
+    }
+
+    public Piece promotionDialog(ch.teemoo.bobby.models.Color color) {
+        JLabel label = new JLabel("Promote pawn to");
+        setBold(label);
+        JRadioButton queenRadioButton = new JRadioButton("♕ Queen", true);
+        JRadioButton rookRadioButton = new JRadioButton("♖ Rook", false);
+        JRadioButton bishopRadioButton = new JRadioButton("♗ Bishop", false);
+        JRadioButton knightRadioButton = new JRadioButton("♘ Knight", false);
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(queenRadioButton);
+        buttonGroup.add(rookRadioButton);
+        buttonGroup.add(bishopRadioButton);
+        buttonGroup.add(knightRadioButton);
+
+        final JComponent[] inputs = new JComponent[] {
+            label,
+            queenRadioButton,
+            rookRadioButton,
+            bishopRadioButton,
+            knightRadioButton
+        };
+
+        JOptionPane
+            .showConfirmDialog(this, inputs, "Promotion", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+                logoIcon);
+
+        Piece piece;
+        if (rookRadioButton.isSelected()) {
+            piece = new Rook(color);
+        } else if (bishopRadioButton.isSelected()) {
+            piece = new Bishop(color);
+        } else if (knightRadioButton.isSelected()) {
+            piece = new Knight(color);
+        } else {
+            piece = new Queen(color);
+        }
+        return piece;
     }
 
     private void setBold(JLabel colorLabel) {
