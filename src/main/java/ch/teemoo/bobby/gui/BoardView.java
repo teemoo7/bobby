@@ -243,8 +243,9 @@ public class BoardView extends JFrame {
     }
 
     public Piece promotionDialog(ch.teemoo.bobby.models.Color color) {
-        JLabel label = new JLabel("Promote pawn to");
-        setBold(label);
+        JLabel funLabel = new JLabel("Wow! Your pawn jus reached the end of the world!\n");
+        JLabel promoteLabel = new JLabel("Promote pawn to");
+        setBold(promoteLabel);
         JRadioButton queenRadioButton = new JRadioButton("♕ Queen", true);
         JRadioButton rookRadioButton = new JRadioButton("♖ Rook", false);
         JRadioButton bishopRadioButton = new JRadioButton("♗ Bishop", false);
@@ -256,7 +257,9 @@ public class BoardView extends JFrame {
         buttonGroup.add(knightRadioButton);
 
         final JComponent[] inputs = new JComponent[] {
-            label,
+            funLabel,
+            new JSeparator(),
+            promoteLabel,
             queenRadioButton,
             rookRadioButton,
             bishopRadioButton,
@@ -395,7 +398,8 @@ public class BoardView extends JFrame {
                 + "Humble tribute to Robert James \"Bobby\" Fischer,\n"
                 + "World Chess Champion\n"
                 + " \n"
-                + "\t\"Chess is life.\" - Bobby Fischer",
+                + "\t“All that matters on the chessboard is good moves.”\n"
+                + "― Bobby Fischer",
             "About Bobby",
             JOptionPane.INFORMATION_MESSAGE, logoIcon);
     }

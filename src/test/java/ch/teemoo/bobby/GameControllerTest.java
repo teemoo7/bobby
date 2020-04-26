@@ -340,7 +340,7 @@ public class GameControllerTest {
         when(game.getHistory()).thenReturn(Collections.emptyList());
         when(game.getPlayerByColor(eq(Color.WHITE))).thenReturn(player);
         controller.displayGameInfo(move);
-        assertThat(systemOutRule.getLog()).contains("1-0 (0 moves)").contains("Checkmate! test (WHITE) has won!");
+        assertThat(systemOutRule.getLog()).contains("1-0 (0 moves)");
     }
 
     @Test
@@ -352,7 +352,7 @@ public class GameControllerTest {
         when(game.getHistory()).thenReturn(Collections.emptyList());
         when(game.getPlayerByColor(eq(Color.BLACK))).thenReturn(player);
         controller.displayGameInfo(move);
-        assertThat(systemOutRule.getLog()).contains("0-1 (0 moves)").contains("Checkmate! test (BLACK) has won!");
+        assertThat(systemOutRule.getLog()).contains("0-1 (0 moves)");
     }
 
     @Test
@@ -432,7 +432,7 @@ public class GameControllerTest {
         Move move = new Move(new Knight(Color.BLACK), 3, 7, 4, 5);
         when(moveService.selectMove(any(), anyInt(), any())).thenReturn(move);
         controller.suggestMove();
-        assertThat(systemOutRule.getLog()).contains("Suggested move is : " + move.toString());
+        assertThat(systemOutRule.getLog()).contains(move.toString());
     }
 
     @Test

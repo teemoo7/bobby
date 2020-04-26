@@ -37,6 +37,7 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 * Limit computation time to _n_ seconds
 * Save game to and load from text files with basic notation
 * Load PGN file
+* AI is as arrogant as the real Bobby was :smile:
 
 ### Technical
 

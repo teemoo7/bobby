@@ -207,7 +207,7 @@ public class GameController {
 	void displayGameInfo(Move move) {
 		boolean showPopup = !game.getWhitePlayer().isBot() || !game.getBlackPlayer().isBot();
 		GameState state;
-		if (game.getState() != null) {
+		if (game.getState() != null && !game.getState().isInProgress()) {
 			state = game.getState();
 		} else {
 			state = moveService.getGameState(game.getBoard(), game.getToPlay(), game.getHistory());
@@ -221,7 +221,13 @@ public class GameController {
 				} else {
 					info("0-1" + getNbMovesInfo(game), false);
 				}
-				info("Checkmate! " + winner.getName() + " (" + winningColor + ") has won!", showPopup);
+				if (winner.isBot()) {
+					info("Checkmate! Ha ha, not even Spassky could beat me!", showPopup);
+				} else {
+					info(
+						"Checkmated?!? Noooo! How is this possible?\nCongrats, not everybody is able to beat the genius Bobby!",
+						showPopup);
+				}
 				break;
 			case DRAW_STALEMATE:
 				info("1/2-1/2" + getNbMovesInfo(game), false);
@@ -405,7 +411,7 @@ public class GameController {
 		if (showTiming) {
 			logger.debug("Time to suggest move: {}", Duration.between(start, end));
 		}
-		info("Suggested move is : " + move.toString(), true);
+		info("Brilliantly, I recommend you to play: " + move.toString(), true);
 	}
 
 	void undoLastMove() {
@@ -424,14 +430,14 @@ public class GameController {
 		if (playerWaiting.isBot()) {
 			boolean drawAccepted = ((Bot) playerWaiting).isDrawAcceptable(game);
 			if (drawAccepted) {
-				info("Draw proposal accepted!", true);
+				info("Hmmm OK, I hate draws but you played quite well... Accepted!", true);
 				game.setState(GameState.DRAW_AGREEMENT);
 				cleanSelectedSquare();
 				view.cleanSquaresBorder();
 				view.resetAllClickables();
 				displayGameInfo(null);
 			} else {
-				info("Your draw proposal was declined", true);
+				info("Are you kidding me? A champion like me can't accept such proposal (at least not now).", true);
 			}
 		} else {
 			info("Sorry, it is not your turn", true);
