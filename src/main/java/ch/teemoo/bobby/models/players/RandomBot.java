@@ -8,6 +8,7 @@ import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.services.MoveService;
 
 public class RandomBot extends Bot {
+    private final static Random RANDOM = new Random();
 
     public RandomBot(MoveService moveService) {
         super(moveService);
@@ -15,10 +16,10 @@ public class RandomBot extends Bot {
 
     public Move selectMove(Game game) {
         List<Move> moves = moveService.computeAllMoves(game.getBoard(), game.getToPlay(), game.getHistory(), true);
-        return moves.get(new Random().nextInt(moves.size()));
+        return moves.get(RANDOM.nextInt(moves.size()));
     }
 
     public boolean isDrawAcceptable(Game game) {
-        return new Random().nextBoolean();
+        return RANDOM.nextBoolean();
     }
 }

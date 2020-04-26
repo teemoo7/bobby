@@ -9,6 +9,7 @@ import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.OpeningService;
 
 public class ExperiencedBot extends TraditionalBot {
+    private final static Random RANDOM = new Random();
     private final OpeningService openingService;
 
     public ExperiencedBot(int level, Integer timeout, MoveService moveService, OpeningService openingService) {
@@ -21,7 +22,7 @@ public class ExperiencedBot extends TraditionalBot {
         if (openingMoves.isEmpty()) {
             return super.selectMove(game);
         } else {
-            return openingMoves.get(new Random().nextInt(openingMoves.size()));
+            return openingMoves.get(RANDOM.nextInt(openingMoves.size()));
         }
     }
 }

@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 public class MoveService {
 	private final static Logger logger = LoggerFactory.getLogger(MoveService.class);
+	private final static Random RANDOM = new Random();
 
 	public final static int WORST = -1000;
 	public final static int BEST = 1000;
@@ -319,7 +320,7 @@ public class MoveService {
 				bestMoves.add(entry.getKey());
 			}
 		}
-		return Optional.of(bestMoves.get(new Random().nextInt(bestMoves.size())));
+		return Optional.of(bestMoves.get(RANDOM.nextInt(bestMoves.size())));
 	}
 
 	boolean canMove(Board board, Color color, List<Move> history) {
