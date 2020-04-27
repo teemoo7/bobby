@@ -10,7 +10,7 @@ Note that the author does not agree with Fischer's political and religious opini
 
 ## How to launch it
 
-**Note:** requires Java 11
+**Note:** requires Java 11 - either install OpenJDK 11 or use the bundled JRE ([doc here](PACKAGE.md))
 
 First build it
 
@@ -30,6 +30,7 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 
 * AI with multiple strength level, from random-stupid to 3-depths computation, using a minimax algorithm
 * All moves implemented
+* Change GUI view according to selected color
 * Draw proposals
 * Undo last move
 * Suggest move
@@ -42,7 +43,7 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 ### Technical
 
 * Uses Java 11
-* Ability to use bundled light JRE ([doc here](RELEASE.md))
+* Ability to use bundled light JRE ([doc here](PACKAGE.md))
 * Uses [launch4j](run/launch4j.xml) to release it as a Window executable (.exe)
 * Strong code coverage, incl. GUI testing
 * Code style with Checkstyle, code quality with SpotBugs and SonarSource

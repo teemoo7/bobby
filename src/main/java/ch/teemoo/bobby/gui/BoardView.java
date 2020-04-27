@@ -5,8 +5,12 @@ import static ch.teemoo.bobby.models.Board.SIZE;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.ListIterator;
 import java.util.Optional;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.swing.*;
@@ -97,24 +101,33 @@ public class BoardView extends JFrame {
         itemProposeDraw.addActionListener(actionListener);
     }
 
-    public void display(Piece[][] positions) {
-        contentPane.removeAll();
-        addFilesLabels();
+    public void display(Piece[][] positions, boolean isReversed) {
+        java.util.List<Component> components = new ArrayList<>((SIZE + 2) ^ 2);
+        addFilesLabels(components);
         Background background;
         for (int i = positions.length - 1; i >= 0; i--) {
-            contentPane.add(getRankLabel(i));
+            components.add(getRankLabel(i));
             background = getFirstSquareBackground(i);
             for (int j = 0; j < positions[i].length; j++) {
                 Piece piece = positions[i][j];
                 // Inverse coordinates (positions is a 2D array, reversed)
                 Square square = new Square(piece, new Position(j, i), background);
                 background = swapBackground(background);
-                contentPane.add(square);
+                components.add(square);
                 squares[i][j] = square;
             }
-            contentPane.add(getRankLabel(i));
+            components.add(getRankLabel(i));
         }
-        addFilesLabels();
+        addFilesLabels(components);
+        contentPane.removeAll();
+        if (isReversed) {
+            ListIterator<Component> li = components.listIterator(components.size());
+            while (li.hasPrevious()) {
+                contentPane.add(li.previous());
+            }
+        } else {
+            components.forEach(contentPane::add);
+        }
         setVisible(visible);
     }
 
@@ -356,17 +369,13 @@ public class BoardView extends JFrame {
         itemAbout.addActionListener(actionEvent -> showAboutDialog());
     }
 
-    private void addFilesLabels() {
-        contentPane.add(new SideLabel(""));
-        contentPane.add(new SideLabel("a"));
-        contentPane.add(new SideLabel("b"));
-        contentPane.add(new SideLabel("c"));
-        contentPane.add(new SideLabel("d"));
-        contentPane.add(new SideLabel("e"));
-        contentPane.add(new SideLabel("f"));
-        contentPane.add(new SideLabel("g"));
-        contentPane.add(new SideLabel("h"));
-        contentPane.add(new SideLabel(""));
+    private void addFilesLabels(java.util.List<Component> components) {
+        char a = 'a';
+        char h = 'h';
+        components.add(new SideLabel(""));
+        Stream<Integer> intStream = IntStream.range(a, h + 1).boxed();
+        intStream.forEach(i -> components.add(new SideLabel(Character.toString((char) (int)i))));
+        components.add(new SideLabel(""));
     }
 
     private SideLabel getRankLabel(int i) {

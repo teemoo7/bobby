@@ -98,7 +98,11 @@ public class GameController {
 	}
 
 	void refreshBoardView(Board board) {
-		view.display(board.getBoard());
+		boolean isReversed = false;
+		if (game != null && game.canBePlayed() && game.getWhitePlayer().isBot()) {
+			isReversed = true;
+		}
+		view.display(board.getBoard(), isReversed);
 	}
 
 	void play() {

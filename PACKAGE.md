@@ -1,4 +1,6 @@
-# Release Bobby
+# Package Bobby
+
+The whole packaging process can be done by just executing [this script](package.sh) or you may manually follow sections below.
 
 ## Create Java runtime (JRE)
 

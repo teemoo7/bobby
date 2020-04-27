@@ -38,12 +38,28 @@ public class BoardViewTest {
         Piece[][] pieces = new Piece[8][8];
         Piece rook = new Rook(Color.WHITE);
         pieces[2][4] = rook;
-        view.display(pieces);
+        view.display(pieces, false);
         Square rookSquare = view.getSquares()[2][4];
         Square emptySquare = view.getSquares()[2][3];
         assertThat(rookSquare.getPiece()).isEqualTo(rook);
         assertThat(emptySquare.getPiece()).isNull();
         assertThat(rookSquare.getBackground()).isNotEqualTo(emptySquare.getBackground());
+        assertThat(((SideLabel) view.getContentPane().getComponent(1)).getText()).isEqualTo("a");
+    }
+
+    @Test
+    public void testDisplayReversed() {
+        Piece[][] pieces = new Piece[8][8];
+        Piece rook = new Rook(Color.WHITE);
+        pieces[2][4] = rook;
+        view.display(pieces, true);
+        Square rookSquare = view.getSquares()[2][4];
+        Square emptySquare = view.getSquares()[2][3];
+        assertThat(rookSquare.getPiece()).isEqualTo(rook);
+        assertThat(emptySquare.getPiece()).isNull();
+        assertThat(rookSquare.getBackground()).isNotEqualTo(emptySquare.getBackground());
+        assertThat(view.getContentPane().getComponent(1)).isInstanceOf(SideLabel.class);
+        assertThat(((SideLabel) view.getContentPane().getComponent(1)).getText()).isEqualTo("h");
     }
 
     @Test
@@ -51,7 +67,7 @@ public class BoardViewTest {
         Piece[][] pieces = new Piece[8][8];
         Piece rook = new Rook(Color.WHITE);
         pieces[2][4] = rook;
-        view.display(pieces);
+        view.display(pieces, false);
         assertThat(view.getSquares()[2][4].getPiece()).isEqualTo(rook);
         Piece[][] noPieces = new Piece[8][8];
         view.refresh(noPieces);
@@ -61,7 +77,7 @@ public class BoardViewTest {
     @Test
     public void testResetAllClickables() {
         Piece[][] noPieces = new Piece[8][8];
-        view.display(noPieces);
+        view.display(noPieces, false);
         view.getSquares()[2][4].addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -76,7 +92,7 @@ public class BoardViewTest {
     @Test
     public void testCleanSquareBorder() {
         Piece[][] noPieces = new Piece[8][8];
-        view.display(noPieces);
+        view.display(noPieces, false);
         view.getSquares()[2][4].setBorder(new LineBorder(java.awt.Color.BLUE));
         assertThat(view.getSquares()[2][4].getBorder()).isInstanceOf(LineBorder.class);
         view.cleanSquaresBorder();
@@ -86,7 +102,7 @@ public class BoardViewTest {
     @Test
     public void testAddBorderToLastMoveSquares() {
         Piece[][] noPieces = new Piece[8][8];
-        view.display(noPieces);
+        view.display(noPieces, false);
         assertThat(view.getSquares()[2][4].getBorder()).isNull();
         assertThat(view.getSquares()[3][4].getBorder()).isNull();
         view.addBorderToLastMoveSquares(new Move(new Queen(Color.WHITE), 4, 2, 4, 3));

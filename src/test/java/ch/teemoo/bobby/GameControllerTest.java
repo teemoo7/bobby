@@ -4,9 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -36,6 +39,7 @@ import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.Knight;
 import ch.teemoo.bobby.models.pieces.Pawn;
+import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.pieces.Rook;
 import ch.teemoo.bobby.models.players.Human;
@@ -97,7 +101,7 @@ public class GameControllerTest {
 
     @Test
     public void testGameControllerInit() {
-        verify(view, times(2)).display(any());
+        verify(view, times(2)).display(any(), anyBoolean());
         verify(view).setItemLoadActionListener(any());
         verify(view).setItemPrintToConsoleActionListener(any());
         verify(view).setItemSaveActionListener(any());
@@ -511,7 +515,6 @@ public class GameControllerTest {
         verify(game, never()).setState(eq(GameState.DRAW_AGREEMENT));
     }
 
-
     @Test
     public void testEvaluateDrawProposalNotYourTurn() {
         // given
@@ -522,5 +525,30 @@ public class GameControllerTest {
 
         // then
         verify(game, never()).setState(eq(GameState.DRAW_AGREEMENT));
+    }
+
+    @Test
+    public void testRefreshBoardViewNormal() {
+        // given
+
+        // when
+        controller.refreshBoardView(board);
+
+        // then
+        verify(view, atLeastOnce()).display(any(), eq(false));
+    }
+
+    @Test
+    public void testRefreshBoardViewReversed() {
+        // given
+        when(game.getWhitePlayer()).thenReturn(new RandomBot(moveService));
+        when(game.canBePlayed()).thenReturn(true);
+        when(board.getBoard()).thenReturn(new Piece[][]{});
+
+        // when
+        controller.refreshBoardView(board);
+
+        // then
+        verify(view, atLeastOnce()).display(any(), eq(true));
     }
 }
