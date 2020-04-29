@@ -6,7 +6,6 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.ListIterator;
 import java.util.Optional;
@@ -15,6 +14,7 @@ import java.util.stream.Stream;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 
 import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.models.GameSetup;
@@ -187,10 +187,10 @@ public class BoardView extends JFrame {
         return Optional.empty();
     }
 
-    public GameSetup gameSetupDialog(BotFactory botFactory) {
+    public GameSetup gameSetupDialog(BotFactory botFactory, boolean exitOnCancel) {
 
         JLabel colorLabel = new JLabel("Your color");
-        setBold(colorLabel);
+        setBoldAndBorder(colorLabel);
         JRadioButton whiteRadioButton = new JRadioButton("White", true);
         JRadioButton blackRadioButton = new JRadioButton("Black", false);
         ButtonGroup colorButtonGroup = new ButtonGroup();
@@ -198,7 +198,7 @@ public class BoardView extends JFrame {
         colorButtonGroup.add(blackRadioButton);
 
         JLabel computerLabel = new JLabel("Computer level");
-        setBold(computerLabel);
+        setBoldAndBorder(computerLabel);
         JSlider levelSlider = getLevelSlider();
         JCheckBox openingsCheckBox = new JCheckBox("Use openings", true);
         JCheckBox timeoutCheckBox = new JCheckBox("Limit computation time to (seconds)", false);
@@ -222,7 +222,11 @@ public class BoardView extends JFrame {
             .showConfirmDialog(this, inputs, "Game setup", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
                 logoIcon);
         if (result != JOptionPane.OK_OPTION) {
-            exit();
+            if (exitOnCancel) {
+                exit();
+            } else {
+                return null;
+            }
         }
 
         Player whitePlayer;
@@ -258,7 +262,7 @@ public class BoardView extends JFrame {
     public Piece promotionDialog(ch.teemoo.bobby.models.Color color) {
         JLabel funLabel = new JLabel("Wow! Your pawn jus reached the end of the world!\n");
         JLabel promoteLabel = new JLabel("Promote pawn to");
-        setBold(promoteLabel);
+        setBoldAndBorder(promoteLabel);
         JRadioButton queenRadioButton = new JRadioButton("♕ Queen", true);
         JRadioButton rookRadioButton = new JRadioButton("♖ Rook", false);
         JRadioButton bishopRadioButton = new JRadioButton("♗ Bishop", false);
@@ -296,8 +300,9 @@ public class BoardView extends JFrame {
         return piece;
     }
 
-    private void setBold(JLabel colorLabel) {
-        colorLabel.setFont(new Font(colorLabel.getFont().getName(), Font.BOLD, colorLabel.getFont().getSize()));
+    private void setBoldAndBorder(JLabel label) {
+        label.setFont(new Font(label.getFont().getName(), Font.BOLD, label.getFont().getSize()));
+        label.setBorder(new EmptyBorder(10, 0, 5, 0));
     }
 
     public void popupInfo(String message) {

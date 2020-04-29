@@ -8,11 +8,24 @@ Note that the author does not agree with Fischer's political and religious opini
 
 ![Bobby Chess Game](src/main/resources/img/logo.png "Bobby Chess Game")
 
-## How to launch it
+**Note:** requires Java 11
 
-**Note:** requires Java 11 - either install OpenJDK 11 or use the bundled JRE ([doc here](PACKAGE.md))
+## How to launch
 
-First build it
+### From a released JAR (coming soon)
+
+If not already done, you can install OpenJDK 11 for free (see the excellent distributions of [AdoptOpenJDK](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot))
+ 
+Then launch the downloaded JAR:
+
+```
+java -jar bobby-1.0.jar 
+```
+
+ 
+### From source code
+
+First build it with maven:
 
 ```
 mvn clean install
@@ -48,19 +61,11 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 * Strong code coverage, incl. GUI testing
 * Code style with Checkstyle, code quality with SpotBugs and SonarSource
 * Pipeline with TravisCI
+* Uses a nice modern Look & Feel [FlatLaf](https://github.com/JFormDesigner/FlatLaf) for all platforms
+* Uses free font _FreeSerif_ in order to have a nice rendering of chess pieces
 
 ## Limitations
 
 ### Computation time
 
 The implemented AI works uses a depth-first computation, which means that if the computation time is restricted, it may not evaluate every single possible move: it evaluates as deep as possible a first move, then a second, etc, but has no guarantee to cover every move of the first depth.
-
-### Black pawn rendering as a P on Mac OS X  
-
-On Mac OS X, because of the system font _Apple Color Emoji_, black pawns are not correctly rendered: the unicode char is replaced by a an emoji, which is unsupported in Swing GUI. In such case, the pawn is represented by a "P".
-
-A workaround is to move the above font to the user's fonts folder so that it can be temporarily disabled in the Font Book, but it requires to be a sudoer (and/or disable SIP) and may impact the whole system.
-
-```shell script
-sudo mv /System/Library/Fonts/Apple\ Color\ Emoji.ttc ~/Library/Fonts/
-```

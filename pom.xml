@@ -26,6 +26,7 @@
     <maven.plugin.surefire.version>3.0.0-M3</maven.plugin.surefire.version>
 
     <!-- Dependencies -->
+    <flatlaf.version>0.33</flatlaf.version>
     <logback.version>1.2.3</logback.version>
 
     <!-- Testing -->
@@ -41,6 +42,12 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>${logback.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.formdev</groupId>
+      <artifactId>flatlaf</artifactId>
+      <version>${flatlaf.version}</version>
     </dependency>
 
     <dependency>

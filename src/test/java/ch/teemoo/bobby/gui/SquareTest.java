@@ -23,21 +23,9 @@ public class SquareTest {
         assertThat(square.getText()).isEqualTo("♛");
         assertThat(square.getPiece()).isEqualTo(queen);
         assertThat(square.getPosition()).isEqualTo(position);
-        assertThat(square.getFont()).isEqualTo(new Font("Sans Serif", Font.PLAIN, 48));
         assertThat(square.getHorizontalAlignment()).isEqualTo(SwingConstants.CENTER);
         assertThat(square.isOpaque()).isTrue();
         assertThat(square.getBackground()).isEqualTo(Background.DARK.getColor());
-    }
-
-    @Test
-    public void testSpecialCaseMacBlackPawn() {
-        Piece pawn = new Pawn(Color.BLACK);
-        Square square = new Square(pawn, null, Background.LIGHT);
-        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-            assertThat(square.getText()).isEqualTo("P");
-        } else {
-            assertThat(square.getText()).isEqualTo("♟");
-        }
     }
 
     @Test

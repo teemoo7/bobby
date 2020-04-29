@@ -71,8 +71,6 @@ public class BobbySwingTest extends AssertJSwingJUnitTestCase {
 
     @Test
     public void testNewGameMenuWithSetupClose() {
-        exit.expectSystemExitWithStatus(0);
-
         frame.menuItem(new GenericTypeMatcher<JMenuItem>(JMenuItem.class) {
             @Override
             protected boolean isMatching(JMenuItem menuItem) {

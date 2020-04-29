@@ -1,7 +1,9 @@
 package ch.teemoo.bobby.gui;
 
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.GraphicsEnvironment;
+import java.io.IOException;
 import java.util.Arrays;
 
 import javax.swing.JLabel;
@@ -10,8 +12,11 @@ import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.Position;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Piece;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Square extends JLabel {
+    private final static Logger logger = LoggerFactory.getLogger(Square.class);
 
     private Piece piece;
     private final Position position;
@@ -20,7 +25,7 @@ public class Square extends JLabel {
         super(getPieceText(piece));
         this.piece = piece;
         this.position = position;
-        setFont(new Font("Sans Serif", Font.PLAIN, 48));
+        setFont();
         setOpaque(true);
         setHorizontalAlignment(CENTER);
         setBackground(background.getColor());
@@ -41,19 +46,23 @@ public class Square extends JLabel {
 
     private static String getPieceText(Piece piece) {
         if (piece != null) {
-            if (piece instanceof Pawn && piece.getColor() == Color.BLACK && System.getProperty("os.name").toLowerCase()
-                .contains("mac") && Arrays
-                .asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames())
-                .contains("Apple Color Emoji")) {
-
-                // on MacOSX this unicode is interpreted as an emoji (Apple Color Emoji), resulting into a bug
-                // to display it. A possible workaround could be to move this Font to user's fonts so that it can be
-                // disabled oin the Font Book but it requires to disable SIP too.
-
-                return "P";
-            }
             return piece.getUnicode();
         }
         return "";
+    }
+
+    private void setFont() {
+        try {
+            var inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("fonts/FreeSerif.ttf");
+            if (inputStream == null) {
+                throw new IOException("Cannot load font from resource");
+            }
+            var font = Font.createFont(Font.TRUETYPE_FONT, inputStream);
+            setFont(font.deriveFont(Font.PLAIN, 72));
+        } catch (IOException | FontFormatException e) {
+            logger.warn("Unable to use embedded font, using fallback", e);
+            setFont(new Font("Serif", Font.PLAIN, 48));
+        }
+
     }
 }

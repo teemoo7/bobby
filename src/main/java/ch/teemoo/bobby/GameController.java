@@ -71,12 +71,12 @@ public class GameController {
 		this.botFactory = botFactory;
 		this.botToSuggestMove = botFactory.getStrongestBot();
 		initView(gameFactory.emptyGame().getBoard());
-		newGame(gameSetup);
+		newGame(gameSetup, true);
 	}
 
 	void initView(Board board) {
 		refreshBoardView(board);
-		view.setItemNewActionListener(actionEvent -> newGame(null));
+		view.setItemNewActionListener(actionEvent -> newGame(null, false));
 		view.setItemLoadActionListener(actionEvent -> loadGame());
 		view.setItemSaveActionListener(actionEvent -> saveGame());
 		view.setItemPrintToConsoleActionListener(actionEvent -> printGameToConsole());
@@ -85,9 +85,14 @@ public class GameController {
 		view.setItemProposeDrawActionListener(actionEvent -> evaluateDrawProposal());
 	}
 
-	void newGame(GameSetup gameSetup) {
+	void newGame(GameSetup gameSetup, boolean exitOnCancel) {
 		if (gameSetup == null) {
-			gameSetup = view.gameSetupDialog(botFactory);
+			GameSetup gameSetupFromDialog = view.gameSetupDialog(botFactory, exitOnCancel);
+			if (gameSetupFromDialog == null && !exitOnCancel) {
+				return;
+			} else {
+				gameSetup = gameSetupFromDialog;
+			}
 		}
 		this.game = gameFactory.createGame(gameSetup);
 		this.board = game.getBoard();

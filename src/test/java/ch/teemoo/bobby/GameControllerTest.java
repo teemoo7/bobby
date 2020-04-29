@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -115,10 +113,10 @@ public class GameControllerTest {
         GameSetup gameSetup = new GameSetup(new Human("test1"), new Human("test2"));
 
         // when
-        controller.newGame(gameSetup);
+        controller.newGame(gameSetup, true);
 
         // then
-        verify(view, atMostOnce()).gameSetupDialog(any());
+        verify(view, atMostOnce()).gameSetupDialog(any(), eq(true));
     }
 
     @Test
