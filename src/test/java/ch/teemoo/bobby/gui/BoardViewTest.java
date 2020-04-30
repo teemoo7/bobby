@@ -1,5 +1,6 @@
 package ch.teemoo.bobby.gui;
 
+import ch.teemoo.bobby.helpers.GuiHelper;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.Piece;
@@ -17,12 +18,13 @@ import java.awt.event.MouseEvent;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BoardViewTest {
+    private GuiHelper guiHelper = new GuiHelper();
 
     private BoardView view;
 
     @Before
     public void setUp() {
-        view = new BoardView("Test board", false);
+        view = new BoardView("Test board", guiHelper, false);
     }
 
     @Test

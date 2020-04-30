@@ -15,23 +15,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class SquareTest {
 
+    private Font font = Font.getFont("Serif");
+
     @Test
     public void testSquare() {
         Piece queen = new Queen(Color.BLACK);
         Position position = new Position(3, 0);
-        Square square = new Square(queen, position, Background.DARK);
+        Square square = new Square(queen, position, Background.DARK, font);
         assertThat(square.getText()).isEqualTo("♛");
         assertThat(square.getPiece()).isEqualTo(queen);
         assertThat(square.getPosition()).isEqualTo(position);
         assertThat(square.getHorizontalAlignment()).isEqualTo(SwingConstants.CENTER);
         assertThat(square.isOpaque()).isTrue();
         assertThat(square.getBackground()).isEqualTo(Background.DARK.getColor());
+        assertThat(square.getFont()).isEqualTo(font);
     }
 
     @Test
     public void testSetPiece() {
         Piece pawn = new Pawn(Color.WHITE);
-        Square square = new Square(pawn, null, Background.LIGHT);
+        Square square = new Square(pawn, null, Background.LIGHT, font);
         assertThat(square.getPiece()).isEqualTo(pawn);
         assertThat(square.getText()).isEqualTo("♙");
 
