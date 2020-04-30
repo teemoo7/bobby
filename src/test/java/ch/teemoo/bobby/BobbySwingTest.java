@@ -31,6 +31,9 @@ public class BobbySwingTest extends AssertJSwingJUnitTestCase {
         application(Bobby.class).withArgs("default").start();
         frame = findFrame(new GenericTypeMatcher<Frame>(Frame.class) {
             protected boolean isMatching(Frame frame) {
+                System.out.println("Frame: " + frame.toString());
+                System.out.println("Showing: " + frame.isShowing());
+                System.out.println("State: " + frame.getState());
                 return "Bobby chess game".equals(frame.getTitle()) && frame.isShowing();
             }
         }).using(robot());

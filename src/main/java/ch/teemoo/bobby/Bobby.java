@@ -12,9 +12,7 @@ import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.OpeningService;
 import ch.teemoo.bobby.services.PortableGameNotationService;
-import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.FlatLightLaf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,26 +26,26 @@ public class Bobby implements Runnable {
     private final OpeningService openingService = new OpeningService(portableGameNotationService, fileService);
     private final GameFactory gameFactory = new GameFactory();
     private final BotFactory botFactory = new BotFactory(moveService, openingService);
-    private final boolean useDefaultGameSetup;
+    private final boolean useDefaultSettings;
 
-    public Bobby(boolean useDefaultGameSetup) {
-        this.useDefaultGameSetup = useDefaultGameSetup;
+    public Bobby(boolean useDefaultSettings) {
+        this.useDefaultSettings = useDefaultSettings;
     }
 
     public static void main(String args[]) {
-        boolean defaultSetup = false;
+        boolean defaultSettings = false;
         if (args.length > 0) {
             if (args[0].equalsIgnoreCase("default")) {
-                defaultSetup = true;
+                defaultSettings = true;
             }
         }
-        setLookAndFeel();
-        SwingUtilities.invokeLater(new Bobby(defaultSetup));
+        setLookAndFeel(defaultSettings);
+        SwingUtilities.invokeLater(new Bobby(defaultSettings));
     }
 
     public void run() {
         GameSetup gameSetup = null;
-        if (useDefaultGameSetup) {
+        if (useDefaultSettings) {
             gameSetup = new GameSetup(new Human("Player"), botFactory.getStrongestBot());
         }
         BoardView boardView = new BoardView("Bobby chess game");
@@ -55,12 +53,16 @@ public class Bobby implements Runnable {
             portableGameNotationService);
     }
 
-    private static void setLookAndFeel() {
+    private static void setLookAndFeel(boolean useDefaultSettings) {
         try {
-            UIManager.setLookAndFeel(new FlatIntelliJLaf());
+            if (useDefaultSettings) {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } else {
+                UIManager.setLookAndFeel(new FlatIntelliJLaf());
+            }
         }
         catch (Exception e) {
-            logger.warn("Unable to set system Look and Feel", e);
+            logger.warn("Unable to set Look and Feel (use system L&F is {})", useDefaultSettings, e);
         }
     }
 }
