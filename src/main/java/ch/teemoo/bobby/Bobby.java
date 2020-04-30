@@ -6,6 +6,7 @@ import javax.swing.UIManager;
 import ch.teemoo.bobby.gui.BoardView;
 import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.helpers.GameFactory;
+import ch.teemoo.bobby.helpers.GuiHelper;
 import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.services.FileService;
@@ -26,6 +27,7 @@ public class Bobby implements Runnable {
     private final OpeningService openingService = new OpeningService(portableGameNotationService, fileService);
     private final GameFactory gameFactory = new GameFactory();
     private final BotFactory botFactory = new BotFactory(moveService, openingService);
+    private final GuiHelper guiHelper = new GuiHelper();
     private final boolean useDefaultSettings;
 
     public Bobby(boolean useDefaultSettings) {
@@ -48,7 +50,7 @@ public class Bobby implements Runnable {
         if (useDefaultSettings) {
             gameSetup = new GameSetup(new Human("Player"), botFactory.getStrongestBot());
         }
-        BoardView boardView = new BoardView("Bobby chess game");
+        BoardView boardView = new BoardView("Bobby chess game", guiHelper);
         new GameController(boardView, gameSetup, gameFactory, botFactory, moveService, fileService,
             portableGameNotationService);
     }

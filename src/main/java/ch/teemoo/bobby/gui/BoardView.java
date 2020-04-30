@@ -17,6 +17,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
 import ch.teemoo.bobby.helpers.BotFactory;
+import ch.teemoo.bobby.helpers.GuiHelper;
 import ch.teemoo.bobby.models.GameSetup;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.Position;
@@ -37,6 +38,7 @@ public class BoardView extends JFrame {
     private final boolean visible;
     private final Container contentPane;
     private final Icon logoIcon;
+    private final GuiHelper guiHelper;
     private Square[][] squares = new Square[SIZE][SIZE];
 
     private JMenuItem itemNew;
@@ -48,11 +50,12 @@ public class BoardView extends JFrame {
     private JMenuItem itemProposeDraw;
     private JMenuItem itemAbout;
 
-    public BoardView(String title) {
-        this(title, true);
+    public BoardView(String title, GuiHelper guiHelper) {
+        this(title, guiHelper, true);
     }
 
-    public BoardView(String title, boolean visible) {
+    public BoardView(String title, GuiHelper guiHelper, boolean visible) {
+        this.guiHelper = guiHelper;
         setTitle(title);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.visible = visible;
@@ -111,7 +114,7 @@ public class BoardView extends JFrame {
             for (int j = 0; j < positions[i].length; j++) {
                 Piece piece = positions[i][j];
                 // Inverse coordinates (positions is a 2D array, reversed)
-                Square square = new Square(piece, new Position(j, i), background);
+                Square square = new Square(piece, new Position(j, i), background, guiHelper.getPieceFont());
                 background = swapBackground(background);
                 components.add(square);
                 squares[i][j] = square;

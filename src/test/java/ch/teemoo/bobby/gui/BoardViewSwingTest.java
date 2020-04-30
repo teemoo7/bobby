@@ -15,6 +15,7 @@ import java.util.concurrent.RunnableFuture;
 import javax.swing.SwingUtilities;
 
 import ch.teemoo.bobby.gui.BoardView;
+import ch.teemoo.bobby.helpers.GuiHelper;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
@@ -31,7 +32,7 @@ public class BoardViewSwingTest extends AssertJSwingJUnitTestCase{
 
     @Override
     protected void onSetUp() {
-            frame = GuiActionRunner.execute(() -> new BoardView("test", true));
+            frame = GuiActionRunner.execute(() -> new BoardView("test", new GuiHelper(), true));
             window = new FrameFixture(robot(), frame);
             window.show(); // shows the frame to test
     }
