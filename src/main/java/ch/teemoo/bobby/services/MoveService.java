@@ -8,10 +8,12 @@ import static ch.teemoo.bobby.models.Board.SIZE;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -48,19 +50,30 @@ public class MoveService {
 	public final static int NEUTRAL = 0;
 	public final static int DRAW_PENALTY = -20;
 
+	public final static int OPENING_MOVES_COUNT = 5;
+	public final static int OPENING_MISTAKE_PENALTY = -10;
+	public final static int KING_MOVE_MISTAKE_PENALTY = -20;
+	public final static int CASTLING_BONUS = 15;
+
 	private final static int MAX_MOVE = SIZE - 1;
 	private final static int[][] heatmapCenter = generateCenteredHeatmap();
 
 	public List<Move> computeAllMoves(Board board, Color color, List<Move> history, boolean withAdditionalInfo) {
-		return computeBoardMoves(board, color, history, withAdditionalInfo, false);
+		return computeAllMoves(board, color, history, withAdditionalInfo, false);
 	}
 
-	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY, List<Move> history, boolean withAdditionalInfo) {
+	public List<Move> computeAllMoves(Board board, Color color, List<Move> history, boolean withAdditionalInfo,
+		boolean takingMovesOnly) {
+		return computeBoardMoves(board, color, history, withAdditionalInfo, false, takingMovesOnly);
+	}
+
+	public List<Move> computeMoves(Board board, Piece piece, int posX, int posY, List<Move> history,
+		boolean withAdditionalInfo, boolean takingMovesOnly) {
 		List<Move> moves = new ArrayList<>();
 		final Color color = piece.getColor();
 
 		if (piece instanceof Pawn) {
-			moves.addAll(computePawnMoves(piece, posX, posY, board, history));
+			moves.addAll(computePawnMoves(piece, posX, posY, board, history, takingMovesOnly));
 		} else if (piece instanceof Knight) {
 			moves.addAll(computeLShapeMoves(piece, posX, posY, board));
 		} else if (piece instanceof Bishop) {
@@ -73,7 +86,9 @@ public class MoveService {
 		} else if (piece instanceof King) {
 			moves.addAll(computeStraightMoves(piece, posX, posY, board, 1));
 			moves.addAll(computeDiagonalMoves(piece, posX, posY, board, 1));
-			moves.addAll(computeCastlingMoves(piece, posX, posY, board, history));
+			if (!takingMovesOnly) {
+				moves.addAll(computeCastlingMoves(piece, posX, posY, board, history));
+			}
 		} else {
 			throw new RuntimeException("Unexpected piece type");
 		}
@@ -253,10 +268,10 @@ public class MoveService {
 			// Game is over
 			if (gameState.isLost()) {
 				if (lastPlayer == colorToEvaluate) {
-					// Opponent is checkmate, that the best move to do!
+					// Opponent is checkmate, that is the best move to do!
 					gameStateScore = BEST;
 				} else {
-					// I am checkmate, that the worst move to do!
+					// I am checkmate, that is the worst move to do!
 					gameStateScore = WORST;
 				}
 			} else if (gameState.isDraw()) {
@@ -266,23 +281,69 @@ public class MoveService {
 			return gameStateScore;
 		}
 
-		// Basically, taking a piece improves your situation
-		int piecesValue = getPiecesValueSum(board, colorToEvaluate);
-		int opponentPiecesValue = getPiecesValueSum(board, swap(colorToEvaluate));
-		int piecesScore = piecesValue-opponentPiecesValue;
+		int piecesScore = getPiecesScore(board, colorToEvaluate);
+		int heatScore = getHeatScore(board, colorToEvaluate, opponentKingPosition, myKingPosition, history);
+		int developmentScore = getDevelopmentScore(colorToEvaluate, history);
 
-		//fixme: we should compute moves for pawns in case of taking, not straight moves
-		List<Move> allMoves = computeAllMoves(board, colorToEvaluate, history,false);
+		return 10 * piecesScore + heatScore + developmentScore;
+	}
+
+	private int getPiecesScore(Board board, Color color) {
+		// Basically, taking a piece improves your situation
+		int piecesValue = getPiecesValueSum(board, color);
+		int opponentPiecesValue = getPiecesValueSum(board, swap(color));
+		return piecesValue-opponentPiecesValue;
+	}
+
+	int getHeatScore(Board board, Color color, Position opponentKingPosition, Position myKingPosition,
+		List<Move> history) {
+		// Should focus the fire on the center of the board and around the opponent's king
+		List<Move> allMoves = computeAllMoves(board, color, history,false, true);
 		int[][] heatmapOpponentKing = getHeatmapAroundLocation(opponentKingPosition.getX(), opponentKingPosition.getY());
 		int myHeatScore = allMoves.stream().mapToInt(
 				m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapOpponentKing[m.getToX()][m.getToY()]).sum();
-		List<Move> allOpponentMoves = computeAllMoves(board, swap(colorToEvaluate), history,false);
+		List<Move> allOpponentMoves = computeAllMoves(board, swap(color), history,false, true);
 		int[][] heatmapMyKing = getHeatmapAroundLocation(myKingPosition.getX(), myKingPosition.getY());
 		int opponentHeatScore = allOpponentMoves.stream().mapToInt(
 				m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapMyKing[m.getToX()][m.getToY()]).sum();
-		int heatScore = myHeatScore - opponentHeatScore;
+		return myHeatScore - opponentHeatScore;
+	}
 
-		return 10 * piecesScore + heatScore;
+	int getDevelopmentScore(Color color, List<Move> history) {
+		// Development strategy is key to avoid being late compared the opponent
+		int myDevelopmentScore = getDevelopmentBonus(
+			history.stream().filter(move -> move.getPiece().getColor() == color).collect(toList()));
+		int opponentDevelopmentScore = getDevelopmentBonus(
+			history.stream().filter(move -> move.getPiece().getColor() == swap(color)).collect(toList()));
+		return myDevelopmentScore - opponentDevelopmentScore;
+	}
+
+	int getDevelopmentBonus(List<Move> myHistory) {
+		int bonus = 0;
+		if (myHistory.size() <= OPENING_MOVES_COUNT) {
+			// Still in the opening
+			List<Piece> openingPieces = myHistory.stream().filter(m -> !(m instanceof CastlingMove)).map(Move::getPiece)
+				.filter(p -> !(p instanceof Pawn)).collect(toList());
+			// Should not use a major piece for now
+			if (openingPieces.stream().anyMatch(p -> p instanceof Queen || p instanceof Rook || p instanceof King)) {
+				bonus += OPENING_MISTAKE_PENALTY;
+			}
+			// Should not move twice the same piece
+			Set<Piece> distinctOpeningPieces = new HashSet<>(openingPieces);
+			if (distinctOpeningPieces.size() != openingPieces.size()) {
+				bonus += OPENING_MISTAKE_PENALTY;
+			}
+		}
+		// Castling is always good to secure the King
+		if (myHistory.stream().anyMatch(m -> m instanceof CastlingMove)) {
+			bonus += CASTLING_BONUS;
+		} else {
+			// But any other king move drops the right for castling
+			if (myHistory.stream().anyMatch(m -> m.getPiece() instanceof King)) {
+				bonus += KING_MOVE_MISTAKE_PENALTY;
+			}
+		}
+		return bonus;
 	}
 
 	int getPiecesValueSum(Board board, Color color) {
@@ -324,11 +385,12 @@ public class MoveService {
 	}
 
 	boolean canMove(Board board, Color color, List<Move> history) {
-		List<Move> moves = computeBoardMoves(board, color, history,true, true);
+		List<Move> moves = computeBoardMoves(board, color, history,true, true, false);
 		return !moves.isEmpty();
 	}
 
-	List<Move> computeBoardMoves(Board board, Color color, List<Move> history, boolean withAdditionalInfo, boolean returnFirstPieceMoves) {
+	List<Move> computeBoardMoves(Board board, Color color, List<Move> history, boolean withAdditionalInfo,
+		boolean returnFirstPieceMoves, boolean takingMovesOnly) {
 		List<Move> moves = new ArrayList<>();
 		List<PiecePosition> piecePositions = new ArrayList<>();
 		for (int i = 0; i < SIZE; i++) {
@@ -344,7 +406,7 @@ public class MoveService {
 
 		for (PiecePosition piecePosition: piecePositions) {
 			List<Move> pieceMoves = computeMoves(board, piecePosition.getPiece(), piecePosition.getPosition().getX(),
-				piecePosition.getPosition().getY(), history, withAdditionalInfo);
+				piecePosition.getPosition().getY(), history, withAdditionalInfo, takingMovesOnly);
 			if (!pieceMoves.isEmpty() && returnFirstPieceMoves) {
 				return pieceMoves;
 			}
@@ -362,7 +424,8 @@ public class MoveService {
 			|| isInPawnCheck(board, kingPosition, color);
 	}
 
-	List<Move> computePawnMoves(Piece piece, int posX, int posY, Board board, List<Move> history) {
+	List<Move> computePawnMoves(Piece piece, int posX, int posY, Board board, List<Move> history,
+		boolean takingMovesOnly) {
 		List<Move> moves = new ArrayList<>();
 		final Color color = piece.getColor();
 		// color matters for pawns since they cannot go back
@@ -376,21 +439,23 @@ public class MoveService {
 			initialY = 6; // second to last row
 		}
 
-		// try one forward (no taking)
-		Optional<Move> move1 = getAllowedMove(piece, posX, posY, 0, factor, board);
-		if (move1.isPresent()) {
-			moves.add(move1.get());
-			// try two forward if initial position (no taking)
-			if (posY == initialY) {
-				Optional<Move> move2 = getAllowedMove(piece, posX, posY, 0, 2 * factor, board);
-				move2.ifPresent(moves::add);
+		if (!takingMovesOnly) {
+			// try one forward (no taking)
+			Optional<Move> move1 = getAllowedMove(piece, posX, posY, 0, factor, board);
+			if (move1.isPresent()) {
+				moves.add(move1.get());
+				// try two forward if initial position (no taking)
+				if (posY == initialY) {
+					Optional<Move> move2 = getAllowedMove(piece, posX, posY, 0, 2 * factor, board);
+					move2.ifPresent(moves::add);
+				}
 			}
 		}
 
 		// try one forward diagonal (only for taking)
-		Optional<Move> move3 = getAllowedMove(piece, posX, posY, -1, factor, board);
+		Optional<Move> move3 = getAllowedMove(piece, posX, posY, -1, factor, board, !takingMovesOnly);
 		move3.ifPresent(moves::add);
-		Optional<Move> move4 = getAllowedMove(piece, posX, posY, 1, factor, board);
+		Optional<Move> move4 = getAllowedMove(piece, posX, posY, 1, factor, board, !takingMovesOnly);
 		move4.ifPresent(moves::add);
 
 		// en-passant moves
@@ -594,36 +659,43 @@ public class MoveService {
 	}
 
 	Optional<Move> getAllowedMove(Piece piece, int posX, int posY, int deltaX, int deltaY, Board board) {
+		return getAllowedMove(piece, posX, posY, deltaX, deltaY, board, true);
+	}
+
+	Optional<Move> getAllowedMove(Piece piece, int posX, int posY, int deltaX, int deltaY, Board board,
+		boolean checkTakingDestPiece) {
 		Move move = new Move(piece, posX, posY, posX + deltaX, posY + deltaY);
 		if (isOutOfBounds(move)) {
 			return Optional.empty();
 		}
-		Optional<Piece> destPiece = board.getPiece(move.getToX(), move.getToY());
-		if (piece instanceof Pawn) {
-			if (deltaX == 0) {
-				// Move forward, taking is not allowed, dest must be free
-				if (destPiece.isPresent()) {
-					return Optional.empty();
+		if (checkTakingDestPiece) {
+			Optional<Piece> destPiece = board.getPiece(move.getToX(), move.getToY());
+			if (piece instanceof Pawn) {
+				if (deltaX == 0) {
+					// Move forward, taking is not allowed, dest must be free
+					if (destPiece.isPresent()) {
+						return Optional.empty();
+					}
+				} else {
+					// Move diagonal, taking is mandatory, dest must be other color
+					if (destPiece.isPresent()) {
+						if (destPiece.get().getColor() != piece.getColor()) {
+							move.setTookPiece(destPiece.get());
+						} else {
+							return Optional.empty();
+						}
+					} else {
+						return Optional.empty();
+					}
 				}
 			} else {
-				// Move diagonal, taking is mandatory, dest must be other color
 				if (destPiece.isPresent()) {
 					if (destPiece.get().getColor() != piece.getColor()) {
 						move.setTookPiece(destPiece.get());
 					} else {
+						// Same color
 						return Optional.empty();
 					}
-				} else {
-					return Optional.empty();
-				}
-			}
-		} else {
-			if (destPiece.isPresent()) {
-				if (destPiece.get().getColor() != piece.getColor()) {
-					move.setTookPiece(destPiece.get());
-				} else {
-					// Same color
-					return Optional.empty();
 				}
 			}
 		}

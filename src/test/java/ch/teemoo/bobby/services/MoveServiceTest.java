@@ -107,11 +107,11 @@ public class MoveServiceTest {
         Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board initialBoard = game.getBoard();
         // White rook cannot move in initial position
-        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(0, 0).get(), 0, 0, game.getHistory(),false)).isEmpty();
+        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(0, 0).get(), 0, 0, game.getHistory(),false, false)).isEmpty();
         // White knight has two possible moves
-        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(1, 0).get(), 1, 0, game.getHistory(),false)).hasSize(2);
+        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(1, 0).get(), 1, 0, game.getHistory(),false, false)).hasSize(2);
         // Any pawn has two possible moves
-        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(5, 1).get(), 5, 1, game.getHistory(),false)).hasSize(2);
+        assertThat(moveService.computeMoves(initialBoard, initialBoard.getPiece(5, 1).get(), 5, 1, game.getHistory(),false, false)).hasSize(2);
     }
 
     @Test
@@ -283,6 +283,52 @@ public class MoveServiceTest {
     }
 
     @Test
+    public void testGetDevelopmentBonusNormal() {
+        assertThat(moveService.getDevelopmentBonus(Collections.emptyList())).isEqualTo(0);
+    }
+
+    @Test
+    public void testGetDevelopmentBonusQueenMoveInOpening() {
+        List<Move> moves = Arrays.asList(
+            new Move(new Pawn(Color.WHITE), 3, 1, 3, 3),
+            new Move(new Queen(Color.WHITE), 3, 0, 3, 2)
+        );
+        assertThat(moveService.getDevelopmentBonus(moves)).isEqualTo(-10);
+    }
+
+    @Test
+    public void testGetDevelopmentBonusTwicePieceMovedInOpening() {
+        Piece knight = new Knight(Color.WHITE);
+        List<Move> moves = Arrays.asList(
+            new Move(knight, 1, 0, 2, 2),
+            new Move(knight, 2, 2, 3, 4)
+        );
+        assertThat(moveService.getDevelopmentBonus(moves)).isEqualTo(-10);
+    }
+
+    @Test
+    public void testGetDevelopmentBonusCastling() {
+        Piece king = new King(Color.WHITE);
+        List<Move> moves = Arrays.asList(
+            new CastlingMove(king, 4, 0, 2, 0, new Rook(Color.WHITE), 0, 0, 3, 0)
+        );
+        assertThat(moveService.getDevelopmentBonus(moves)).isEqualTo(15);
+    }
+
+    @Test
+    public void testGetDevelopmentBonusKingShouldNotMoveBeforeCastling() {
+        List<Move> moves = Arrays.asList(
+            new Move(new Pawn(Color.WHITE), 3, 1, 3, 2),
+            new Move(new Pawn(Color.WHITE), 3, 2, 3, 3),
+            new Move(new Pawn(Color.WHITE), 3, 3, 3, 4),
+            new Move(new Pawn(Color.WHITE), 3, 4, 3, 5),
+            new Move(new Pawn(Color.WHITE), 3, 5, 3, 6),
+            new Move(new King(Color.WHITE), 4, 0, 4, 1)
+            );
+        assertThat(moveService.getDevelopmentBonus(moves)).isEqualTo(-20);
+    }
+
+    @Test
     public void testGetBestMove() {
         Map<MoveAnalysis, Integer> map = new HashMap<>();
         map.put(new MoveAnalysis(new Move(new Bishop(Color.BLACK), 4, 5, 5, 6)), 60);
@@ -358,7 +404,7 @@ public class MoveServiceTest {
         // Initial positions board
         Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board board = game.getBoard();
-        List<Move> whiteMovesStart = moveService.computeBoardMoves(board, Color.WHITE, game.getHistory(),false, false);
+        List<Move> whiteMovesStart = moveService.computeBoardMoves(board, Color.WHITE, game.getHistory(),false, false, false);
         assertThat(whiteMovesStart).containsExactlyInAnyOrder(
                 // Pawns
                 new Move(board.getPiece(0, 1).get(), 0, 1, 0, 2),
@@ -390,7 +436,7 @@ public class MoveServiceTest {
         // Initial positions board
         Game game = new Game(new RandomBot(moveService), new RandomBot(moveService));
         Board board = game.getBoard();
-        List<Move> whiteMovesStart = moveService.computeBoardMoves(board, Color.WHITE, game.getHistory(),false, true);
+        List<Move> whiteMovesStart = moveService.computeBoardMoves(board, Color.WHITE, game.getHistory(),false, true, false);
         assertThat(whiteMovesStart).containsExactlyInAnyOrder(
                 new Move(board.getPiece(1, 0).get(), 1, 0, 0, 2),
                 new Move(board.getPiece(1, 0).get(), 1, 0, 2, 2)
@@ -434,7 +480,7 @@ public class MoveServiceTest {
                 "                \n"
         );
         Piece pawn = board.getPiece(3, 4).get();
-        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board, Collections.emptyList());
+        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board, Collections.emptyList(), false);
         assertThat(moves).containsExactlyInAnyOrder(
                 new Move(pawn, 3, 4, 3, 5),
                 getMoveWithTookPiece(pawn, 3, 4, 2, 5, board.getPiece(2, 5).get()),
@@ -442,7 +488,7 @@ public class MoveServiceTest {
         );
 
         Piece pawnAtStart = board.getPiece(0, 1).get();
-        moves = moveService.computePawnMoves(pawnAtStart, 0, 1, board, Collections.emptyList());
+        moves = moveService.computePawnMoves(pawnAtStart, 0, 1, board, Collections.emptyList(), false);
         assertThat(moves).containsExactlyInAnyOrder(
                 new Move(pawnAtStart, 0, 1, 0, 2),
                 new Move(pawnAtStart, 0, 1, 0, 3),
@@ -463,15 +509,15 @@ public class MoveServiceTest {
                 "                \n"
         );
         Piece pawn = board.getPiece(3, 4).get();
-        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board, Collections.emptyList());
+        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board, Collections.emptyList(), false);
         assertThat(moves).containsExactlyInAnyOrder(getMoveWithTookPiece(pawn, 3, 4, 4, 5, board.getPiece(4, 5).get()));
 
         Piece pawnAtStart = board.getPiece(0, 1).get();
-        moves = moveService.computePawnMoves(pawnAtStart, 0, 1, board, Collections.emptyList());
+        moves = moveService.computePawnMoves(pawnAtStart, 0, 1, board, Collections.emptyList(), false);
         assertThat(moves).isEmpty();
 
         Piece blackPawn = board.getPiece(4, 5).get();
-        moves = moveService.computePawnMoves(blackPawn, 4, 5, board, Collections.emptyList());
+        moves = moveService.computePawnMoves(blackPawn, 4, 5, board, Collections.emptyList(), false);
         assertThat(moves).containsExactlyInAnyOrder(new Move(blackPawn, 4, 5, 4, 4), getMoveWithTookPiece(blackPawn, 4, 5, 3, 4, board.getPiece(3, 4).get()));
     }
 
@@ -491,7 +537,7 @@ public class MoveServiceTest {
         Move lastMove = new Move(blackPawn, 4, 6, 4, 4);
         List<Move> history = Collections.singletonList(lastMove);
         Piece pawn = board.getPiece(3, 4).get();
-        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board, history);
+        List<Move> moves = moveService.computePawnMoves(pawn, 3, 4, board, history, false);
         EnPassantMove enPassantMove = new EnPassantMove(new Move(pawn, 3, 4, 4, 5), 4, 4);
         enPassantMove.setTookPiece(blackPawn);
         assertThat(moves).containsExactlyInAnyOrder(new Move(pawn, 3, 4, 3, 5), enPassantMove);

@@ -154,9 +154,9 @@ public class GameController {
 			view.resetAllClickables();
 		}
 
-		List<Move> matchingMoves =
-			moveService.computeMoves(board, move.getPiece(), move.getFromX(), move.getFromY(), game.getHistory(), true)
-				.stream().filter(m -> m.equalsForPositions(move)).collect(Collectors.toList());
+		List<Move> matchingMoves = moveService
+			.computeMoves(board, move.getPiece(), move.getFromX(), move.getFromY(), game.getHistory(), true, false)
+			.stream().filter(m -> m.equalsForPositions(move)).collect(Collectors.toList());
 		Move allowedMove = getAllowedMove(move, player, matchingMoves);
 		// We use allowedMove instead of given move since it contains additional info like taking and check
 		board.doMove(allowedMove);
@@ -323,8 +323,8 @@ public class GameController {
 					// Self piece is clickable so that it selection can be cancelled
 					markSquareClickable(square);
 					square.setBorder(RED_BORDER);
-					List<Move> moves = moveService
-							.computeMoves(board, square.getPiece(), square.getPosition().getX(), square.getPosition().getY(), game.getHistory(), true);
+					List<Move> moves = moveService.computeMoves(board, square.getPiece(), square.getPosition().getX(),
+						square.getPosition().getY(), game.getHistory(), true, false);
 					for (Move move : moves) {
 						Square destination = view.getSquares()[move.getToY()][move.getToX()];
 						destination.setBorder(BLUE_BORDER);
