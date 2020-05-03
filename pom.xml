@@ -30,6 +30,7 @@
     <logback.version>1.2.3</logback.version>
 
     <!-- Testing -->
+    <appache-commons.version>3.6.1</appache-commons.version>
     <assertj.version>3.12.2</assertj.version>
     <assertj-swing.version>3.9.2</assertj-swing.version>
     <junit.version>4.12</junit.version>
@@ -69,6 +70,13 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>${appache-commons.version}</version>
       <scope>test</scope>
     </dependency>
 
