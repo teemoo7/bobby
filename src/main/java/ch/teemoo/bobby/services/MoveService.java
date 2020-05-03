@@ -14,22 +14,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ch.teemoo.bobby.models.Board;
-import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.moves.EnPassantMove;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameState;
-import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.MoveAnalysis;
 import ch.teemoo.bobby.models.Position;
+import ch.teemoo.bobby.models.moves.CastlingMove;
+import ch.teemoo.bobby.models.moves.EnPassantMove;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.King;
@@ -175,35 +172,16 @@ public class MoveService {
 				.orElseThrow(() -> new RuntimeException("King expected here"));
 		final Position myKingOriginalPosition = findKingPosition(board, color)
 				.orElseThrow(() -> new RuntimeException("King expected here"));
-		Map<MoveAnalysis, Integer> moveScores;
 
-		Stream<Move> movesStream = moves.stream();
+		Map<MoveAnalysis, Integer> moveScores = moves.stream().map(
+			move -> computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
+				myKingOriginalPosition, move, computationTimeout))
+			.collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
 
 		if (isTopDepth) {
-			Callable<Map<MoveAnalysis, Integer>> task = () ->
-					moves.parallelStream().map(
-						move ->
-								computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
-									myKingOriginalPosition, move, computationTimeout)
-					).collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
-
-			ForkJoinPool forkJoinPool = new ForkJoinPool();
-
-			try {
-				moveScores = forkJoinPool.submit(task).get();
-			} catch (InterruptedException | ExecutionException e) {
-				Thread.currentThread().interrupt();
-				throw new RuntimeException("Move computation failed in parallel threads", e);
-			}
-
 			logger.debug(moveScores.entrySet().stream()
 					.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(e -> e.getKey().getMove().toString() + "=" + e.getValue().toString()).collect(
 							Collectors.joining(", ")));
-		} else {
-			moveScores = movesStream.map(
-				move -> computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
-					myKingOriginalPosition, move, computationTimeout))
-				.collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
 		}
 		return getBestMove(moveScores);
 	}
