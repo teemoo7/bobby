@@ -70,8 +70,10 @@ public class BoardTest {
                 Optional<Piece> pieceOpt = clone.getPiece(i, j);
                 Optional<Piece> initialPieceOpt = initialBoard.getPiece(i, j);
                 if (pieceOpt.isPresent()) {
-                    assertThat(pieceOpt.get().getId()).isEqualTo(
-                            initialPieceOpt.orElseThrow(() -> new RuntimeException("Expected piece here")).getId());
+                    assertThat(pieceOpt.get()).isInstanceOf(
+                            initialPieceOpt.orElseThrow(() -> new RuntimeException("Expected piece here")).getClass());
+                    assertThat(pieceOpt.get().getColor()).isEqualTo(
+                            initialPieceOpt.orElseThrow(() -> new RuntimeException("Expected piece here")).getColor());
                 } else {
                     assertThat(initialPieceOpt).isEmpty();
                 }

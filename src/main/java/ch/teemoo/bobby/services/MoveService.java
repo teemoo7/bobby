@@ -14,22 +14,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ch.teemoo.bobby.models.Board;
-import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.moves.EnPassantMove;
 import ch.teemoo.bobby.models.Game;
 import ch.teemoo.bobby.models.GameState;
-import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.MoveAnalysis;
 import ch.teemoo.bobby.models.Position;
+import ch.teemoo.bobby.models.moves.CastlingMove;
+import ch.teemoo.bobby.models.moves.EnPassantMove;
+import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.King;
@@ -95,13 +92,14 @@ public class MoveService {
 
 		if (withAdditionalInfo) {
 			return moves.stream().filter(move -> {
-				Board boardAfterMove = board.copy();
-				boardAfterMove.doMove(move);
+				board.doMove(move);
 
 				// Checking opponent's king
-				move.setChecking(isInCheck(boardAfterMove, swap(color)));
+				move.setChecking(isInCheck(board, swap(color)));
 
-				return isValidSituation(boardAfterMove, color);
+				boolean valid = isValidSituation(board, color);
+				board.undoMove(move);
+				return valid;
 			}).collect(toList());
 		} else {
 			return moves;
@@ -175,35 +173,16 @@ public class MoveService {
 				.orElseThrow(() -> new RuntimeException("King expected here"));
 		final Position myKingOriginalPosition = findKingPosition(board, color)
 				.orElseThrow(() -> new RuntimeException("King expected here"));
-		Map<MoveAnalysis, Integer> moveScores;
 
-		Stream<Move> movesStream = moves.stream();
+		Map<MoveAnalysis, Integer> moveScores = moves.stream().map(
+			move -> computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
+				myKingOriginalPosition, move, computationTimeout))
+			.collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
 
 		if (isTopDepth) {
-			Callable<Map<MoveAnalysis, Integer>> task = () ->
-					moves.parallelStream().map(
-						move ->
-								computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
-									myKingOriginalPosition, move, computationTimeout)
-					).collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
-
-			ForkJoinPool forkJoinPool = new ForkJoinPool();
-
-			try {
-				moveScores = forkJoinPool.submit(task).get();
-			} catch (InterruptedException | ExecutionException e) {
-				Thread.currentThread().interrupt();
-				throw new RuntimeException("Move computation failed in parallel threads", e);
-			}
-
 			logger.debug(moveScores.entrySet().stream()
 					.sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(e -> e.getKey().getMove().toString() + "=" + e.getValue().toString()).collect(
 							Collectors.joining(", ")));
-		} else {
-			moveScores = movesStream.map(
-				move -> computeMoveAnalysis(board, color, history, depth, opponentColor, opponentKingPosition,
-					myKingOriginalPosition, move, computationTimeout))
-				.collect(Collectors.toMap(Function.identity(), MoveAnalysis::getScore));
 		}
 		return getBestMove(moveScores);
 	}
@@ -224,26 +203,23 @@ public class MoveService {
 		}
 		Board boardAfter = board.copy();
 		boardAfter.doMove(move);
-		List<Move> historyCopy = new ArrayList<>(history);
-		historyCopy.add(move);
-		final GameState gameState = getGameState(boardAfter, opponentColor, historyCopy);
+		history.add(move);
+		final GameState gameState = getGameState(boardAfter, opponentColor, history);
 
-		int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition, myKingPosition, historyCopy);
+		int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition, myKingPosition, history);
 		moveAnalysis.setScore(score);
 		if (score >= BEST) {
+			history.remove(move);
 			return moveAnalysis;
 		}
 
 		// Compute the probable next move for the opponent and see if our current move is a real benefit in the end
 		if (depth >= 1 && gameState.isInProgress()) {
 			MoveAnalysis opponentMoveAnalysis =
-				selectMove(boardAfter, opponentColor, historyCopy, depth - 1, false, computationTimeout);
-			Move opponentMove = opponentMoveAnalysis.getMove();
-			boardAfter.doMove(opponentMove);
-			historyCopy.add(opponentMove);
-			moveAnalysis.setNextProbableMove(opponentMoveAnalysis);
+				selectMove(boardAfter, opponentColor, history, depth - 1, false, computationTimeout);
 			moveAnalysis.setScore(-opponentMoveAnalysis.getScore());
 		}
+		history.remove(move);
 		return moveAnalysis;
 	}
 
@@ -624,9 +600,11 @@ public class MoveService {
 
 		// Check that king does not cross fire during move
 		for (int x = Math.min(kingToX, kingFromX + 1); x < Math.max(kingFromX, kingToX + 1); x++) {
-			Board boardAfter = board.copy();
-			boardAfter.doMove(new Move(piece, kingFromX, kingFromY, x, kingFromY));
-			if (isInCheck(boardAfter, color)) {
+			Move move = new Move(piece, kingFromX, kingFromY, x, kingFromY);
+			board.doMove(move);
+			boolean inCheck = isInCheck(board, color);
+			board.undoMove(move);
+			if (inCheck) {
 				return Optional.empty();
 			}
 		}
@@ -652,7 +630,7 @@ public class MoveService {
 			}
 		}
 		Optional<Piece> kingOpt = board.getPiece(posX, posY);
-		if (!(kingOpt.isPresent() && kingOpt.get().equals(piece))) {
+		if (kingOpt.isEmpty() || !(kingOpt.get() instanceof King) || kingOpt.get().getColor() != color) {
 			return false;
 		}
 		return !isInCheck(board, color);
