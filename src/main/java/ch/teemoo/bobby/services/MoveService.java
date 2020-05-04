@@ -92,13 +92,14 @@ public class MoveService {
 
 		if (withAdditionalInfo) {
 			return moves.stream().filter(move -> {
-				Board boardAfterMove = board.copy();
-				boardAfterMove.doMove(move);
+				board.doMove(move);
 
 				// Checking opponent's king
-				move.setChecking(isInCheck(boardAfterMove, swap(color)));
+				move.setChecking(isInCheck(board, swap(color)));
 
-				return isValidSituation(boardAfterMove, color);
+				boolean valid = isValidSituation(board, color);
+				board.undoMove(move);
+				return valid;
 			}).collect(toList());
 		} else {
 			return moves;
@@ -202,26 +203,24 @@ public class MoveService {
 		}
 		Board boardAfter = board.copy();
 		boardAfter.doMove(move);
-		List<Move> historyCopy = new ArrayList<>(history);
-		historyCopy.add(move);
-		final GameState gameState = getGameState(boardAfter, opponentColor, historyCopy);
+		history.add(move);
+		final GameState gameState = getGameState(boardAfter, opponentColor, history);
 
-		int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition, myKingPosition, historyCopy);
+		int score = evaluateBoard(boardAfter, color, color, gameState, opponentKingPosition, myKingPosition, history);
 		moveAnalysis.setScore(score);
 		if (score >= BEST) {
+			history.remove(move);
 			return moveAnalysis;
 		}
 
 		// Compute the probable next move for the opponent and see if our current move is a real benefit in the end
 		if (depth >= 1 && gameState.isInProgress()) {
 			MoveAnalysis opponentMoveAnalysis =
-				selectMove(boardAfter, opponentColor, historyCopy, depth - 1, false, computationTimeout);
-			Move opponentMove = opponentMoveAnalysis.getMove();
-			boardAfter.doMove(opponentMove);
-			historyCopy.add(opponentMove);
-			moveAnalysis.setNextProbableMove(opponentMoveAnalysis);
+				selectMove(boardAfter, opponentColor, history, depth - 1, false, computationTimeout);
 			moveAnalysis.setScore(-opponentMoveAnalysis.getScore());
 		}
+		//board.undoMove(move);
+		history.remove(move);
 		return moveAnalysis;
 	}
 
@@ -602,9 +601,11 @@ public class MoveService {
 
 		// Check that king does not cross fire during move
 		for (int x = Math.min(kingToX, kingFromX + 1); x < Math.max(kingFromX, kingToX + 1); x++) {
-			Board boardAfter = board.copy();
-			boardAfter.doMove(new Move(piece, kingFromX, kingFromY, x, kingFromY));
-			if (isInCheck(boardAfter, color)) {
+			Move move = new Move(piece, kingFromX, kingFromY, x, kingFromY);
+			board.doMove(move);
+			boolean inCheck = isInCheck(board, color);
+			board.undoMove(move);
+			if (inCheck) {
 				return Optional.empty();
 			}
 		}
@@ -630,7 +631,7 @@ public class MoveService {
 			}
 		}
 		Optional<Piece> kingOpt = board.getPiece(posX, posY);
-		if (!(kingOpt.isPresent() && kingOpt.get().equals(piece))) {
+		if (kingOpt.isEmpty() || !(kingOpt.get() instanceof King) || kingOpt.get().getColor() != color) {
 			return false;
 		}
 		return !isInCheck(board, color);

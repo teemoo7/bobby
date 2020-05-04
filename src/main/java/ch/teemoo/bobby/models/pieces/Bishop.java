@@ -18,8 +18,6 @@ public class Bishop extends Piece {
 
     @Override
     public Piece copy() {
-        Piece clone = new Bishop(color);
-        clone.setId(id);
-        return clone;
+        return new Bishop(color);
     }
 }
