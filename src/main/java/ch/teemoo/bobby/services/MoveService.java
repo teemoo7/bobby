@@ -219,7 +219,6 @@ public class MoveService {
 				selectMove(boardAfter, opponentColor, history, depth - 1, false, computationTimeout);
 			moveAnalysis.setScore(-opponentMoveAnalysis.getScore());
 		}
-		//board.undoMove(move);
 		history.remove(move);
 		return moveAnalysis;
 	}
