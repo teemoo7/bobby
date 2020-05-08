@@ -401,9 +401,9 @@ public class BoardView extends JFrame {
     private Background getFirstSquareBackground(int i) {
         Background background;
         if (i % 2 != 0) {
-            background = Background.DARK;
-        } else {
             background = Background.LIGHT;
+        } else {
+            background = Background.DARK;
         }
         return background;
     }
