@@ -28,7 +28,6 @@ public class OpeningService {
 		"queensgambit.pgn",
 		"retiopening.pgn",
 		"ruylopezopening.pgn",
-		"scandinaviandefense.pgn",
 		"scotchgame.pgn",
 		"siciliandefense.pgn",
 		"slavdefense.pgn",
