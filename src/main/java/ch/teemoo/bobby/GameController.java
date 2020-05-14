@@ -97,6 +97,7 @@ public class GameController {
 		this.game = gameFactory.createGame(gameSetup);
 		this.board = game.getBoard();
 		refreshBoardView(board);
+		cleanSelectedSquare();
 		if (game.canBePlayed()) {
 			play();
 		}

@@ -48,6 +48,7 @@ public class MoveService {
 	public final static int DRAW_PENALTY = -20;
 
 	public final static int OPENING_MOVES_COUNT = 5;
+	public final static int MID_GAME_MOVES_COUNT = 20;
 	public final static int OPENING_MISTAKE_PENALTY = -10;
 	public final static int KING_MOVE_MISTAKE_PENALTY = -20;
 	public final static int CASTLING_BONUS = 15;
@@ -275,13 +276,25 @@ public class MoveService {
 		List<Move> history) {
 		// Should focus the fire on the center of the board and around the opponent's king
 		List<Move> allMoves = computeAllMoves(board, color, history,false, true);
+
+		final int centerControllingRate = 1;
+		final int attackingRate;
+		if (history.size() < MID_GAME_MOVES_COUNT) {
+			attackingRate = 0;
+		} else {
+			attackingRate = 1;
+		}
 		int[][] heatmapOpponentKing = getHeatmapAroundLocation(opponentKingPosition.getX(), opponentKingPosition.getY());
-		int myHeatScore = allMoves.stream().mapToInt(
-				m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapOpponentKing[m.getToX()][m.getToY()]).sum();
+		int myHeatScore = allMoves.stream().mapToInt(m ->
+			centerControllingRate * heatmapCenter[m.getToX()][m.getToY()]
+			+ attackingRate * heatmapOpponentKing[m.getToX()][m.getToY()]
+		).sum();
 		List<Move> allOpponentMoves = computeAllMoves(board, swap(color), history,false, true);
 		int[][] heatmapMyKing = getHeatmapAroundLocation(myKingPosition.getX(), myKingPosition.getY());
-		int opponentHeatScore = allOpponentMoves.stream().mapToInt(
-				m -> heatmapCenter[m.getToX()][m.getToY()] + heatmapMyKing[m.getToX()][m.getToY()]).sum();
+		int opponentHeatScore = allOpponentMoves.stream().mapToInt(m ->
+			centerControllingRate * heatmapCenter[m.getToX()][m.getToY()]
+			+ attackingRate * heatmapMyKing[m.getToX()][m.getToY()]
+		).sum();
 		return myHeatScore - opponentHeatScore;
 	}
 
