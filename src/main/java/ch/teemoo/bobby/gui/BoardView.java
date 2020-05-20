@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.ListIterator;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -410,7 +411,9 @@ public class BoardView extends JFrame {
 
     private void showAboutDialog() {
         JOptionPane.showMessageDialog(this,
-            "Written with ♥ by Micaël Paquier\n"
+            "Bobby " + guiHelper.getVersion() + " (" + guiHelper.getBuildTimestamp() + ")\n"
+                + " \n"
+                + "Written with ♥ by Micaël Paquier\n"
                 + " \n"
                 + "Humble tribute to Robert James \"Bobby\" Fischer,\n"
                 + "World Chess Champion\n"
