@@ -18,6 +18,9 @@
 
     <skipUnitTests>false</skipUnitTests>
 
+    <timestamp>${maven.build.timestamp}</timestamp>
+    <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+
     <!-- Plugins -->
     <maven.plugin.compiler.version>3.8.0</maven.plugin.compiler.version>
     <maven.plugin.checkstyle.version>3.1.0</maven.plugin.checkstyle.version>
@@ -106,6 +109,23 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>bobby.properties</exclude>
+        </excludes>
+      </resource>
+
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>bobby.properties</include>
+        </includes>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <groupId>com.github.spotbugs</groupId>
