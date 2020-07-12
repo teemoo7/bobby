@@ -10,32 +10,39 @@ Note that the author does not agree with Fischer's political and religious opini
 
 **Note:** requires Java 11
 
+## About Bobby
+
+If you are interested in how this engine works, please have a look at those two articles by the author:
+
+1. Implementing my own Chess engine from scratch (coming soon)
+2. [Enhancing a Java Swing App to a clean, elegant Web App without changing the code](https://codeburst.io/enhancing-a-java-swing-app-to-a-clean-elegant-web-app-without-changing-the-code-a69d7c1c2781?source=friends_link&sk=952623a093a6bed7870746b52719ef88)
+
 ## How to launch
 
-### From a released JAR (coming soon)
+### From a released JAR
 
-If not already done, you can install OpenJDK 11 for free (see the excellent distributions of [AdoptOpenJDK](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot))
- 
-Then launch the downloaded JAR:
-
-```
-java -jar bobby-1.0.jar 
-```
-
+1. If not already done, you can install OpenJDK 11 for free (see the excellent distributions of [AdoptOpenJDK](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot))
+2. Download the [latest release JAR](https://github.com/teemoo7/bobby/releases/download/bobby-0.1/bobby-0.1.jar)
+3. Then launch the downloaded JAR
+    ```
+    java -jar bobby-0.1.jar 
+    ```
  
 ### From source code
 
-First build it with maven:
+1. Checkout the code
+2. Build it with maven
+    ```
+    mvn clean install
+    ```
+3. Launch the created JAR
+    ```
+    java -jar target/bobby-1.0-SNAPSHOT.jar 
+    ```
 
-```
-mvn clean install
-```
+### Online
 
-Then launch the created JAR:
-
-```
-java -jar target/bobby-1.0-SNAPSHOT.jar 
-```
+Open https://www.bobby-chess.com/bobby/ for a browser version of the game (limited to one single user at a time).
 
 ## Features
 
@@ -57,7 +64,6 @@ java -jar target/bobby-1.0-SNAPSHOT.jar
 
 * Uses Java 11
 * Ability to use bundled light JRE ([doc here](PACKAGE.md))
-* Uses [launch4j](run/launch4j.xml) to release it as a Window executable (.exe)
 * Strong code coverage, incl. GUI testing
 * Code style with Checkstyle, code quality with SpotBugs and SonarSource
 * Pipeline with TravisCI
