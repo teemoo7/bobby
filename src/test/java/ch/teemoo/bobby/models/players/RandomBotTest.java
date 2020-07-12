@@ -1,7 +1,7 @@
 package ch.teemoo.bobby.models.players;
 
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.Game;
+import ch.teemoo.bobby.models.games.Game;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.Rook;
 import ch.teemoo.bobby.services.MoveService;
@@ -30,6 +30,7 @@ public class RandomBotTest {
     public void testRandomBotProps() {
         Player bot = new RandomBot(moveService);
         assertThat(bot.getName()).isEqualTo("Bobby");
+        assertThat(bot.getDescription()).isEqualTo("RandomBot Bobby");
         assertThat(bot.isBot()).isTrue();
     }
 

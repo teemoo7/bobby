@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import ch.teemoo.bobby.models.Game;
+import ch.teemoo.bobby.models.games.Game;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.PortableGameNotationService;

@@ -2,7 +2,7 @@ package ch.teemoo.bobby.models.players;
 
 import java.time.LocalDateTime;
 
-import ch.teemoo.bobby.models.Game;
+import ch.teemoo.bobby.models.games.Game;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.services.MoveService;
 
@@ -14,6 +14,11 @@ public class TraditionalBot extends Bot {
         super(moveService);
         this.level = level;
         this.timeout = timeout;
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription() + " (level " + level + ")";
     }
 
     public Move selectMove(Game game) {

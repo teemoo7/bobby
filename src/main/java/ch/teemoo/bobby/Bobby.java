@@ -4,10 +4,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import ch.teemoo.bobby.gui.BoardView;
+import ch.teemoo.bobby.gui.IBoardView;
 import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.helpers.GameFactory;
 import ch.teemoo.bobby.helpers.GuiHelper;
-import ch.teemoo.bobby.models.GameSetup;
+import ch.teemoo.bobby.models.games.GameSetup;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
@@ -50,9 +51,10 @@ public class Bobby implements Runnable {
         if (useDefaultSettings) {
             gameSetup = new GameSetup(new Human("Player"), botFactory.getStrongestBot());
         }
-        BoardView boardView = new BoardView("Bobby chess game", guiHelper);
-        new GameController(boardView, gameSetup, gameFactory, botFactory, moveService, fileService,
+        IBoardView boardView = new BoardView("Bobby chess game", guiHelper);
+        GameController gameController = new GameController(boardView, gameFactory, botFactory, moveService, fileService,
             portableGameNotationService);
+        gameController.newGame(gameSetup, true, r -> {});
     }
 
     private static void setLookAndFeel(boolean useDefaultSettings) {

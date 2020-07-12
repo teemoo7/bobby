@@ -1,4 +1,4 @@
-package ch.teemoo.bobby.models;
+package ch.teemoo.bobby.models.games;
 
 import ch.teemoo.bobby.models.players.Player;
 

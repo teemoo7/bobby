@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.ListIterator;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -19,7 +18,7 @@ import javax.swing.border.EmptyBorder;
 
 import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.helpers.GuiHelper;
-import ch.teemoo.bobby.models.GameSetup;
+import ch.teemoo.bobby.models.games.GameSetup;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.Position;
 import ch.teemoo.bobby.models.pieces.Bishop;
@@ -32,7 +31,7 @@ import ch.teemoo.bobby.models.players.Player;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 
-public class BoardView extends JFrame {
+public class BoardView extends JFrame implements IBoardView {
     private static final Border NO_BORDER = BorderFactory.createEmptyBorder();
     private static final Border GREEN_BORDER = BorderFactory.createLineBorder(java.awt.Color.green, 3, true);
 

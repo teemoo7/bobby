@@ -1,6 +1,8 @@
 package ch.teemoo.bobby.services;
 
 import ch.teemoo.bobby.models.*;
+import ch.teemoo.bobby.models.games.Game;
+import ch.teemoo.bobby.models.games.GameState;
 import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.moves.EnPassantMove;
 import ch.teemoo.bobby.models.moves.Move;
@@ -1298,10 +1300,10 @@ public class MoveServiceTest {
         int[][] expected = new int[][] {
                 {0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 1, 1, 0, 0, 0},
+                {0, 0, 1, 1, 1, 1, 0, 0},
                 {0, 0, 1, 2, 2, 1, 0, 0},
                 {0, 0, 1, 2, 2, 1, 0, 0},
-                {0, 0, 0, 1, 1, 0, 0, 0},
+                {0, 0, 1, 1, 1, 1, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0},
         };

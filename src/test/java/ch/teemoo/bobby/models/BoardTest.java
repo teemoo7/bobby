@@ -1,5 +1,6 @@
 package ch.teemoo.bobby.models;
 
+import ch.teemoo.bobby.models.games.Game;
 import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.moves.EnPassantMove;
 import ch.teemoo.bobby.models.moves.Move;

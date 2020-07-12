@@ -11,6 +11,10 @@ public abstract class Player {
         return name;
     }
 
+    public String getDescription() {
+        return getClass().getSimpleName() + " " + getName();
+    }
+
     public boolean isBot() {
         return this instanceof Bot;
     }

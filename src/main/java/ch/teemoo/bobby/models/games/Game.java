@@ -1,10 +1,12 @@
-package ch.teemoo.bobby.models;
+package ch.teemoo.bobby.models.games;
 
 import static ch.teemoo.bobby.models.Board.SIZE;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.teemoo.bobby.models.Board;
+import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.King;
@@ -106,8 +108,7 @@ public class Game {
     }
 
     public boolean canBePlayed() {
-        return whitePlayer != null && blackPlayer != null && state == GameState.IN_PROGRESS && (!whitePlayer.isBot()
-            || !blackPlayer.isBot());
+        return whitePlayer != null && blackPlayer != null && state == GameState.IN_PROGRESS;
     }
 
     private Piece[][] getInitialPiecesPositions() {

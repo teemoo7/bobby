@@ -8,9 +8,10 @@ public class HumanTest {
 
     @Test
     public void testHumanProps() {
-        final String name = "Bobby";
+        final String name = "Micael";
         Player human = new Human(name);
         assertThat(human.getName()).isEqualTo(name);
+        assertThat(human.getDescription()).isEqualTo("Human Micael");
         assertThat(human.isBot()).isFalse();
     }
 }

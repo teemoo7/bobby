@@ -1,5 +1,9 @@
-package ch.teemoo.bobby.models;
+package ch.teemoo.bobby.models.games;
 
+import ch.teemoo.bobby.models.Board;
+import ch.teemoo.bobby.models.Color;
+import ch.teemoo.bobby.models.games.Game;
+import ch.teemoo.bobby.models.games.GameState;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.*;
 import ch.teemoo.bobby.models.players.Human;
@@ -95,7 +99,7 @@ public class GameTest {
         Game game = new Game(new RandomBot(null), new Human("test"));
         assertThat(game.canBePlayed()).isTrue();
         game = new Game(new RandomBot(null), new RandomBot(null));
-        assertThat(game.canBePlayed()).isFalse();
+        assertThat(game.canBePlayed()).isTrue();
         game = new Game(new RandomBot(null), new Human("test"));
         game.setState(GameState.LOSS);
         assertThat(game.canBePlayed()).isFalse();

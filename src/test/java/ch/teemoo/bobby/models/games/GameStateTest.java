@@ -1,5 +1,6 @@
-package ch.teemoo.bobby.models;
+package ch.teemoo.bobby.models.games;
 
+import ch.teemoo.bobby.models.games.GameState;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

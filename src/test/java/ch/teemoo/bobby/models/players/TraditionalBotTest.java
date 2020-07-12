@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.verify;
 
-import ch.teemoo.bobby.models.Game;
+import ch.teemoo.bobby.models.games.Game;
 import ch.teemoo.bobby.services.MoveService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +25,7 @@ public class TraditionalBotTest {
     public void testTraditionalBotProps() {
         Player bot = new TraditionalBot(0, null, moveService);
         assertThat(bot.getName()).isEqualTo("Bobby");
+        assertThat(bot.getDescription()).isEqualTo("TraditionalBot Bobby (level 0)");
         assertThat(bot.isBot()).isTrue();
     }
 

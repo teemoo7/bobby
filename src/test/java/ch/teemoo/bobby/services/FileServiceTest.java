@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.Game;
+import ch.teemoo.bobby.models.games.Game;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.players.Human;

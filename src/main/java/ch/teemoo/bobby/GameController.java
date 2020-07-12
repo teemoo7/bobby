@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
@@ -21,15 +22,16 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.Border;
 
-import ch.teemoo.bobby.gui.BoardView;
+import ch.teemoo.bobby.gui.IBoardView;
 import ch.teemoo.bobby.gui.Square;
 import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.helpers.GameFactory;
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.GameSetup;
-import ch.teemoo.bobby.models.GameState;
+import ch.teemoo.bobby.models.games.Game;
+import ch.teemoo.bobby.models.games.GameResult;
+import ch.teemoo.bobby.models.games.GameSetup;
+import ch.teemoo.bobby.models.games.GameState;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Piece;
@@ -48,7 +50,9 @@ public class GameController {
 	private static final Border RED_BORDER = BorderFactory.createLineBorder(java.awt.Color.red, 3, true);
 	private static final Border BLUE_BORDER = BorderFactory.createLineBorder(java.awt.Color.blue, 3, true);
 
-	private final BoardView view;
+	private Consumer<GameResult> gameResultConsumer;
+
+	private final IBoardView view;
 	private Board board;
 	private Game game;
 	private final GameFactory gameFactory;
@@ -61,8 +65,8 @@ public class GameController {
 
 	private Square selectedSquare = null;
 
-	public GameController(BoardView view, GameSetup gameSetup, GameFactory gameFactory, BotFactory botFactory,
-		MoveService moveService, FileService fileService, PortableGameNotationService portableGameNotationService) {
+	public GameController(IBoardView view, GameFactory gameFactory, BotFactory botFactory, MoveService moveService,
+		FileService fileService, PortableGameNotationService portableGameNotationService) {
 		this.moveService = moveService;
 		this.fileService = fileService;
 		this.portableGameNotationService = portableGameNotationService;
@@ -71,12 +75,13 @@ public class GameController {
 		this.botFactory = botFactory;
 		this.botToSuggestMove = botFactory.getStrongestBot();
 		initView(gameFactory.emptyGame().getBoard());
-		newGame(gameSetup, true);
 	}
 
 	void initView(Board board) {
 		refreshBoardView(board);
-		view.setItemNewActionListener(actionEvent -> newGame(null, false));
+		view.setItemNewActionListener(actionEvent -> {
+			newGame(null, false, r -> {});
+		});
 		view.setItemLoadActionListener(actionEvent -> loadGame());
 		view.setItemSaveActionListener(actionEvent -> saveGame());
 		view.setItemPrintToConsoleActionListener(actionEvent -> printGameToConsole());
@@ -85,7 +90,7 @@ public class GameController {
 		view.setItemProposeDrawActionListener(actionEvent -> evaluateDrawProposal());
 	}
 
-	void newGame(GameSetup gameSetup, boolean exitOnCancel) {
+	public void newGame(GameSetup gameSetup, boolean exitOnCancel, Consumer<GameResult> gameResultConsumer) {
 		if (gameSetup == null) {
 			GameSetup gameSetupFromDialog = view.gameSetupDialog(botFactory, exitOnCancel);
 			if (gameSetupFromDialog == null && !exitOnCancel) {
@@ -96,6 +101,7 @@ public class GameController {
 		}
 		this.game = gameFactory.createGame(gameSetup);
 		this.board = game.getBoard();
+		this.gameResultConsumer = gameResultConsumer;
 		refreshBoardView(board);
 		cleanSelectedSquare();
 		if (game.canBePlayed()) {
@@ -228,8 +234,10 @@ public class GameController {
 				Player winner = game.getPlayerByColor(winningColor);
 				if (winningColor == Color.WHITE) {
 					info("1-0" + getNbMovesInfo(game), false);
+					gameResultConsumer.accept(new GameResult(game.getHistory().size(), GameResult.Result.WHITE_WINS));
 				} else {
 					info("0-1" + getNbMovesInfo(game), false);
+					gameResultConsumer.accept(new GameResult(game.getHistory().size(), GameResult.Result.BLACK_WINS));
 				}
 				if (winner.isBot()) {
 					info("Checkmate! Ha ha, not even Spassky could beat me!", showPopup);
@@ -242,18 +250,22 @@ public class GameController {
 			case DRAW_STALEMATE:
 				info("1/2-1/2" + getNbMovesInfo(game), false);
 				info("Draw (Stalemate). The game is over.", showPopup);
+				gameResultConsumer.accept(new GameResult(game.getHistory().size(), GameResult.Result.DRAW));
 				break;
 			case DRAW_50_MOVES:
 				info("1/2-1/2" + getNbMovesInfo(game), false);
 				info("Draw (50 moves). The game is over.", showPopup);
+				gameResultConsumer.accept(new GameResult(game.getHistory().size(), GameResult.Result.DRAW));
 				break;
 			case DRAW_THREEFOLD:
 				info("1/2-1/2" + getNbMovesInfo(game), false);
 				info("Draw (threefold). The game is over.", showPopup);
+				gameResultConsumer.accept(new GameResult(game.getHistory().size(), GameResult.Result.DRAW));
 				break;
 			case DRAW_AGREEMENT:
 				info("1/2-1/2" + getNbMovesInfo(game), false);
 				info("Draw (agreement). The game is over.", showPopup);
+				gameResultConsumer.accept(new GameResult(game.getHistory().size(), GameResult.Result.DRAW));
 				break;
 			case IN_PROGRESS:
 			default:

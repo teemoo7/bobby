@@ -2,11 +2,10 @@ package ch.teemoo.bobby.helpers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.GameSetup;
+import ch.teemoo.bobby.models.games.Game;
+import ch.teemoo.bobby.models.games.GameSetup;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.Player;
-import ch.teemoo.bobby.models.players.RandomBot;
 import org.junit.Test;
 
 public class GameFactoryTest {

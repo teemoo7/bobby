@@ -13,7 +13,7 @@ import java.util.Collections;
 
 import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.Game;
+import ch.teemoo.bobby.models.games.Game;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Rook;
@@ -39,6 +39,7 @@ public class ExperiencedBotTest {
     public void testExperiencedBotProps() {
         Player bot = new ExperiencedBot(0, null, moveService, openingService);
         assertThat(bot.getName()).isEqualTo("Bobby");
+        assertThat(bot.getDescription()).isEqualTo("ExperiencedBot Bobby (level 0)");
         assertThat(bot.isBot()).isTrue();
     }
 

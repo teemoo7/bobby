@@ -29,9 +29,9 @@ import ch.teemoo.bobby.helpers.BotFactory;
 import ch.teemoo.bobby.helpers.GameFactory;
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.Game;
-import ch.teemoo.bobby.models.GameSetup;
-import ch.teemoo.bobby.models.GameState;
+import ch.teemoo.bobby.models.games.Game;
+import ch.teemoo.bobby.models.games.GameSetup;
+import ch.teemoo.bobby.models.games.GameState;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
@@ -93,8 +93,9 @@ public class GameControllerTest {
     	when(gameFactory.createGame(any())).thenReturn(game);
         when(botFactory.getStrongestBot()).thenReturn(new TraditionalBot(0, null, moveService));
         when(game.getBoard()).thenReturn(board);
-        controller = new GameController(view, null, gameFactory, botFactory, moveService, fileService,
-            portableGameNotationService);
+        controller =
+            new GameController(view, gameFactory, botFactory, moveService, fileService, portableGameNotationService);
+        controller.newGame(null, true, r -> {});
     }
 
     @Test
@@ -113,7 +114,7 @@ public class GameControllerTest {
         GameSetup gameSetup = new GameSetup(new Human("test1"), new Human("test2"));
 
         // when
-        controller.newGame(gameSetup, true);
+        controller.newGame(gameSetup, true, gameResult -> {});
 
         // then
         verify(view, atMostOnce()).gameSetupDialog(any(), eq(true));
