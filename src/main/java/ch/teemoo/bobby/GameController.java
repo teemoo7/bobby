@@ -130,7 +130,7 @@ public class GameController {
 			Bot bot = (Bot) player;
 			Instant start = Instant.now();
 
-			FindBestMoveTask findBestMoveTask = new FindBestMoveTask(bot, game, moveService);
+			FindBestMoveTask findBestMoveTask = new FindBestMoveTask(bot, game);
 			findBestMoveTask.execute();
 			Move move;
 
@@ -473,12 +473,10 @@ public class GameController {
 	private static class FindBestMoveTask extends SwingWorker<Move, Object> {
 		final private Bot bot;
 		final private Game game;
-		final private MoveService moveService;
 
-		public FindBestMoveTask(Bot bot, Game game, MoveService moveService) {
+		public FindBestMoveTask(Bot bot, Game game) {
 			this.bot = bot;
 			this.game = game;
-			this.moveService = moveService;
 		}
 
 		@Override

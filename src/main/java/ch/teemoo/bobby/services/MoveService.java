@@ -48,8 +48,8 @@ public class MoveService {
 
 	public final static int OPENING_MOVES_COUNT = 5;
 	public final static int MID_GAME_MOVES_COUNT = 20;
-	public final static int OPENING_MISTAKE_PENALTY = -10;
-	public final static int KING_MOVE_MISTAKE_PENALTY = -20;
+	public final static int OPENING_MISTAKE_PENALTY = -5;
+	public final static int KING_MOVE_MISTAKE_PENALTY = -10;
 	public final static int CASTLING_BONUS = 15;
 
 	private final static int MAX_MOVE = SIZE - 1;

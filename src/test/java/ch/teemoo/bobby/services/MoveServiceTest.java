@@ -295,7 +295,7 @@ public class MoveServiceTest {
             new Move(new Pawn(Color.WHITE), 3, 1, 3, 3),
             new Move(new Queen(Color.WHITE), 3, 0, 3, 2)
         );
-        assertThat(moveService.getDevelopmentBonus(moves)).isEqualTo(-10);
+        assertThat(moveService.getDevelopmentBonus(moves)).isEqualTo(-5);
     }
 
     @Test
@@ -305,7 +305,7 @@ public class MoveServiceTest {
             new Move(knight, 1, 0, 2, 2),
             new Move(knight, 2, 2, 3, 4)
         );
-        assertThat(moveService.getDevelopmentBonus(moves)).isEqualTo(-10);
+        assertThat(moveService.getDevelopmentBonus(moves)).isEqualTo(-5);
     }
 
     @Test
@@ -327,7 +327,7 @@ public class MoveServiceTest {
             new Move(new Pawn(Color.WHITE), 3, 5, 3, 6),
             new Move(new King(Color.WHITE), 4, 0, 4, 1)
             );
-        assertThat(moveService.getDevelopmentBonus(moves)).isEqualTo(-20);
+        assertThat(moveService.getDevelopmentBonus(moves)).isEqualTo(-10);
     }
 
     @Test
