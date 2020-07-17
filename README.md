@@ -33,7 +33,7 @@ If you are interested in how this engine works, please have a look at those two 
 1. Checkout the code
 2. Build it with maven
     ```
-    mvn clean install
+     mvn package -Dmaven.test.skip=true
     ```
 3. Launch the created JAR
     ```
