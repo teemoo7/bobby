@@ -14,7 +14,7 @@ Note that the author does not agree with Fischer's political and religious opini
 
 If you are interested in how this engine works, please have a look at those two articles by the author:
 
-1. Implementing my own Chess engine from scratch (coming soon)
+1. [Implementing a Chess engine from scratch](https://towardsdatascience.com/implementing-a-chess-engine-from-scratch-be38cbdae91?source=friends_link&sk=ebc15d3d963f1e61ca1bfe7961afdcad)
 2. [Enhancing a Java Swing App to a clean, elegant Web App without changing the code](https://codeburst.io/enhancing-a-java-swing-app-to-a-clean-elegant-web-app-without-changing-the-code-a69d7c1c2781?source=friends_link&sk=952623a093a6bed7870746b52719ef88)
 
 ## How to launch
