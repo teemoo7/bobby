@@ -39,7 +39,7 @@
     <appache-commons.version>3.6.1</appache-commons.version>
     <assertj.version>3.12.2</assertj.version>
     <assertj-swing.version>3.9.2</assertj-swing.version>
-    <junit.version>4.12</junit.version>
+    <junit.version>4.13.1</junit.version>
     <mockito.version>2.28.2</mockito.version>
     <system-rules.version>1.19.0</system-rules.version>
   </properties>
