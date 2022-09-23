@@ -1295,7 +1295,7 @@ public class MoveServiceTest {
     @Test
     public void testCenteredHeatmap() {
         int[][] heatmap = MoveService.generateCenteredHeatmap();
-        assertThat(heatmap).hasSize(8);
+        assertThat(heatmap).hasNumberOfRows(8);
         assertThat(heatmap[0]).hasSize(8);
         int[][] expected = new int[][] {
                 {0, 0, 0, 0, 0, 0, 0, 0},
@@ -1313,7 +1313,7 @@ public class MoveServiceTest {
     @Test
     public void testGetHeatmapAroundLocation() {
         int[][] heatmap = moveService.getHeatmapAroundLocation(7, 0);
-        assertThat(heatmap).hasSize(8);
+        assertThat(heatmap).hasNumberOfRows(8);
         assertThat(heatmap[0]).hasSize(8);
         int[][] expected = new int[][] {
                 {0, 0, 0, 0, 0, 0, 0, 0},
