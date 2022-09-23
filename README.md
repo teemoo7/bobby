@@ -66,7 +66,7 @@ Open https://www.bobby-chess.com/bobby/ for a browser version of the game (limit
 * Ability to use bundled light JRE ([doc here](PACKAGE.md))
 * Strong code coverage, incl. GUI testing
 * Code style with Checkstyle, code quality with SpotBugs and SonarSource
-* Pipeline with TravisCI
+* Pipeline with GitHub Actions
 * Uses a nice modern Look & Feel [FlatLaf](https://github.com/JFormDesigner/FlatLaf) for all platforms
 * Uses free font _FreeSerif_ in order to have a nice rendering of chess pieces
 
