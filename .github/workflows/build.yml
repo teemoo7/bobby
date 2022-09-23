@@ -24,8 +24,8 @@ jobs:
           cache: maven
       - name: Compile and Unit tests (headless for GUI)
         uses: GabrielBB/xvfb-action@v1.6
-          with:
-            run: mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install
+        with:
+          run: mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install
       - name: Quality gate
         run: mvn --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
         env:
