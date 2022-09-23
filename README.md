@@ -8,7 +8,7 @@ Note that the author does not agree with Fischer's political and religious opini
 
 ![Bobby Chess Game](src/main/resources/img/logo.png "Bobby Chess Game")
 
-**Note:** requires Java 11
+**Note:** requires Java 17
 
 ## About Bobby
 
@@ -21,7 +21,7 @@ If you are interested in how this engine works, please have a look at those two 
 
 ### From a released JAR
 
-1. If not already done, you can install OpenJDK 11 for free (see the excellent distributions of [AdoptOpenJDK](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot))
+1. If not already done, you can install OpenJDK 17 for free (see the excellent distributions of [Temurin by Adoptium](https://adoptium.net/temurin/releases/?version=17))
 2. Download the [latest release JAR](https://github.com/teemoo7/bobby/releases/download/bobby-0.1/bobby-0.1.jar)
 3. Then launch the downloaded JAR
     ```
@@ -62,7 +62,7 @@ Open https://www.bobby-chess.com/bobby/ for a browser version of the game (limit
 
 ### Technical
 
-* Uses Java 11
+* Uses Java 17
 * Ability to use bundled light JRE ([doc here](PACKAGE.md))
 * Strong code coverage, incl. GUI testing
 * Code style with Checkstyle, code quality with SpotBugs and SonarSource

@@ -14,7 +14,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <java.release.version>11</java.release.version>
+    <java.release.version>17</java.release.version>
 
     <skipUnitTests>false</skipUnitTests>
 
@@ -22,25 +22,26 @@
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 
     <!-- Plugins -->
-    <maven.plugin.compiler.version>3.8.0</maven.plugin.compiler.version>
-    <maven.plugin.checkstyle.version>3.1.0</maven.plugin.checkstyle.version>
-    <maven.plugin.failsafe.version>3.0.0-M3</maven.plugin.failsafe.version>
-    <maven.plugin.jacoco.version>0.8.4</maven.plugin.jacoco.version>
-    <maven.plugin.project-info-reports.version>3.0.0</maven.plugin.project-info-reports.version>
-    <maven.plugin.site.version>3.7.1</maven.plugin.site.version>
-    <maven.plugin.spotbugs.version>3.1.12</maven.plugin.spotbugs.version>
-    <maven.plugin.surefire.version>3.0.0-M3</maven.plugin.surefire.version>
+    <maven.plugin.compiler.version>3.10.0</maven.plugin.compiler.version>
+    <maven.plugin.checkstyle.version>3.2.0</maven.plugin.checkstyle.version>
+    <maven.plugin.failsafe.version>3.0.0-M7</maven.plugin.failsafe.version>
+    <maven.plugin.jacoco.version>0.8.8</maven.plugin.jacoco.version>
+    <maven.plugin.project-info-reports.version>3.4.1</maven.plugin.project-info-reports.version>
+    <maven.plugin.site.version>4.0.0-M3</maven.plugin.site.version>
+    <maven.plugin.spotbugs.version>4.7.2.0</maven.plugin.spotbugs.version>
+    <maven.plugin.surefire.version>3.0.0-M7</maven.plugin.surefire.version>
 
     <!-- Dependencies -->
     <flatlaf.version>0.33</flatlaf.version>
-    <logback.version>1.2.3</logback.version>
+    <logback.version>1.4.1</logback.version>
+    <spotbugs.version>4.7.2</spotbugs.version>
 
     <!-- Testing -->
     <appache-commons.version>3.6.1</appache-commons.version>
-    <assertj.version>3.12.2</assertj.version>
-    <assertj-swing.version>3.9.2</assertj-swing.version>
-    <junit.version>4.12</junit.version>
-    <mockito.version>2.28.2</mockito.version>
+    <assertj.version>3.23.1</assertj.version>
+    <assertj-swing.version>3.17.1</assertj-swing.version>
+    <junit.version>4.13</junit.version>
+    <mockito.version>4.8.0</mockito.version>
     <system-rules.version>1.19.0</system-rules.version>
   </properties>
 
@@ -60,7 +61,7 @@
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
-      <version>${maven.plugin.spotbugs.version}</version>
+      <version>${spotbugs.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -131,6 +132,9 @@
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
         <version>${maven.plugin.spotbugs.version}</version>
+        <configuration>
+          <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+        </configuration>
         <executions>
           <execution>
             <goals>

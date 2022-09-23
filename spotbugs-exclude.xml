@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<FindBugsFilter>
+
+	<!-- https://github.com/spotbugs/spotbugs/issues/1601 -->
+	<Match>
+		<Bug pattern="EI_EXPOSE_REP" />
+	</Match>
+	<Match>
+		<Bug pattern="EI_EXPOSE_REP2" />
+	</Match>
+
+</FindBugsFilter>
