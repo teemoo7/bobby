@@ -1,17 +1,18 @@
 package ch.teemoo.bobby.gui;
 
-import ch.teemoo.bobby.models.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.awt.Font;
+
+import javax.swing.SwingConstants;
+
 import ch.teemoo.bobby.models.Color;
+import ch.teemoo.bobby.models.Position;
 import ch.teemoo.bobby.models.pieces.Knight;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
-import org.junit.Test;
-
-import javax.swing.*;
-import java.awt.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 public class SquareTest {
 

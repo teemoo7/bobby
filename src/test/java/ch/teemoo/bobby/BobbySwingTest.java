@@ -17,8 +17,8 @@ import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JLabelFixture;
 import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.jupiter.api.Test;
 
 public class BobbySwingTest extends AssertJSwingJUnitTestCase {
     @Rule

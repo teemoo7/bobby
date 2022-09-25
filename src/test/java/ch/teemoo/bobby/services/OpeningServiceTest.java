@@ -12,8 +12,8 @@ import java.util.List;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.Pawn;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class OpeningServiceTest {
 
@@ -22,7 +22,7 @@ public class OpeningServiceTest {
 	private PortableGameNotationService portableGameNotationService;
 	private MoveService moveService;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		this.fileService = new FileService();
 		this.moveService = new MoveService();

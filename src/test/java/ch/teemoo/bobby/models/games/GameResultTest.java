@@ -2,9 +2,7 @@ package ch.teemoo.bobby.models.games;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ch.teemoo.bobby.models.players.Human;
-import ch.teemoo.bobby.models.players.Player;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class GameResultTest {
 

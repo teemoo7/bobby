@@ -1,5 +1,9 @@
 package ch.teemoo.bobby.models;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Optional;
+
 import ch.teemoo.bobby.models.games.Game;
 import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.moves.EnPassantMove;
@@ -9,19 +13,15 @@ import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.players.Human;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class BoardTest {
 
     private Game game;
     private Board initialBoard;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // The game board will have the default pieces positions, which will be used in the tests below
         this.game = new Game(new Human("Human"), new Human("Human2"));

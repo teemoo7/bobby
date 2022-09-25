@@ -7,22 +7,22 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.games.Game;
+import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.pieces.Rook;
 import org.assertj.core.api.ThrowableAssert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PortableGameNotationServiceTest {
 	private final static String PGN_OPENING_RUY_LOPEZ_CONTENT = "[Event \"?\"]\n" + "[Site \"?\"]\n"
 		+ "[Date \"????.??.??\"]\n" + "[Round \"?\"]\n" + "[White \"?\"]\n" + "[Black \"?\"]\n" + "[Result \"*\"]\n"
@@ -61,7 +61,7 @@ public class PortableGameNotationServiceTest {
 	@Spy
 	private MoveService moveService;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		this.moveService = new MoveService();
 		this.portableGameNotationService = new PortableGameNotationService(moveService);

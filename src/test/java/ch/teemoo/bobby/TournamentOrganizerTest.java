@@ -3,8 +3,8 @@ package ch.teemoo.bobby;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import org.junit.jupiter.api.Test;
 
 public class TournamentOrganizerTest {
 	@Rule

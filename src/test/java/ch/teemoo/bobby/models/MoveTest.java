@@ -1,15 +1,15 @@
 package ch.teemoo.bobby.models;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+
 import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
 import ch.teemoo.bobby.models.pieces.Rook;
-import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import org.junit.jupiter.api.Test;
 
 public class MoveTest {
 

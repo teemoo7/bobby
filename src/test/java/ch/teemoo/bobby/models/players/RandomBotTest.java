@@ -1,24 +1,24 @@
 package ch.teemoo.bobby.models.players;
 
-import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.games.Game;
-import ch.teemoo.bobby.models.moves.Move;
-import ch.teemoo.bobby.models.pieces.Rook;
-import ch.teemoo.bobby.services.MoveService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Collections;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+import java.util.Collections;
+
+import ch.teemoo.bobby.models.Color;
+import ch.teemoo.bobby.models.games.Game;
+import ch.teemoo.bobby.models.moves.Move;
+import ch.teemoo.bobby.models.pieces.Rook;
+import ch.teemoo.bobby.services.MoveService;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class RandomBotTest {
     @Mock
     Game game;

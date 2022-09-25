@@ -12,7 +12,7 @@ import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.PortableGameNotationService;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,14 +1,14 @@
 package ch.teemoo.bobby.models;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.moves.PromotionMove;
 import ch.teemoo.bobby.models.pieces.Bishop;
 import ch.teemoo.bobby.models.pieces.Pawn;
 import ch.teemoo.bobby.models.pieces.Piece;
 import ch.teemoo.bobby.models.pieces.Queen;
-import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 public class PromotionMoveTest {
 

@@ -1,11 +1,10 @@
 package ch.teemoo.bobby.gui;
 
-import org.junit.Test;
-
-import javax.swing.*;
-import java.awt.*;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import javax.swing.SwingConstants;
+
+import org.junit.jupiter.api.Test;
 
 public class SideLabelTest {
 

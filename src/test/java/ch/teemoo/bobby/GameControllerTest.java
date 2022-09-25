@@ -48,15 +48,15 @@ import ch.teemoo.bobby.services.FileService;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.PortableGameNotationService;
 import org.assertj.core.api.ThrowableAssert;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class GameControllerTest {
     @Rule
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();
@@ -87,7 +87,7 @@ public class GameControllerTest {
 
     private GameController controller;
 
-    @Before
+    @BeforeEach
     public void setUp() {
 		when(gameFactory.emptyGame()).thenReturn(new Game(null, null));
     	when(gameFactory.createGame(any())).thenReturn(game);

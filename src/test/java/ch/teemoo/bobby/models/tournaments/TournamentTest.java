@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 import ch.teemoo.bobby.models.players.Player;
 import ch.teemoo.bobby.models.players.RandomBot;
 import ch.teemoo.bobby.services.MoveService;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 public class TournamentTest {
@@ -25,7 +25,7 @@ public class TournamentTest {
 	@Mock
 	MoveService moveService;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		player1 = new RandomBot(moveService);
 		player2 = new RandomBot(moveService);

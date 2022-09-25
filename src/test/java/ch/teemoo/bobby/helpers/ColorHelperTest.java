@@ -1,9 +1,9 @@
 package ch.teemoo.bobby.helpers;
 
-import ch.teemoo.bobby.models.Color;
-import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import ch.teemoo.bobby.models.Color;
+import org.junit.jupiter.api.Test;
 
 public class ColorHelperTest {
 

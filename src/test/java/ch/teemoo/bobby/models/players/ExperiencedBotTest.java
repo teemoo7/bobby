@@ -11,20 +11,20 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
-import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.games.Game;
+import ch.teemoo.bobby.models.moves.CastlingMove;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.King;
 import ch.teemoo.bobby.models.pieces.Rook;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.OpeningService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ExperiencedBotTest {
     @Mock
     MoveService moveService;

@@ -6,7 +6,7 @@ import ch.teemoo.bobby.models.games.Game;
 import ch.teemoo.bobby.models.games.GameSetup;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.Player;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class GameFactoryTest {
 

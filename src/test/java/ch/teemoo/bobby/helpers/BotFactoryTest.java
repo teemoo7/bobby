@@ -9,8 +9,8 @@ import ch.teemoo.bobby.models.players.RandomBot;
 import ch.teemoo.bobby.models.players.TraditionalBot;
 import ch.teemoo.bobby.services.MoveService;
 import ch.teemoo.bobby.services.OpeningService;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 public class BotFactoryTest {
@@ -23,7 +23,7 @@ public class BotFactoryTest {
 	@Mock
 	OpeningService openingService;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		this.botFactory = new BotFactory(moveService, openingService);
 	}

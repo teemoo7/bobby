@@ -1,17 +1,21 @@
 package ch.teemoo.bobby.models.games;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.games.Game;
-import ch.teemoo.bobby.models.games.GameState;
 import ch.teemoo.bobby.models.moves.Move;
-import ch.teemoo.bobby.models.pieces.*;
+import ch.teemoo.bobby.models.pieces.Bishop;
+import ch.teemoo.bobby.models.pieces.King;
+import ch.teemoo.bobby.models.pieces.Knight;
+import ch.teemoo.bobby.models.pieces.Pawn;
+import ch.teemoo.bobby.models.pieces.Piece;
+import ch.teemoo.bobby.models.pieces.Queen;
+import ch.teemoo.bobby.models.pieces.Rook;
 import ch.teemoo.bobby.models.players.Human;
 import ch.teemoo.bobby.models.players.Player;
 import ch.teemoo.bobby.models.players.RandomBot;
-import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 public class GameTest {
 
