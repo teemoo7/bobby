@@ -3,7 +3,6 @@ package ch.teemoo.bobby.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -87,7 +86,7 @@ public class PortableGameNotationServiceTest {
 	}
 
 	@Test
-	public void readPgnGameFileTest() throws IOException {
+	public void readPgnGameFileTest() {
 		// given
 		List<String> lines = Arrays.asList(PGN_GAME_CONTENT.split("\\n"));
 
@@ -126,7 +125,7 @@ public class PortableGameNotationServiceTest {
 	}
 
 	@Test
-	public void readPgnBigGameFileTest() throws IOException {
+	public void readPgnBigGameFileTest() {
 		// given
 		List<String> lines = Arrays.asList(PGN_GAME_WORLD_CHAMPIONSHIP_CONTENT.split("\\n"));
 
@@ -152,7 +151,7 @@ public class PortableGameNotationServiceTest {
 	}
 
 	@Test
-	public void testUnexpectedMove() throws IOException {
+	public void testUnexpectedMove() {
 		// given
 		String pgn = "[Event \"?\"]\n" + "[Site \"?\"]\n" + "[Date \"????.??.??\"]\n" + "[Round \"?\"]\n"
 			+ "[White \"?\"]\n" + "[Black \"?\"]\n" + "[Result \"*\"]\n\n1. O-O-O O-O-O 2. e8=R e1=K 3. d8=B *";

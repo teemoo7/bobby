@@ -3,18 +3,12 @@ package ch.teemoo.bobby.gui;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.awt.Dialog;
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 
 import javax.swing.SwingUtilities;
 
-import ch.teemoo.bobby.gui.BoardView;
 import ch.teemoo.bobby.helpers.GuiHelper;
 import ch.teemoo.bobby.models.Color;
 import ch.teemoo.bobby.models.pieces.Piece;
@@ -23,7 +17,6 @@ import org.assertj.swing.core.GenericTypeMatcher;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class BoardViewSwingTest extends AssertJSwingJUnitTestCase{

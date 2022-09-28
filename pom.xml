@@ -39,12 +39,14 @@
     <flatlaf.version>0.33</flatlaf.version>
     <logback.version>1.4.1</logback.version>
     <spotbugs.version>4.7.2</spotbugs.version>
+    <dotenv-java.version>2.2.4</dotenv-java.version>
+    <chariot.version>0.0.53</chariot.version>
 
     <!-- Testing -->
     <appache-commons.version>3.6.1</appache-commons.version>
     <assertj.version>3.23.1</assertj.version>
     <assertj-swing.version>3.17.1</assertj-swing.version>
-    <junit.version>4.13</junit.version>
+    <junit.version>4.13.2</junit.version>
     <mockito.version>4.8.0</mockito.version>
     <system-rules.version>1.19.0</system-rules.version>
   </properties>
@@ -67,6 +69,18 @@
       <artifactId>spotbugs-annotations</artifactId>
       <version>${spotbugs.version}</version>
       <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>dotenv-java</artifactId>
+      <version>${dotenv-java.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.tors42</groupId>
+      <artifactId>chariot</artifactId>
+      <version>${chariot.version}</version>
     </dependency>
 
     <!-- Testing -->
