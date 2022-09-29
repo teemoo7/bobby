@@ -87,6 +87,15 @@ public class Move {
 		return builder.toString();
 	}
 
+	public String getUciNotation() {
+		StringBuilder builder = new StringBuilder();
+		builder.append(convertXToChar(fromX))
+			.append(fromY + 1)
+			.append(convertXToChar(toX))
+			.append(toY + 1);
+		return builder.toString();
+	}
+
 	public static Move fromBasicNotation(String notation, Color color) {
 		if (notation == null || color == null) {
 			throw new IllegalArgumentException("Unexpected format for basic notation move: " + notation + " (" + color + ")");

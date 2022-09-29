@@ -1,6 +1,10 @@
 package ch.teemoo.bobby.models.moves;
 
+import ch.teemoo.bobby.models.pieces.Bishop;
+import ch.teemoo.bobby.models.pieces.Knight;
 import ch.teemoo.bobby.models.pieces.Piece;
+import ch.teemoo.bobby.models.pieces.Queen;
+import ch.teemoo.bobby.models.pieces.Rook;
 
 public class PromotionMove extends Move {
     private final Piece promotedPiece;
@@ -18,6 +22,22 @@ public class PromotionMove extends Move {
 
     public String getPrettyNotation() {
         return super.getPrettyNotation() + " (promoted to " + getPromotedPiece().getClass().getSimpleName() + ")";
+    }
+
+    public String getUciNotation() {
+        String promotionInfo;
+        if (promotedPiece instanceof Queen) {
+            promotionInfo = "q";
+        } else if (promotedPiece instanceof Rook) {
+            promotionInfo = "r";
+        } else if (promotedPiece instanceof Knight) {
+            promotionInfo = "n";
+        } else if (promotedPiece instanceof Bishop) {
+            promotionInfo = "b";
+        } else {
+            throw new RuntimeException("Unexpected promoted piece");
+        }
+        return super.getUciNotation() + promotionInfo;
     }
 
     @Override

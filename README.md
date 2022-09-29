@@ -2,6 +2,12 @@
 
 [![Build](https://github.com/teemoo7/bobby/actions/workflows/build.yml/badge.svg)](https://github.com/teemoo7/bobby/actions/workflows/build.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ch.teemoo%3Abobby&metric=alert_status)](https://sonarcloud.io/dashboard?id=ch.teemoo%3Abobby) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ch.teemoo%3Abobby&metric=coverage)](https://sonarcloud.io/dashboard?id=ch.teemoo%3Abobby)
 
+---
+
+:boom: **Try it on [Lichess](https://lichess.org/@/bobby-bot)**! :boom:
+
+---
+
 This basic Chess game is a humble tribute to famous Chess player [Robert James "Bobby" Fischer](https://en.wikipedia.org/wiki/Bobby_Fischer), World Chess Champion.
 
 Note that the author does not agree with Fischer's political and religious opinions, but remains a fan of his genius at Chess.
@@ -42,7 +48,15 @@ If you are interested in how this engine works, please have a look at those two 
 
 ### Online
 
-Open https://www.bobby-chess.com/bobby/ for a browser version of the game (limited to one single user at a time).
+#### :new: Lichess Bot
+
+Thanks to the great lib [Chariot](https://github.com/tors42/chariot), it is now possible to play against Bobby on Lichess.
+
+Just browse to [bobby-bot profile on Lichess.org](https://lichess.org/@/bobby-bot) and challenge it! If the server is running, the bot will accept the challenge and play.
+
+#### GUI in browser (deprecated)
+
+There was a browser version of the game (limited to one single user at a time), but it was stopped for costs reasons.
 
 ## Features
 

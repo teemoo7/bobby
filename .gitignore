@@ -1,5 +1,6 @@
-.java-version
-.idea
+.*
+!.gitignore
+!.github
 *.iml
 out
 target

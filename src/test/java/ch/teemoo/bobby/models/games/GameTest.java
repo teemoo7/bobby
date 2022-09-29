@@ -2,8 +2,6 @@ package ch.teemoo.bobby.models.games;
 
 import ch.teemoo.bobby.models.Board;
 import ch.teemoo.bobby.models.Color;
-import ch.teemoo.bobby.models.games.Game;
-import ch.teemoo.bobby.models.games.GameState;
 import ch.teemoo.bobby.models.moves.Move;
 import ch.teemoo.bobby.models.pieces.*;
 import ch.teemoo.bobby.models.players.Human;
