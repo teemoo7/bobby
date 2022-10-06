@@ -74,10 +74,9 @@ public class EventHandler {
 	}
 
 	boolean isChallengeAcceptable(Event.ChallengeEvent challengeEvent) {
-		Predicate<Challenge> challengerName = challenge -> challenge.challenger().name().equalsIgnoreCase("teemoo7");
 		Predicate<Challenge> variantStandard = challenge -> challenge.variant().key() == Enums.GameVariant.standard;
 
-		return challengerName.and(variantStandard).test(challengeEvent.challenge());
+		return variantStandard.test(challengeEvent.challenge());
 	}
 
 	void acceptChallenge(Event.ChallengeEvent challengeEvent) {
