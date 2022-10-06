@@ -1,0 +1,21 @@
+<configuration>
+	<root level="warn">
+		<appender-ref ref="rollingFileAppender" />
+	</root>
+
+	<logger level="debug" name="ch.teemoo.bobby" />
+
+	<appender name="rollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>logs/app.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${application.logsDirectory}/${application.name}.%d{yyyy-MM-dd_HH}.%i.log.gz</fileNamePattern>
+			<maxFileSize>100MB</maxFileSize>
+			<maxHistory>90</maxHistory>
+			<totalSizeCap>1GB</totalSizeCap>
+		</rollingPolicy>
+		<encoder>
+			<pattern>[%d{HH:mm:ss.SSS}][%-5p] - %m%n</pattern>
+		</encoder>
+	</appender>
+
+</configuration>
