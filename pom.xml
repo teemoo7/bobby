@@ -30,6 +30,7 @@
     <maven.plugin.checkstyle.version>3.2.0</maven.plugin.checkstyle.version>
     <maven.plugin.failsafe.version>3.0.0-M7</maven.plugin.failsafe.version>
     <maven.plugin.jacoco.version>0.8.8</maven.plugin.jacoco.version>
+    <maven.plugin.pitest.version>1.9.0</maven.plugin.pitest.version>
     <maven.plugin.project-info-reports.version>3.4.1</maven.plugin.project-info-reports.version>
     <maven.plugin.site.version>4.0.0-M3</maven.plugin.site.version>
     <maven.plugin.spotbugs.version>4.7.2.0</maven.plugin.spotbugs.version>
@@ -252,6 +253,33 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>${maven.plugin.pitest.version}</version>
+        <configuration>
+          <targetClasses>
+            <targetClass>ch.teemoo.bobby.*</targetClass>
+          </targetClasses>
+          <targetTests>
+            <targetTest>ch.teemoo.bobby.*</targetTest>
+          </targetTests>
+          <excludedClasses>
+            <param>*.gui.*</param>
+          </excludedClasses>
+          <excludedTestClasses>
+            <param>*.gui.*</param>
+            <param>*IT</param>
+            <param>*SwingTest</param>
+            <param>*FactoryTest</param>
+          </excludedTestClasses>
+          <outputFormats>
+            <outputFormat>XML</outputFormat>
+          </outputFormats>
+          <timestampedReports>false</timestampedReports>
+        </configuration>
       </plugin>
     </plugins>
   </build>
