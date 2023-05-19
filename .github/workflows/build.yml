@@ -10,6 +10,9 @@ on:
     - cron: "0 3 * * 0-6"
   workflow_dispatch:
 
+permissions:
+  checks: write
+
 jobs:
   build:
 
