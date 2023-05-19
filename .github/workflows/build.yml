@@ -40,4 +40,4 @@ jobs:
         run: mvn clean test-compile org.pitest:pitest-maven:mutationCoverage
 
       - name: Check test strength
-        uses: teemoo7/mutation-testing-report-action@main
+        uses: teemoo7/mutation-testing-report-action@Mutation-testing-pitest
