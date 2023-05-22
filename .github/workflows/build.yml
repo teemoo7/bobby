@@ -44,5 +44,3 @@ jobs:
 
       - name: Check test strength
         uses: teemoo7/mutation-testing-report-action@Mutation-testing-pitest
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
