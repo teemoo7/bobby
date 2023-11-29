@@ -37,7 +37,7 @@
 
     <!-- Dependencies -->
     <flatlaf.version>0.33</flatlaf.version>
-    <logback.version>1.4.1</logback.version>
+    <logback.version>1.4.12</logback.version>
     <spotbugs.version>4.7.2</spotbugs.version>
     <dotenv-java.version>2.2.4</dotenv-java.version>
     <chariot.version>0.0.53</chariot.version>
