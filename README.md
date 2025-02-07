@@ -23,6 +23,10 @@ If you are interested in how this engine works, please have a look at those two 
 1. [Implementing a Chess engine from scratch](https://towardsdatascience.com/implementing-a-chess-engine-from-scratch-be38cbdae91?source=friends_link&sk=ebc15d3d963f1e61ca1bfe7961afdcad)
 2. [Enhancing a Java Swing App to a clean, elegant Web App without changing the code](https://codeburst.io/enhancing-a-java-swing-app-to-a-clean-elegant-web-app-without-changing-the-code-a69d7c1c2781?source=friends_link&sk=952623a093a6bed7870746b52719ef88)
 
+![Bobby Chess Board](src/main/resources/img/bobby-settings.png "Bobby Settings")
+
+![Bobby Chess Board](src/main/resources/img/bobby-board.png "Bobby Chess Board")
+
 ## How to launch
 
 ### From a released JAR
@@ -46,13 +50,15 @@ If you are interested in how this engine works, please have a look at those two 
     java -jar target/bobby-1.0-SNAPSHOT.jar 
     ```
 
-### Online
+### Online (deprecated)
 
-#### :new: Lichess Bot
+#### Lichess Bot (deprecated)
 
-Thanks to the great lib [Chariot](https://github.com/tors42/chariot), it is now possible to play against Bobby on Lichess.
+Thanks to the great lib [Chariot](https://github.com/tors42/chariot), it was possible to play against Bobby on Lichess.
 
 Just browse to [bobby-bot profile on Lichess.org](https://lichess.org/@/bobby-bot) and challenge it! If the server is running, the bot will accept the challenge and play.
+
+However, the bot has been stopped for costs reasons.
 
 #### GUI in browser (deprecated)
 
