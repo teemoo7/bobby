@@ -44,7 +44,7 @@
 
     <!-- Testing -->
     <appache-commons.version>3.6.1</appache-commons.version>
-    <assertj.version>3.23.1</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
     <assertj-swing.version>3.17.1</assertj-swing.version>
     <junit.version>4.13.2</junit.version>
     <mockito.version>4.8.0</mockito.version>
